@@ -1,11 +1,12 @@
-# build output and local tools (re-created by the build / Docker)
+# build output (re-created by the build / Docker)
 **/target/
 pr-ui/node_modules/
 pr-ui/test-results/
 pr-ui/playwright-report/
 pr-ui/e2e/.auth/
-tools/
-# database dumps contain patient data
-backup/
-*.dump
+# tools/ (bundled Maven, Node and the Maven library cache) IS committed, so a new Windows machine can build and
+# test without downloading anything; only the project's own artifacts that "mvn install" writes into the cache
+# are left out (they change on every build)
+tools/m2repo/com/hospital/
+# backup/ IS committed (private repository): dumps contain the demo patients and users' password hashes
 *.log
