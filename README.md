@@ -46,15 +46,15 @@ On first start of empty volumes the app creates its tables, `pg-setup` creates t
 filled automatically. Measured on this laptop with everything running: about 1.6-2 GB in total.
 
 ## Demo data on a new machine
-The repository holds no patient data. The full demo data set (H001 1,00,002, H002 20,000, H003 10,000 patients,
-all users, settings and saved reports) is attached to the GitHub release **`demo-data-2026-10-16`**
-(Releases page of this repository) as `patientreg_full_2026-10-16_1726.dump` (22 MB).
-1. `docker compose up -d --build` and wait until `docker compose ps` shows the app as healthy.
-2. Download the dump from the release (needs repository access) into `backup\`.
-3. Optional check: `certutil -hashfile backup\patientreg_full_2026-10-16_1726.dump SHA256` must print
+The full demo data set (H001 1,00,002, H002 20,000, H003 10,000 patients, all users, settings and saved reports) is
+in the repository: `backup\patientreg_full_2026-10-16_1726.dump` (22 MB; the older dumps in `backup\` are earlier
+stages). The bundled `tools\` (Maven, Node, library cache) let a Windows machine build and test without downloads.
+1. `git clone`, then `docker compose up -d --build` and wait until `docker compose ps` shows the app as healthy.
+2. Optional check: `certutil -hashfile backup\patientreg_full_2026-10-16_1726.dump SHA256` must print
    `5eb7c11e3fb09084e79871119944e35fb08c0a76be5a67d5660f6bc936b9f72b`.
-4. `restore.bat backup\patientreg_full_2026-10-16_1726.dump` (type YES): replaces all data and reloads ClickHouse.
-5. For the real-time pipeline afterwards: `start.bat cdc`.
+3. `restore.bat backup\patientreg_full_2026-10-16_1726.dump` (type YES): replaces all data and reloads ClickHouse.
+4. For the real-time pipeline afterwards: `start.bat cdc`.
+A new dump (`backup.bat`) committed later adds about 22 MB to the repository history each time.
 
 ## Database (PostgreSQL, 24 tables in 3 schemas)
 | Schema | Tables |
