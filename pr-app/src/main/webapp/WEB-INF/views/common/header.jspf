@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><c:out value="${pageTitle}"/> | Patient Registration</title>
+    <link rel="stylesheet" href="${ctx}/resources/css/app.css">
+</head>
+<body>
+<header class="topbar">
+    <div class="brand">&#10010; Patient Registration <span>System</span></div>
+    <c:if test="${not empty tenant}">
+    <nav>
+        <a href="${ctx}/" class="${activeNav == 'home' ? 'active' : ''}">Dashboard</a>
+        <c:if test="${tenant.allowedHere('REGISTER')}">
+            <a href="${ctx}/patient/new" class="${activeNav == 'new' ? 'active' : ''}">New Registration</a>
+        </c:if>
+        <c:if test="${tenant.allowedHere('LEGACY_REPORTS')}">
+            <a href="${ctx}/reports/register" class="${activeNav == 'register' ? 'active' : ''}">Patient Register</a>
+            <a href="${ctx}/reports/summary" class="${activeNav == 'summary' ? 'active' : ''}">Department Summary</a>
+        </c:if>
+        <c:if test="${tenant.allowedAnywhere('ANALYTICS')}">
+            <a href="${ctx}/app/">Analytics</a>
+        </c:if>
+        <c:if test="${tenant.allowedHere('MANAGE_SETTINGS')}">
+            <a href="${ctx}/settings" class="${activeNav == 'settings' ? 'active' : ''}">Settings</a>
+        </c:if>
+        <c:if test="${tenant.allowedAnywhere('MANAGE_USERS') or tenant.superAdmin}">
+            <a href="${ctx}/admin/users" class="${activeNav == 'admin' ? 'active' : ''}">Administration</a>
+        </c:if>
+    </nav>
+    <div class="userbar">
+        <c:choose>
+            <c:when test="${tenant.multiHospital}">
+                <form method="post" action="${ctx}/session/hospital" class="inline">
+                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
+                    <select name="hospitalId" data-autosubmit title="Hospital you are working in" aria-label="Hospital">
+                        <c:forEach var="h" items="${tenant.hospitals}">
+                            <option value="${h.hospitalId}" ${h.hospitalId == tenant.activeHospitalId ? 'selected' : ''}><c:out value="${h.code} - ${h.name}"/></option>
+                        </c:forEach>
+                    </select>
+                </form>
+            </c:when>
+            <c:otherwise><span class="hospital"><c:out value="${tenant.active.code} - ${tenant.active.name}"/></span></c:otherwise>
+        </c:choose>
+        <a href="${ctx}/account/password" title="Change password"><c:out value="${tenant.displayName}"/></a>
+        <form method="post" action="${ctx}/logout" class="inline">
+            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
+            <button type="submit" class="link">Sign out</button>
+        </form>
+    </div>
+    </c:if>
+</header>
+<main class="container">

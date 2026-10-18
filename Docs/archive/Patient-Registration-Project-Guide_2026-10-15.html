@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Patient Registration Guide</title>
+<style>
+:root {
+  --bg: #f5f7f9; --surface: #ffffff; --surface-2: #eef3f6; --text: #1d2730; --muted: #5d6b78;
+  --border: #d3dce3; --accent: #00707e; --accent-soft: #e0f1f3; --accent-text: #ffffff;
+  --code-bg: #f0f3f6; --warn-bg: #fff6e5; --warn-border: #e8b04a; --ok-bg: #e9f6ec; --ok-border: #58a86a;
+  --svg-box: #ffffff; --svg-head: #00707e; --svg-head-text: #ffffff; --svg-line: #4d5b67; --svg-text: #1d2730;
+  --svg-muted: #6a7885; --svg-fk: #b35c00; --svg-pk: #00707e; --svg-alt: #f2f7f9;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12171c; --surface: #1a2128; --surface-2: #212a33; --text: #e3e9ee; --muted: #9aa8b4;
+    --border: #33404c; --accent: #3fb6c4; --accent-soft: #163339; --accent-text: #0d1a1d;
+    --code-bg: #212a33; --warn-bg: #2e2717; --warn-border: #b9893a; --ok-bg: #18291d; --ok-border: #4c8f5b;
+    --svg-box: #1f2830; --svg-head: #2a8f9b; --svg-head-text: #ffffff; --svg-line: #9aa8b4; --svg-text: #e3e9ee;
+    --svg-muted: #9aa8b4; --svg-fk: #f0a35a; --svg-pk: #5cc8d4; --svg-alt: #24303a;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12171c; --surface: #1a2128; --surface-2: #212a33; --text: #e3e9ee; --muted: #9aa8b4;
+  --border: #33404c; --accent: #3fb6c4; --accent-soft: #163339; --accent-text: #0d1a1d;
+  --code-bg: #212a33; --warn-bg: #2e2717; --warn-border: #b9893a; --ok-bg: #18291d; --ok-border: #4c8f5b;
+  --svg-box: #1f2830; --svg-head: #2a8f9b; --svg-head-text: #ffffff; --svg-line: #9aa8b4; --svg-text: #e3e9ee;
+  --svg-muted: #9aa8b4; --svg-fk: #f0a35a; --svg-pk: #5cc8d4; --svg-alt: #24303a;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 "Segoe UI", system-ui, -apple-system, Arial, sans-serif; }
+a { color: var(--accent); }
+code, pre, .mono { font-family: Consolas, "Cascadia Mono", "Courier New", monospace; font-size: 13px; }
+code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; border: 1px solid var(--border); line-height: 1.45; }
+pre code { background: none; padding: 0; }
+
+.layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 100vh; }
+nav.toc { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--surface); border-right: 1px solid var(--border); padding: 20px 16px; }
+nav.toc .brand { font-weight: 700; font-size: 16px; color: var(--accent); margin-bottom: 4px; }
+nav.toc .sub { color: var(--muted); font-size: 12px; margin-bottom: 16px; }
+nav.toc ol { margin: 0; padding-left: 20px; }
+nav.toc li { margin: 3px 0; font-size: 13.5px; }
+nav.toc a { text-decoration: none; color: var(--text); }
+nav.toc a:hover { color: var(--accent); }
+.theme-btn { margin-top: 18px; font: inherit; font-size: 12px; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 5px 10px; cursor: pointer; }
+
+main { padding: 28px 40px 60px; max-width: 1180px; width: 100%; }
+header.hero { background: var(--surface); border: 1px solid var(--border); border-left: 5px solid var(--accent); border-radius: 8px; padding: 22px 26px; margin-bottom: 28px; }
+header.hero h1 { margin: 0 0 6px; font-size: 26px; }
+header.hero p { margin: 4px 0; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.chip { background: var(--accent-soft); color: var(--text); border-radius: 12px; padding: 2px 10px; font-size: 12.5px; }
+
+section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 22px 26px; margin-bottom: 22px; }
+section h2 { margin: 0 0 14px; font-size: 21px; padding-bottom: 8px; border-bottom: 2px solid var(--accent-soft); }
+section h2 .num { color: var(--accent); margin-right: 6px; }
+section h3 { font-size: 16.5px; margin: 22px 0 8px; }
+section h4 { font-size: 14.5px; margin: 16px 0 6px; color: var(--muted); }
+
+.table-wrap { overflow-x: auto; margin: 10px 0 14px; border: 1px solid var(--border); border-radius: 6px; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th { background: var(--surface-2); text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { padding: 6px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+td.mono, td code { white-space: nowrap; }
+.pk { color: var(--svg-pk); font-weight: 700; }
+.fk { color: var(--svg-fk); font-weight: 700; }
+
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
+.card h4 { margin: 0 0 6px; color: var(--text); }
+.card p { margin: 0; font-size: 13.5px; color: var(--muted); }
+.stat { font-size: 22px; font-weight: 700; color: var(--accent); }
+
+.note { border-left: 4px solid var(--warn-border); background: var(--warn-bg); padding: 10px 14px; border-radius: 4px; margin: 12px 0; font-size: 14px; }
+.warn { border-left: 4px solid #d97706; background: rgba(217,119,6,.10); padding: 10px 14px; border-radius: 4px; margin: 12px 0; font-size: 14px; }
+.ok { border-left: 4px solid var(--ok-border); background: var(--ok-bg); padding: 10px 14px; border-radius: 4px; margin: 12px 0; font-size: 14px; }
+
+.diagram { overflow-x: auto; background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 10px; margin: 10px 0 6px; }
+.diagram svg { display: block; margin: 0 auto; width: 100%; height: auto; min-width: 860px; }
+.caption { font-size: 12.5px; color: var(--muted); margin: 0 0 12px; }
+
+/* SVG styling (shared by all diagrams) */
+.box { fill: var(--svg-box); stroke: var(--svg-line); stroke-width: 1.2; }
+.alt { fill: var(--svg-alt); }
+.head { fill: var(--svg-head); }
+.htext { fill: var(--svg-head-text); font: 600 13px "Segoe UI", Arial, sans-serif; }
+.t { fill: var(--svg-text); font: 12px Consolas, "Courier New", monospace; }
+.ty { fill: var(--svg-muted); font: 11px Consolas, "Courier New", monospace; }
+.kpk { fill: var(--svg-pk); font: 700 10.5px "Segoe UI", Arial, sans-serif; }
+.kfk { fill: var(--svg-fk); font: 700 10.5px "Segoe UI", Arial, sans-serif; }
+.ln { stroke: var(--svg-line); stroke-width: 1.6; fill: none; }
+.card-l { fill: var(--svg-text); font: 700 12.5px "Segoe UI", Arial, sans-serif; }
+.lbl { fill: var(--svg-text); font: 600 12.5px "Segoe UI", Arial, sans-serif; }
+.lbl-s { fill: var(--svg-muted); font: 11px "Segoe UI", Arial, sans-serif; }
+.layer { fill: var(--svg-alt); stroke: var(--svg-line); stroke-dasharray: 4 3; stroke-width: 1; }
+.layer-t { fill: var(--svg-muted); font: 700 11px "Segoe UI", Arial, sans-serif; letter-spacing: .06em; }
+.arrowhead { fill: var(--svg-line); }
+
+ol.steps { padding-left: 22px; }
+ol.steps li { margin: 6px 0; }
+.kbd { border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--surface-2); font-size: 12.5px; }
+footer { color: var(--muted); font-size: 12.5px; text-align: center; margin-top: 30px; }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  nav.toc { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+  main { padding: 16px; }
+  section, header.hero { padding: 16px; }
+  .grid2, .grid3 { grid-template-columns: 1fr; }
+}
+@media print {
+  nav.toc, .theme-btn { display: none; }
+  .layout { display: block; }
+  body { background: #fff; }
+  section { break-inside: auto; border: none; padding: 0 0 12px; }
+  .diagram { overflow: visible; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="toc">
+  <div class="brand">Patient Registration</div>
+  <div class="sub">Project guide &middot; 15 Oct 2026</div>
+  <ol>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#stack">Technology stack</a></li>
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#structure">Project structure</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#er">ER diagram</a></li>
+    <li><a href="#tables">Database tables</a></li>
+    <li><a href="#java">Java classes &amp; relations</a></li>
+    <li><a href="#screens">Screens &amp; URLs</a></li>
+    <li><a href="#validation">Validation rules</a></li>
+    <li><a href="#reports">Reports &amp; downloads</a></li>
+    <li><a href="#config">Configuration</a></li>
+    <li><a href="#deploy">Deployment steps</a></li>
+    <li><a href="#data">Bulk data (Phase 2)</a></li>
+    <li><a href="#performance">Performance</a></li>
+    <li><a href="#backup">Backup &amp; restore</a></li>
+    <li><a href="#security">Security &amp; limitations</a></li>
+    <li><a href="#troubleshooting">Troubleshooting</a></li>
+  </ol>
+  <button class="theme-btn" type="button" id="themeBtn">Toggle light / dark</button>
+</nav>
+
+<main>
+
+<header class="hero">
+  <h1>Patient Registration System</h1>
+  <p>A Spring MVC web application that registers hospital patients (70 fields across 6 tables plus a department master) and produces two reports, each downloadable as Excel or PDF.</p>
+  <p>Location: <code>D:\Pravin\patient-registration</code> &middot; URL: <a href="http://localhost:8080/patient-registration/">http://localhost:8080/patient-registration/</a></p>
+  <div class="chips">
+    <span class="chip">Java 21</span><span class="chip">Spring MVC 6.2</span><span class="chip">JSP + JSTL</span>
+    <span class="chip">Tomcat 11</span><span class="chip">PostgreSQL 18</span><span class="chip">Apache POI</span>
+    <span class="chip">OpenPDF</span><span class="chip">100% open source libraries</span>
+  </div>
+</header>
+
+<!-- ============================== 1. OVERVIEW ============================== -->
+<section id="overview">
+  <h2><span class="num">1.</span>Overview</h2>
+  <p>The application lets reception staff register a patient in a single form and lets management view and download registration reports. It was built in two phases:</p>
+  <div class="grid2">
+    <div class="card"><h4>Phase 1 &middot; Application</h4>
+      <p>Registration form with 70 fields in 6 sections, server-side validation, patient detail view, Report 1 (Patient Register) and Report 2 (Department Summary) with Excel and PDF downloads.</p></div>
+    <div class="card"><h4>Phase 2 &middot; Volume</h4>
+      <p>1 lakh (100,000) realistic patients loaded with every field filled; queries, indexes and downloads tuned and measured at that volume; a cap on concurrent downloads.</p></div>
+  </div>
+  <h3>Key numbers</h3>
+  <div class="grid3">
+    <div class="card"><div class="stat">70</div><p>Registration fields</p></div>
+    <div class="card"><div class="stat">7</div><p>Database tables (6 patient + 1 master)</p></div>
+    <div class="card"><div class="stat">100,002</div><p>Patients in the database (1 lakh generated + 2 entered by hand)</p></div>
+    <div class="card"><div class="stat">2</div><p>Reports, each as screen, Excel (.xlsx) and PDF</p></div>
+    <div class="card"><div class="stat">20</div><p>Java classes in 6 packages</p></div>
+    <div class="card"><div class="stat">&lt; 0.5 s</div><p>Every screen at 1 lakh patients</p></div>
+  </div>
+</section>
+
+<!-- ============================== 2. STACK ============================== -->
+<section id="stack">
+  <h2><span class="num">2.</span>Technology stack</h2>
+  <p>Every library is open source with no licence fee. Everything runs locally on Windows.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Layer</th><th>Technology</th><th>Version</th><th>Licence</th><th>Used for</th></tr></thead>
+    <tbody>
+      <tr><td>Language / runtime</td><td>Java (JDK)</td><td>21.0.12.1</td><td>See note below</td><td>Compiling and running the application</td></tr>
+      <tr><td>Web server</td><td>Apache Tomcat (Docker image <code>tomcat:11.0-jdk21-temurin</code>, container <code>pr-app</code>)</td><td>11.0 (Servlet 6.1, JSP 4.0)</td><td>Apache 2.0</td><td>Hosts the WAR at <code>/patient-registration</code></td></tr>
+      <tr><td>Web framework</td><td>Spring Framework (spring-webmvc, spring-jdbc)</td><td>6.2.10</td><td>Apache 2.0</td><td>MVC controllers, dependency injection, transactions, JDBC templates</td></tr>
+      <tr><td>Views</td><td>JSP + Jakarta JSTL (API 3.0.2, Glassfish impl 3.0.1) + Spring form tags</td><td>&mdash;</td><td>EPL 2.0</td><td>HTML pages, form binding, escaping</td></tr>
+      <tr><td>Database</td><td>PostgreSQL (Docker image <code>postgres:18</code>, container <code>pr-postgres</code>)</td><td>18</td><td>PostgreSQL Licence</td><td>Schema <code>patientreg</code> in database <code>postgres</code></td></tr>
+      <tr><td>JDBC driver</td><td>PostgreSQL JDBC (PgJDBC)</td><td>42.7.4</td><td>BSD-2</td><td>Database connectivity</td></tr>
+      <tr><td>Connection pool</td><td>HikariCP</td><td>5.1.0</td><td>Apache 2.0</td><td>Pool of 10 connections</td></tr>
+      <tr><td>Search</td><td>pg_trgm (PostgreSQL extension)</td><td>bundled</td><td>PostgreSQL Licence</td><td>Fast "contains" search on name, registration no, mobile</td></tr>
+      <tr><td>Excel export</td><td>Apache POI (poi-ooxml, SXSSF streaming)</td><td>5.3.0</td><td>Apache 2.0</td><td>.xlsx downloads</td></tr>
+      <tr><td>PDF export</td><td>OpenPDF</td><td>1.3.43</td><td>LGPL 2.1 / MPL 2.0</td><td>.pdf downloads</td></tr>
+      <tr><td>Logging</td><td>SLF4J (api + simple) 2.0.16, Log4j API / to-slf4j bridge 2.24.1</td><td>&mdash;</td><td>MIT / Apache 2.0</td><td>Application log to Tomcat console</td></tr>
+      <tr><td>Build</td><td>Apache Maven (bundled in <code>tools\</code>)</td><td>3.9.9</td><td>Apache 2.0</td><td>Builds <code>patient-registration.war</code></td></tr>
+      <tr><td>Front end</td><td>Plain CSS + small vanilla JavaScript</td><td>&mdash;</td><td>&mdash;</td><td>Layout, age/BMI calculation, show/hide sections</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><strong>JDK licence note:</strong> the JDK in <code>D:\Pravin\jdk-21.0.12.1</code> is an Oracle build. Whether Oracle's no-fee terms cover a given Oracle JDK update depends on its version and release date. If a licence-free runtime matters, use any OpenJDK 21 build (for example Eclipse Temurin 21). The application runs on it unchanged; only <code>JAVA_HOME</code> in <code>env.bat</code> needs to change.</div>
+  <p>No Spring Boot, no ORM: the project uses plain Spring configuration classes and SQL through <code>NamedParameterJdbcTemplate</code>. That keeps the stack small, and the SQL is easy to read and tune.</p>
+</section>
+
+<!-- ============================== 3. ARCHITECTURE ============================== -->
+<section id="architecture">
+  <h2><span class="num">3.</span>Architecture</h2>
+  <p>A classic layered web application. The browser talks to Tomcat; Spring's <code>DispatcherServlet</code> routes each request to a controller. The controller calls a service, the service calls a DAO, and the DAO runs SQL against PostgreSQL. Controllers then either render a JSP page or stream a file download.</p>
+  <div class="diagram">
+  <svg width="1080" height="330" viewBox="0 0 1080 330" role="img" aria-label="Architecture: browser, Tomcat with Spring layers, PostgreSQL">
+    <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arrowhead"/></marker></defs>
+    <rect class="box" x="20" y="120" width="140" height="70" rx="8"/>
+    <text class="lbl" x="90" y="150" text-anchor="middle">Browser</text>
+    <text class="lbl-s" x="90" y="168" text-anchor="middle">HTML pages, downloads</text>
+
+    <rect class="layer" x="200" y="20" width="640" height="290" rx="10"/>
+    <text class="layer-t" x="215" y="40">APACHE TOMCAT 11 &middot; patient-registration.war</text>
+
+    <rect class="box" x="220" y="120" width="130" height="70" rx="6"/>
+    <text class="lbl" x="285" y="148" text-anchor="middle">Dispatcher</text>
+    <text class="lbl" x="285" y="164" text-anchor="middle">Servlet</text>
+    <text class="lbl-s" x="285" y="181" text-anchor="middle">+ UTF-8 filter</text>
+
+    <rect class="box" x="380" y="60" width="130" height="58" rx="6"/>
+    <text class="lbl" x="445" y="85" text-anchor="middle">Controllers</text>
+    <text class="lbl-s" x="445" y="102" text-anchor="middle">Home / Patient / Report</text>
+    <rect class="box" x="380" y="190" width="130" height="58" rx="6"/>
+    <text class="lbl" x="445" y="215" text-anchor="middle">JSP views</text>
+    <text class="lbl-s" x="445" y="232" text-anchor="middle">JSTL + Spring form tags</text>
+
+    <rect class="box" x="540" y="60" width="130" height="58" rx="6"/>
+    <text class="lbl" x="605" y="85" text-anchor="middle">Services</text>
+    <text class="lbl-s" x="605" y="102" text-anchor="middle">validation, transactions</text>
+    <rect class="box" x="540" y="190" width="130" height="58" rx="6"/>
+    <text class="lbl" x="605" y="215" text-anchor="middle">Exporters</text>
+    <text class="lbl-s" x="605" y="232" text-anchor="middle">POI Excel / OpenPDF</text>
+
+    <rect class="box" x="700" y="60" width="120" height="58" rx="6"/>
+    <text class="lbl" x="760" y="85" text-anchor="middle">DAOs</text>
+    <text class="lbl-s" x="760" y="102" text-anchor="middle">SQL via JdbcTemplate</text>
+    <rect class="box" x="700" y="190" width="120" height="58" rx="6"/>
+    <text class="lbl" x="760" y="215" text-anchor="middle">HikariCP</text>
+    <text class="lbl-s" x="760" y="232" text-anchor="middle">10 connections</text>
+
+    <rect class="box" x="880" y="110" width="180" height="90" rx="8"/>
+    <text class="lbl" x="970" y="140" text-anchor="middle">PostgreSQL 18</text>
+    <text class="lbl-s" x="970" y="158" text-anchor="middle">Docker container "Postgres"</text>
+    <text class="lbl-s" x="970" y="175" text-anchor="middle">schema patientreg &middot; port 5432</text>
+
+    <path class="ln" d="M160,155 L218,155" marker-end="url(#ah)"/>
+    <path class="ln" d="M350,145 L378,95" marker-end="url(#ah)"/>
+    <path class="ln" d="M510,89 L538,89" marker-end="url(#ah)"/>
+    <path class="ln" d="M670,89 L698,89" marker-end="url(#ah)"/>
+    <path class="ln" d="M445,118 L445,188" marker-end="url(#ah)"/>
+    <path class="ln" d="M605,118 L605,188" marker-end="url(#ah)"/>
+    <path class="ln" d="M760,118 L760,188" marker-end="url(#ah)"/>
+    <path class="ln" d="M820,219 L850,219 L850,170 L878,170" marker-end="url(#ah)"/>
+    <path class="ln" d="M380,219 L300,219 L300,192" marker-end="url(#ah)"/>
+    <text class="lbl-s" x="320" y="268">HTML response / file stream back to the browser</text>
+  </svg>
+  </div>
+  <p class="caption">Request path: browser &rarr; DispatcherServlet &rarr; controller &rarr; service &rarr; DAO &rarr; HikariCP &rarr; PostgreSQL. The response is a JSP page or an Excel/PDF stream.</p>
+
+  <h3>Two Spring contexts</h3>
+  <div class="grid2">
+    <div class="card"><h4>Root context &mdash; <code>AppConfig</code></h4><p>DataSource (HikariCP), schema initialiser, JdbcTemplate / NamedParameterJdbcTemplate, transaction manager, services, DAOs, exporters. It scans everything except controllers.</p></div>
+    <div class="card"><h4>Web context &mdash; <code>WebConfig</code></h4><p>Spring MVC (<code>@EnableWebMvc</code>), JSP view resolver (<code>/WEB-INF/views/*.jsp</code>), static resources (<code>/resources/**</code>), message source, controllers and the global exception handler.</p></div>
+  </div>
+  <p>Both are wired by <code>WebAppInitializer</code>, which replaces the classic <code>web.xml</code> servlet declarations. <code>web.xml</code> still exists, but only for container settings: cookie-only sessions and the error page.</p>
+</section>
+
+<!-- ============================== 4. STRUCTURE ============================== -->
+<section id="structure">
+  <h2><span class="num">4.</span>Project structure</h2>
+<pre><code>D:\Pravin\
+├── jdk-21.0.12.1\                     Java 21 (used by the scripts)
+├── apache-tomcat-11.0.27\             Tomcat 11 (used before the move to Docker; no longer needed)
+└── patient-registration\              &lt;-- the project (everything lives here)
+    ├── pom.xml                        Maven build: dependencies and WAR packaging
+    ├── README.md                      Short how-to
+    ├── env.bat                        Shared paths: JAVA_HOME, CATALINA_HOME, Maven, Docker container name
+    ├── build.bat                      Builds target\patient-registration.war
+    ├── docker-compose.yml, Dockerfile, .env   The whole system in Docker (section 13)
+    ├── start.bat                      docker compose up (start.bat cdc = with Kafka + Debezium)
+    ├── deploy.bat                     Rebuilds and restarts the app container
+    ├── stop.bat                       Stops all containers (data is kept)
+    ├── load-data.bat                  Phase 2: loads bulk test patients
+    ├── backup.bat                     Full backup (schema + data) with today's date
+    ├── backup\                        Backups, e.g. patientreg_full_2026-10-15.dump
+    ├── db\load-test-data.sql          Bulk data generator (SQL)
+    ├── Docs\                          This document
+    ├── tools\
+    │   ├── apache-maven-3.9.9\        Bundled Maven
+    │   └── m2repo\                    Maven's local library cache (kept inside the project)
+    ├── target\                        Build output (patient-registration.war)
+    └── src\main\
+        ├── java\com\hospital\patientreg\
+        │   ├── config\                AppConfig, WebConfig, WebAppInitializer
+        │   ├── controller\            HomeController, PatientController, ReportController, GlobalExceptionHandler
+        │   ├── service\               PatientService, PatientValidator, ReportService, ExportLimiter
+        │   ├── dao\                   PatientDao, ReportDao
+        │   ├── report\                ExcelExporter, PdfExporter, ReportDefinition
+        │   └── model\                 PatientForm, ReportFilter, Department, Lookups
+        ├── resources\
+        │   ├── db.properties          Database URL / user / password, pool size, download limit
+        │   ├── schema.sql             Tables, indexes, sequence, seed data (runs at every startup, idempotent)
+        │   └── messages.properties    Friendly text for type-conversion errors
+        └── webapp\
+            ├── resources\css\app.css  Styles
+            ├── resources\js\patient-form.js   Form behaviour (age, BMI, show/hide, double-submit guard)
+            └── WEB-INF\
+                ├── web.xml            Session cookie settings, error page
+                └── views\             home, patient-form, patient-view, report-register, report-summary, error
+                    └── common\        taglibs.jspf, header.jspf, footer.jspf</code></pre>
+</section>
+
+<!-- ============================== 5. HOW IT WORKS ============================== -->
+<section id="how">
+  <h2><span class="num">5.</span>How it works</h2>
+
+  <h3>5.1 Application start-up</h3>
+  <ol class="steps">
+    <li>Tomcat finds <code>WebAppInitializer</code> (a Spring <code>WebApplicationInitializer</code>) inside the WAR and starts the root and web contexts.</li>
+    <li><code>AppConfig</code> creates the HikariCP pool from <code>db.properties</code>. If Windows reports the legacy time zone <code>Asia/Calcutta</code>, it is switched to <code>Asia/Kolkata</code> first, because the PostgreSQL container rejects the old name at login (its time-zone database has no <code>Asia/Calcutta</code> alias).</li>
+    <li><code>DataSourceInitializer</code> runs <code>schema.sql</code>. Every statement is idempotent (<code>IF NOT EXISTS</code>, <code>ON CONFLICT DO NOTHING</code>), so the script creates the schema on first start and only applies missing pieces afterwards.</li>
+    <li><code>WebConfig</code> registers controllers, the JSP view resolver and static resources. The app is then live at <code>/patient-registration/</code>.</li>
+  </ol>
+
+  <h3>5.2 Registering a patient</h3>
+  <ol class="steps">
+    <li><strong>GET <code>/patient/new</code></strong>: <code>PatientController</code> creates an empty <code>PatientForm</code> (registration and visit dates default to today) and renders <code>patient-form.jsp</code> with dropdown values from <code>Lookups</code> and departments from the database.</li>
+    <li>In the browser, <code>patient-form.js</code> calculates age from the date of birth and BMI from height and weight. It shows the insurance section only when "has insurance" is ticked and the permanent address only when it differs, and it disables the submit button after the first click.</li>
+    <li><strong>POST <code>/patient/save</code></strong>: Spring binds the request into <code>PatientForm</code>. Blank strings become <code>null</code>, and the internal fields <code>patientId</code>, <code>registrationNo</code>, <code>status</code>, <code>bmi</code> and <code>deptName</code> are never taken from the request.</li>
+    <li><code>PatientValidator</code> checks every rule (section 10). On error the same form is shown again with a message next to each failing field.</li>
+    <li><code>PatientService.register()</code> runs in <strong>one database transaction</strong>:
+      <ul>
+        <li><code>prepare()</code> derives values: default dates, exact age from date of birth, BMI. It also clears the permanent address when it is the same as the current one, and clears the insurance fields when the patient has no insurance.</li>
+        <li><code>PatientDao.insert()</code> inserts into <code>patient</code> (getting back the new id and registration number), then <code>patient_contact</code>, <code>patient_emergency_contact</code>, <code>patient_insurance</code>, <code>patient_medical_info</code> and <code>patient_visit</code> (flagged <code>registration_visit = TRUE</code>).</li>
+        <li>If any insert fails, all six are rolled back, so no half-saved patients can exist.</li>
+      </ul></li>
+    <li>The browser is redirected (Post/Redirect/Get) to <strong><code>/patient/{id}</code></strong>, which shows every registration detail (all form fields plus registration number and status; the audit timestamps are not shown) with a "registered successfully" message. Refreshing that page cannot submit the form twice.</li>
+  </ol>
+
+  <h3>5.3 Registration number</h3>
+  <p>Format: <code>REG</code> + year of the registration date + a 7-digit running number from the PostgreSQL sequence <code>reg_no_seq</code>, for example <code>REG20260000001</code>. The number is generated inside the <code>INSERT</code> itself, so it is unique even with many users saving at once. A failed save leaves a gap in the numbers, because sequences are never rolled back.</p>
+
+  <h3>5.4 Viewing a report</h3>
+  <ol class="steps">
+    <li>The filter form submits by <strong>GET</strong>, so every report view is a shareable URL. Filters are bound into <code>ReportFilter</code>; values that cannot be parsed (for example a malformed date) are ignored instead of causing an error.</li>
+    <li><code>ReportDao</code> builds the WHERE clause from fixed SQL fragments with bound parameters (no SQL injection is possible) and joins <code>patient</code>, <code>patient_contact</code>, <code>patient_insurance</code>, the registration visit and <code>department</code>.</li>
+    <li>Report 1 runs a count plus one page of 50 rows (<code>LIMIT/OFFSET</code>). Report 2 runs one grouped query; the grand-total row is computed in Java.</li>
+  </ol>
+
+  <h3>5.5 Downloading Excel or PDF</h3>
+  <ol class="steps">
+    <li><code>ReportController</code> asks <code>ExportLimiter</code> for a slot. At most 3 downloads run at once; a 4th waits up to 20 seconds, then gets a "server busy, try again" page.</li>
+    <li>Only after a slot is granted are the download headers set (<code>Content-Type</code>, <code>Content-Disposition</code> with a timestamped filename such as <code>patient_register_20261015_1530.xlsx</code>).</li>
+    <li><code>ReportService.exportRegister()</code> runs in a read-only transaction. That lets the PostgreSQL driver use a <strong>server-side cursor</strong> (fetch size 2,000), so rows stream from the database instead of loading all 1 lakh into memory.</li>
+    <li>Each row goes straight to the exporter:
+      <ul>
+        <li><strong>Excel</strong>: Apache POI's <code>SXSSFWorkbook</code> keeps only 200 rows in memory; the rest go to compressed temp files that are deleted afterwards.</li>
+        <li><strong>PDF</strong>: OpenPDF adds the table to the document every 500 rows, which writes those rows and frees them. The header row repeats on every page, and every page has a footer with the report title and page number.</li>
+      </ul></li>
+  </ol>
+
+  <h3>5.6 Errors</h3>
+  <p><code>GlobalExceptionHandler</code> catches every exception and shows <code>error.jsp</code> with a plain message (page not found, invalid request, server busy, or a generic error). Stack traces and SQL are never shown to the user; server errors are written to the log instead. Container-level errors use the same page via <code>web.xml</code>.</p>
+</section>
+
+<!-- ============================== 6. ER DIAGRAM ============================== -->
+<section id="er">
+  <h2><span class="num">6.</span>ER diagram</h2>
+  <p>All tables live in schema <code>patientreg</code>. <code>patient</code> is the centre. Four detail tables share its primary key (one-to-one), visits are one-to-many, and each visit belongs to one department.</p>
+  <div class="diagram">
+  <svg width="1180" height="830" viewBox="0 0 1180 830" role="img" aria-label="Entity relationship diagram of the seven tables">
+    <!-- relationship lines (drawn first, under the boxes) -->
+    <path class="ln" d="M360,57 L420,57"/>
+    <text class="lbl" x="366" y="51">1</text><text class="lbl" x="408" y="51">1</text>
+    <path class="ln" d="M360,367 L420,367"/>
+    <text class="lbl" x="366" y="361">1</text><text class="lbl" x="408" y="361">1</text>
+    <path class="ln" d="M760,57 L820,57"/>
+    <text class="lbl" x="766" y="51">1</text><text class="lbl" x="808" y="51">1</text>
+    <path class="ln" d="M760,327 L820,327"/>
+    <text class="lbl" x="766" y="321">1</text><text class="lbl" x="808" y="321">1</text>
+    <path class="ln" d="M590,434 L590,500"/>
+    <text class="lbl" x="598" y="450">1</text><text class="lbl" x="598" y="494">N</text>
+    <path class="ln" d="M760,573 L790,573 L790,674 L820,674"/>
+    <text class="lbl" x="766" y="567">N</text><text class="lbl" x="806" y="668">1</text>
+
+    <!-- patient_contact (13) at 20,20 -->
+    <g>
+      <rect class="box" x="20" y="20" width="340" height="270" rx="6"/>
+      <path class="head" d="M26,20 h328 a6,6 0 0 1 6,6 v22 h-340 v-22 a6,6 0 0 1 6,-6 z"/>
+      <text class="htext" x="32" y="39">patient_contact</text>
+      <text class="t" x="30" y="61">patient_id</text><text class="ty" x="200" y="61">bigint</text><text class="kpk" x="318" y="61">PK</text><text class="kfk" x="336" y="61">FK</text>
+      <text class="t" x="30" y="79">mobile</text><text class="ty" x="200" y="79">varchar(15)</text>
+      <text class="t" x="30" y="97">alternate_phone</text><text class="ty" x="200" y="97">varchar(15)</text>
+      <text class="t" x="30" y="115">email</text><text class="ty" x="200" y="115">varchar(100)</text>
+      <text class="t" x="30" y="133">address_line1</text><text class="ty" x="200" y="133">varchar(150)</text>
+      <text class="t" x="30" y="151">address_line2</text><text class="ty" x="200" y="151">varchar(150)</text>
+      <text class="t" x="30" y="169">city</text><text class="ty" x="200" y="169">varchar(60)</text>
+      <text class="t" x="30" y="187">district</text><text class="ty" x="200" y="187">varchar(60)</text>
+      <text class="t" x="30" y="205">state</text><text class="ty" x="200" y="205">varchar(60)</text>
+      <text class="t" x="30" y="223">pincode</text><text class="ty" x="200" y="223">varchar(10)</text>
+      <text class="t" x="30" y="241">country</text><text class="ty" x="200" y="241">varchar(60)</text>
+      <text class="t" x="30" y="259">perm_same_as_current</text><text class="ty" x="200" y="259">boolean</text>
+      <text class="t" x="30" y="277">permanent_address</text><text class="ty" x="200" y="277">varchar(300)</text>
+    </g>
+
+    <!-- patient_emergency_contact (6) at 20,330 -->
+    <g>
+      <rect class="box" x="20" y="330" width="340" height="144" rx="6"/>
+      <path class="head" d="M26,330 h328 a6,6 0 0 1 6,6 v22 h-340 v-22 a6,6 0 0 1 6,-6 z"/>
+      <text class="htext" x="32" y="349">patient_emergency_contact</text>
+      <text class="t" x="30" y="371">patient_id</text><text class="ty" x="200" y="371">bigint</text><text class="kpk" x="318" y="371">PK</text><text class="kfk" x="336" y="371">FK</text>
+      <text class="t" x="30" y="389">contact_name</text><text class="ty" x="200" y="389">varchar(100)</text>
+      <text class="t" x="30" y="407">relationship</text><text class="ty" x="200" y="407">varchar(30)</text>
+      <text class="t" x="30" y="425">phone</text><text class="ty" x="200" y="425">varchar(15)</text>
+      <text class="t" x="30" y="443">alternate_phone</text><text class="ty" x="200" y="443">varchar(15)</text>
+      <text class="t" x="30" y="461">address</text><text class="ty" x="200" y="461">varchar(300)</text>
+    </g>
+
+    <!-- patient (21) at 420,20 -->
+    <g>
+      <rect class="box" x="420" y="20" width="340" height="414" rx="6"/>
+      <path class="head" d="M426,20 h328 a6,6 0 0 1 6,6 v22 h-340 v-22 a6,6 0 0 1 6,-6 z"/>
+      <text class="htext" x="432" y="39">patient</text>
+      <text class="t" x="430" y="61">patient_id</text><text class="ty" x="600" y="61">bigserial</text><text class="kpk" x="728" y="61">PK</text>
+      <text class="t" x="430" y="79">registration_no</text><text class="ty" x="600" y="79">varchar(20)</text><text class="kpk" x="728" y="79">UQ</text>
+      <text class="t" x="430" y="97">registration_date</text><text class="ty" x="600" y="97">date</text>
+      <text class="t" x="430" y="115">title</text><text class="ty" x="600" y="115">varchar(10)</text>
+      <text class="t" x="430" y="133">first_name</text><text class="ty" x="600" y="133">varchar(60)</text>
+      <text class="t" x="430" y="151">middle_name</text><text class="ty" x="600" y="151">varchar(60)</text>
+      <text class="t" x="430" y="169">last_name</text><text class="ty" x="600" y="169">varchar(60)</text>
+      <text class="t" x="430" y="187">gender</text><text class="ty" x="600" y="187">varchar(10)</text>
+      <text class="t" x="430" y="205">date_of_birth</text><text class="ty" x="600" y="205">date</text>
+      <text class="t" x="430" y="223">age_years</text><text class="ty" x="600" y="223">integer</text>
+      <text class="t" x="430" y="241">blood_group</text><text class="ty" x="600" y="241">varchar(5)</text>
+      <text class="t" x="430" y="259">marital_status</text><text class="ty" x="600" y="259">varchar(15)</text>
+      <text class="t" x="430" y="277">nationality</text><text class="ty" x="600" y="277">varchar(40)</text>
+      <text class="t" x="430" y="295">religion</text><text class="ty" x="600" y="295">varchar(30)</text>
+      <text class="t" x="430" y="313">occupation</text><text class="ty" x="600" y="313">varchar(60)</text>
+      <text class="t" x="430" y="331">national_id</text><text class="ty" x="600" y="331">varchar(20)</text>
+      <text class="t" x="430" y="349">preferred_language</text><text class="ty" x="600" y="349">varchar(30)</text>
+      <text class="t" x="430" y="367">patient_category</text><text class="ty" x="600" y="367">varchar(20)</text>
+      <text class="t" x="430" y="385">status</text><text class="ty" x="600" y="385">varchar(10)</text>
+      <text class="t" x="430" y="403">created_at</text><text class="ty" x="600" y="403">timestamp</text>
+      <text class="t" x="430" y="421">updated_at</text><text class="ty" x="600" y="421">timestamp</text>
+    </g>
+
+    <!-- patient_insurance (11) at 820,20 -->
+    <g>
+      <rect class="box" x="820" y="20" width="340" height="234" rx="6"/>
+      <path class="head" d="M826,20 h328 a6,6 0 0 1 6,6 v22 h-340 v-22 a6,6 0 0 1 6,-6 z"/>
+      <text class="htext" x="832" y="39">patient_insurance</text>
+      <text class="t" x="830" y="61">patient_id</text><text class="ty" x="1000" y="61">bigint</text><text class="kpk" x="1118" y="61">PK</text><text class="kfk" x="1136" y="61">FK</text>
+      <text class="t" x="830" y="79">has_insurance</text><text class="ty" x="1000" y="79">boolean</text>
+      <text class="t" x="830" y="97">provider_name</text><text class="ty" x="1000" y="97">varchar(100)</text>
+      <text class="t" x="830" y="115">policy_number</text><text class="ty" x="1000" y="115">varchar(40)</text>
+      <text class="t" x="830" y="133">group_number</text><text class="ty" x="1000" y="133">varchar(40)</text>
+      <text class="t" x="830" y="151">policy_holder_name</text><text class="ty" x="1000" y="151">varchar(100)</text>
+      <text class="t" x="830" y="169">holder_relationship</text><text class="ty" x="1000" y="169">varchar(30)</text>
+      <text class="t" x="830" y="187">valid_from</text><text class="ty" x="1000" y="187">date</text>
+      <text class="t" x="830" y="205">valid_to</text><text class="ty" x="1000" y="205">date</text>
+      <text class="t" x="830" y="223">coverage_type</text><text class="ty" x="1000" y="223">varchar(30)</text>
+      <text class="t" x="830" y="241">sum_insured</text><text class="ty" x="1000" y="241">numeric(12,2)</text>
+    </g>
+
+    <!-- patient_medical_info (13) at 820,290 -->
+    <g>
+      <rect class="box" x="820" y="290" width="340" height="270" rx="6"/>
+      <path class="head" d="M826,290 h328 a6,6 0 0 1 6,6 v22 h-340 v-22 a6,6 0 0 1 6,-6 z"/>
+      <text class="htext" x="832" y="309">patient_medical_info</text>
+      <text class="t" x="830" y="331">patient_id</text><text class="ty" x="1000" y="331">bigint</text><text class="kpk" x="1118" y="331">PK</text><text class="kfk" x="1136" y="331">FK</text>
+      <text class="t" x="830" y="349">height_cm</text><text class="ty" x="1000" y="349">numeric(5,1)</text>
+      <text class="t" x="830" y="367">weight_kg</text><text class="ty" x="1000" y="367">numeric(5,1)</text>
+      <text class="t" x="830" y="385">bmi</text><text class="ty" x="1000" y="385">numeric(5,1)</text>
+      <text class="t" x="830" y="403">known_allergies</text><text class="ty" x="1000" y="403">varchar(300)</text>
+      <text class="t" x="830" y="421">chronic_conditions</text><text class="ty" x="1000" y="421">varchar(300)</text>
+      <text class="t" x="830" y="439">current_medications</text><text class="ty" x="1000" y="439">varchar(300)</text>
+      <text class="t" x="830" y="457">past_surgeries</text><text class="ty" x="1000" y="457">varchar(300)</text>
+      <text class="t" x="830" y="475">family_history</text><text class="ty" x="1000" y="475">varchar(300)</text>
+      <text class="t" x="830" y="493">smoking_status</text><text class="ty" x="1000" y="493">varchar(20)</text>
+      <text class="t" x="830" y="511">alcohol_use</text><text class="ty" x="1000" y="511">varchar(20)</text>
+      <text class="t" x="830" y="529">disability</text><text class="ty" x="1000" y="529">varchar(100)</text>
+      <text class="t" x="830" y="547">vaccination_status</text><text class="ty" x="1000" y="547">varchar(30)</text>
+    </g>
+
+    <!-- patient_visit (15) at 420,500 -->
+    <g>
+      <rect class="box" x="420" y="500" width="340" height="306" rx="6"/>
+      <path class="head" d="M426,500 h328 a6,6 0 0 1 6,6 v22 h-340 v-22 a6,6 0 0 1 6,-6 z"/>
+      <text class="htext" x="432" y="519">patient_visit</text>
+      <text class="t" x="430" y="541">visit_id</text><text class="ty" x="600" y="541">bigserial</text><text class="kpk" x="728" y="541">PK</text>
+      <text class="t" x="430" y="559">patient_id</text><text class="ty" x="600" y="559">bigint</text><text class="kfk" x="728" y="559">FK</text>
+      <text class="t" x="430" y="577">dept_id</text><text class="ty" x="600" y="577">integer</text><text class="kfk" x="728" y="577">FK</text>
+      <text class="t" x="430" y="595">consulting_doctor</text><text class="ty" x="600" y="595">varchar(100)</text>
+      <text class="t" x="430" y="613">visit_type</text><text class="ty" x="600" y="613">varchar(20)</text>
+      <text class="t" x="430" y="631">visit_date</text><text class="ty" x="600" y="631">date</text>
+      <text class="t" x="430" y="649">referred_by</text><text class="ty" x="600" y="649">varchar(100)</text>
+      <text class="t" x="430" y="667">referral_source</text><text class="ty" x="600" y="667">varchar(30)</text>
+      <text class="t" x="430" y="685">chief_complaint</text><text class="ty" x="600" y="685">varchar(300)</text>
+      <text class="t" x="430" y="703">symptom_duration</text><text class="ty" x="600" y="703">varchar(30)</text>
+      <text class="t" x="430" y="721">priority</text><text class="ty" x="600" y="721">varchar(10)</text>
+      <text class="t" x="430" y="739">payment_mode</text><text class="ty" x="600" y="739">varchar(20)</text>
+      <text class="t" x="430" y="757">registration_fee</text><text class="ty" x="600" y="757">numeric(10,2)</text>
+      <text class="t" x="430" y="775">remarks</text><text class="ty" x="600" y="775">varchar(300)</text>
+      <text class="t" x="430" y="793">registration_visit</text><text class="ty" x="600" y="793">boolean</text>
+    </g>
+
+    <!-- department (4) at 820,620 -->
+    <g>
+      <rect class="box" x="820" y="620" width="340" height="108" rx="6"/>
+      <path class="head" d="M826,620 h328 a6,6 0 0 1 6,6 v22 h-340 v-22 a6,6 0 0 1 6,-6 z"/>
+      <text class="htext" x="832" y="639">department (master)</text>
+      <text class="t" x="830" y="661">dept_id</text><text class="ty" x="1000" y="661">serial</text><text class="kpk" x="1118" y="661">PK</text>
+      <text class="t" x="830" y="679">dept_code</text><text class="ty" x="1000" y="679">varchar(10)</text><text class="kpk" x="1118" y="679">UQ</text>
+      <text class="t" x="830" y="697">dept_name</text><text class="ty" x="1000" y="697">varchar(100)</text>
+      <text class="t" x="830" y="715">active</text><text class="ty" x="1000" y="715">boolean</text>
+    </g>
+  </svg>
+  </div>
+  <p class="caption">PK = primary key, FK = foreign key, UQ = unique. All patient foreign keys use <code>ON DELETE CASCADE</code>: deleting a patient removes all of their rows.</p>
+
+  <h3>Relationships</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>From</th><th>To</th><th>Cardinality</th><th>Key</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>patient</code></td><td><code>patient_contact</code></td><td>1 : 1</td><td><code>patient_contact.patient_id</code> (PK and FK)</td><td>Phone, email, current and permanent address</td></tr>
+      <tr><td><code>patient</code></td><td><code>patient_emergency_contact</code></td><td>1 : 1</td><td><code>patient_emergency_contact.patient_id</code> (PK and FK)</td><td>Person to call in an emergency</td></tr>
+      <tr><td><code>patient</code></td><td><code>patient_insurance</code></td><td>1 : 1</td><td><code>patient_insurance.patient_id</code> (PK and FK)</td><td>Policy details (fields empty when not insured)</td></tr>
+      <tr><td><code>patient</code></td><td><code>patient_medical_info</code></td><td>1 : 1</td><td><code>patient_medical_info.patient_id</code> (PK and FK)</td><td>Height, weight, BMI, history, habits</td></tr>
+      <tr><td><code>patient</code></td><td><code>patient_visit</code></td><td>1 : N</td><td><code>patient_visit.patient_id</code> (FK)</td><td>Visits. At most one per patient can have <code>registration_visit = TRUE</code> (partial unique index); every registration creates it, so in practice each patient has exactly one. Room is left for future follow-up visits.</td></tr>
+      <tr><td><code>department</code></td><td><code>patient_visit</code></td><td>1 : N</td><td><code>patient_visit.dept_id</code> (FK)</td><td>Department of each visit</td></tr>
+    </tbody>
+  </table></div>
+  <p>Every registration writes exactly one row into each of the six patient tables, all in the same transaction.</p>
+</section>
+
+<!-- ============================== 7. TABLES ============================== -->
+<section id="tables">
+  <h2><span class="num">7.</span>Database tables in detail</h2>
+  <p>83 columns in total (79 in the six patient tables plus 4 in <code>department</code>); the form fields map onto them as shown. "Req." means required by the form (or by the database).</p>
+
+  <h3>7.1 <code>department</code> &mdash; master data (10 rows seeded)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Column</th><th>Type</th><th>Req.</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>dept_id</code> <span class="pk">PK</span></td><td>serial</td><td>yes</td><td>Auto number</td></tr>
+      <tr><td><code>dept_code</code></td><td>varchar(10), unique</td><td>yes</td><td>GEN, CAR, ORT, PED, GYN, ENT, DER, NEU, OPH, DEN</td></tr>
+      <tr><td><code>dept_name</code></td><td>varchar(100)</td><td>yes</td><td>General Medicine, Cardiology, Orthopaedics, Paediatrics, Obstetrics &amp; Gynaecology, ENT, Dermatology, Neurology, Ophthalmology, Dental</td></tr>
+      <tr><td><code>active</code></td><td>boolean</td><td>yes</td><td>Only active departments appear in dropdowns and the summary</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>7.2 <code>patient</code> &mdash; core demographics (form section 1)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Column</th><th>Type</th><th>Req.</th><th>Form field / notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>patient_id</code> <span class="pk">PK</span></td><td>bigserial</td><td>auto</td><td>Internal id, used in <code>/patient/{id}</code></td></tr>
+      <tr><td><code>registration_no</code></td><td>varchar(20), unique</td><td>auto</td><td><code>REG</code> + year + 7 digits (section 5.3)</td></tr>
+      <tr><td><code>registration_date</code></td><td>date</td><td>yes</td><td>Registration Date (default today, not in the future)</td></tr>
+      <tr><td><code>title</code></td><td>varchar(10)</td><td></td><td>Mr., Mrs., Ms., Master, Baby, Dr.</td></tr>
+      <tr><td><code>first_name</code></td><td>varchar(60)</td><td>yes</td><td>First Name</td></tr>
+      <tr><td><code>middle_name</code></td><td>varchar(60)</td><td></td><td>Middle Name</td></tr>
+      <tr><td><code>last_name</code></td><td>varchar(60)</td><td>yes</td><td>Last Name</td></tr>
+      <tr><td><code>gender</code></td><td>varchar(10)</td><td>yes</td><td>Male, Female, Other</td></tr>
+      <tr><td><code>date_of_birth</code></td><td>date</td><td></td><td>Date of Birth (age is calculated from it when given)</td></tr>
+      <tr><td><code>age_years</code></td><td>integer</td><td>yes</td><td>Age (entered, or derived from date of birth)</td></tr>
+      <tr><td><code>blood_group</code></td><td>varchar(5)</td><td></td><td>A+, A-, B+, B-, AB+, AB-, O+, O-</td></tr>
+      <tr><td><code>marital_status</code></td><td>varchar(15)</td><td></td><td>Single, Married, Divorced, Widowed</td></tr>
+      <tr><td><code>nationality</code></td><td>varchar(40)</td><td></td><td>Default "Indian"</td></tr>
+      <tr><td><code>religion</code></td><td>varchar(30)</td><td></td><td>Dropdown</td></tr>
+      <tr><td><code>occupation</code></td><td>varchar(60)</td><td></td><td>Free text</td></tr>
+      <tr><td><code>national_id</code></td><td>varchar(20)</td><td></td><td>Aadhaar number (12 digits)</td></tr>
+      <tr><td><code>preferred_language</code></td><td>varchar(30)</td><td></td><td>Dropdown</td></tr>
+      <tr><td><code>patient_category</code></td><td>varchar(20)</td><td>yes</td><td>GENERAL, SENIOR_CITIZEN, STAFF, VIP, BPL</td></tr>
+      <tr><td><code>status</code></td><td>varchar(10)</td><td>auto</td><td>ACTIVE (server-controlled, cannot be set from the form)</td></tr>
+      <tr><td><code>created_at</code> / <code>updated_at</code></td><td>timestamp</td><td>auto</td><td>Audit timestamps</td></tr>
+    </tbody>
+  </table></div>
+  <p>Indexes: <code>idx_patient_reg_order (registration_date DESC, patient_id DESC)</code> matches the register's sort order; <code>idx_patient_gender</code>; <code>idx_patient_category</code>; trigram GIN indexes <code>idx_patient_name_trgm</code> (first + last name) and <code>idx_patient_regno_trgm</code>.</p>
+
+  <h3>7.3 <code>patient_contact</code> &mdash; contact &amp; address (form section 2)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Column</th><th>Type</th><th>Req.</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>patient_id</code> <span class="pk">PK</span> <span class="fk">FK</span></td><td>bigint</td><td>auto</td><td>&rarr; patient</td></tr>
+      <tr><td><code>mobile</code></td><td>varchar(15)</td><td>yes</td><td>10 digits</td></tr>
+      <tr><td><code>alternate_phone</code></td><td>varchar(15)</td><td></td><td>10 digits</td></tr>
+      <tr><td><code>email</code></td><td>varchar(100)</td><td></td><td>Valid email format</td></tr>
+      <tr><td><code>address_line1</code></td><td>varchar(150)</td><td>yes</td><td></td></tr>
+      <tr><td><code>address_line2</code></td><td>varchar(150)</td><td></td><td></td></tr>
+      <tr><td><code>city</code></td><td>varchar(60)</td><td>yes</td><td>Indexed (<code>idx_contact_city</code>)</td></tr>
+      <tr><td><code>district</code></td><td>varchar(60)</td><td></td><td></td></tr>
+      <tr><td><code>state</code></td><td>varchar(60)</td><td>yes</td><td>Dropdown of Indian states</td></tr>
+      <tr><td><code>pincode</code></td><td>varchar(10)</td><td>yes</td><td>6 digits</td></tr>
+      <tr><td><code>country</code></td><td>varchar(60)</td><td>yes</td><td>Default "India"</td></tr>
+      <tr><td><code>perm_same_as_current</code></td><td>boolean</td><td>yes</td><td>Checkbox; when unticked a permanent address is required</td></tr>
+      <tr><td><code>permanent_address</code></td><td>varchar(300)</td><td></td><td></td></tr>
+    </tbody>
+  </table></div>
+  <p>Indexes: <code>idx_contact_mobile</code> (exact match) and <code>idx_contact_mobile_trgm</code> (partial match).</p>
+
+  <h3>7.4 <code>patient_emergency_contact</code> (form section 3)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Column</th><th>Type</th><th>Req.</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>patient_id</code> <span class="pk">PK</span> <span class="fk">FK</span></td><td>bigint</td><td>auto</td><td>&rarr; patient</td></tr>
+      <tr><td><code>contact_name</code></td><td>varchar(100)</td><td>yes</td><td></td></tr>
+      <tr><td><code>relationship</code></td><td>varchar(30)</td><td>yes</td><td>Father, Mother, Spouse, Son, Daughter, Brother, Sister, Guardian, Friend, Other</td></tr>
+      <tr><td><code>phone</code></td><td>varchar(15)</td><td>yes</td><td>10 digits</td></tr>
+      <tr><td><code>alternate_phone</code></td><td>varchar(15)</td><td></td><td>10 digits</td></tr>
+      <tr><td><code>address</code></td><td>varchar(300)</td><td></td><td></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>7.5 <code>patient_insurance</code> (form section 4)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Column</th><th>Type</th><th>Req.</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>patient_id</code> <span class="pk">PK</span> <span class="fk">FK</span></td><td>bigint</td><td>auto</td><td>&rarr; patient</td></tr>
+      <tr><td><code>has_insurance</code></td><td>boolean</td><td>yes</td><td>Checkbox; the other fields are only saved when ticked</td></tr>
+      <tr><td><code>provider_name</code></td><td>varchar(100)</td><td>if insured</td><td></td></tr>
+      <tr><td><code>policy_number</code></td><td>varchar(40)</td><td>if insured</td><td></td></tr>
+      <tr><td><code>group_number</code></td><td>varchar(40)</td><td></td><td></td></tr>
+      <tr><td><code>policy_holder_name</code></td><td>varchar(100)</td><td></td><td></td></tr>
+      <tr><td><code>holder_relationship</code></td><td>varchar(30)</td><td></td><td>Self, Spouse, Parent, Child, Employer</td></tr>
+      <tr><td><code>valid_from</code></td><td>date</td><td></td><td></td></tr>
+      <tr><td><code>valid_to</code></td><td>date</td><td>if insured</td><td>Must not be before valid_from</td></tr>
+      <tr><td><code>coverage_type</code></td><td>varchar(30)</td><td></td><td>Individual, Family Floater, Corporate, Government Scheme</td></tr>
+      <tr><td><code>sum_insured</code></td><td>numeric(12,2)</td><td></td><td>0 to 10,00,00,000</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>7.6 <code>patient_medical_info</code> (form section 5)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Column</th><th>Type</th><th>Req.</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>patient_id</code> <span class="pk">PK</span> <span class="fk">FK</span></td><td>bigint</td><td>auto</td><td>&rarr; patient</td></tr>
+      <tr><td><code>height_cm</code></td><td>numeric(5,1)</td><td></td><td>30&ndash;250</td></tr>
+      <tr><td><code>weight_kg</code></td><td>numeric(5,1)</td><td></td><td>1&ndash;400</td></tr>
+      <tr><td><code>bmi</code></td><td>numeric(5,1)</td><td>auto</td><td>weight / (height in m)&sup2;, calculated by the server</td></tr>
+      <tr><td><code>known_allergies</code></td><td>varchar(300)</td><td></td><td></td></tr>
+      <tr><td><code>chronic_conditions</code></td><td>varchar(300)</td><td></td><td></td></tr>
+      <tr><td><code>current_medications</code></td><td>varchar(300)</td><td></td><td></td></tr>
+      <tr><td><code>past_surgeries</code></td><td>varchar(300)</td><td></td><td></td></tr>
+      <tr><td><code>family_history</code></td><td>varchar(300)</td><td></td><td></td></tr>
+      <tr><td><code>smoking_status</code></td><td>varchar(20)</td><td></td><td>Never, Former, Current</td></tr>
+      <tr><td><code>alcohol_use</code></td><td>varchar(20)</td><td></td><td>Never, Occasional, Regular</td></tr>
+      <tr><td><code>disability</code></td><td>varchar(100)</td><td></td><td></td></tr>
+      <tr><td><code>vaccination_status</code></td><td>varchar(30)</td><td></td><td>Fully / Partially / Not Vaccinated, Unknown</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>7.7 <code>patient_visit</code> (form section 6)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Column</th><th>Type</th><th>Req.</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>visit_id</code> <span class="pk">PK</span></td><td>bigserial</td><td>auto</td><td></td></tr>
+      <tr><td><code>patient_id</code> <span class="fk">FK</span></td><td>bigint</td><td>auto</td><td>&rarr; patient (indexed)</td></tr>
+      <tr><td><code>dept_id</code> <span class="fk">FK</span></td><td>integer</td><td>yes</td><td>&rarr; department (indexed); must be an active department</td></tr>
+      <tr><td><code>consulting_doctor</code></td><td>varchar(100)</td><td>yes</td><td></td></tr>
+      <tr><td><code>visit_type</code></td><td>varchar(20)</td><td>yes</td><td>NEW, FOLLOW_UP, EMERGENCY</td></tr>
+      <tr><td><code>visit_date</code></td><td>date</td><td>yes</td><td>Defaults to the registration date; not in the future, not before registration (indexed)</td></tr>
+      <tr><td><code>referred_by</code></td><td>varchar(100)</td><td></td><td></td></tr>
+      <tr><td><code>referral_source</code></td><td>varchar(30)</td><td></td><td>Self, Doctor, Hospital, Health Camp, Online, Other</td></tr>
+      <tr><td><code>chief_complaint</code></td><td>varchar(300)</td><td>yes</td><td></td></tr>
+      <tr><td><code>symptom_duration</code></td><td>varchar(30)</td><td></td><td>e.g. "3 days"</td></tr>
+      <tr><td><code>priority</code></td><td>varchar(10)</td><td>yes</td><td>NORMAL, URGENT, CRITICAL</td></tr>
+      <tr><td><code>payment_mode</code></td><td>varchar(20)</td><td>yes</td><td>CASH, CARD, UPI, INSURANCE, CREDIT</td></tr>
+      <tr><td><code>registration_fee</code></td><td>numeric(10,2)</td><td>yes</td><td>0 to 1,00,000</td></tr>
+      <tr><td><code>remarks</code></td><td>varchar(300)</td><td></td><td></td></tr>
+      <tr><td><code>registration_visit</code></td><td>boolean</td><td>auto</td><td>TRUE for the visit created at registration; partial unique index <code>ux_visit_registration</code> allows only one per patient</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>7.8 Other database objects</h3>
+  <ul>
+    <li><strong>Sequence <code>reg_no_seq</code></strong>: running number for registration numbers.</li>
+    <li><strong>Extension <code>pg_trgm</code></strong> (installed in schema <code>patientreg</code>): trigram matching for fast "contains" search.</li>
+    <li><strong>Schema migrations</strong>: <code>schema.sql</code> is re-run at every start-up. New columns are added with <code>ALTER TABLE &hellip; ADD COLUMN IF NOT EXISTS</code> (this is how Phase 2 added <code>registration_visit</code> and backfilled it).</li>
+  </ul>
+</section>
+
+<!-- ============================== 8. JAVA ============================== -->
+<section id="java">
+  <h2><span class="num">8.</span>Java classes &amp; relations</h2>
+  <p>20 classes in package <code>com.hospital.patientreg</code>. Dependencies flow downward only: controllers &rarr; services &rarr; DAOs / exporters &rarr; database. All dependencies are injected through constructors.</p>
+  <div class="diagram">
+  <svg width="1140" height="660" viewBox="0 0 1140 660" role="img" aria-label="Class dependency diagram">
+    <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arrowhead"/></marker></defs>
+    <rect class="layer" x="20" y="10" width="1100" height="100" rx="8"/><text class="layer-t" x="1108" y="104" text-anchor="end">WEB LAYER &middot; controller</text>
+    <rect class="layer" x="20" y="150" width="1100" height="100" rx="8"/><text class="layer-t" x="1108" y="244" text-anchor="end">SERVICE LAYER &middot; service</text>
+    <rect class="layer" x="20" y="290" width="1100" height="100" rx="8"/><text class="layer-t" x="1108" y="384" text-anchor="end">DATA ACCESS &amp; EXPORT &middot; dao, report</text>
+    <rect class="layer" x="20" y="430" width="1100" height="80" rx="8"/><text class="layer-t" x="32" y="448">INFRASTRUCTURE</text>
+    <rect class="layer" x="20" y="540" width="1100" height="100" rx="8"/><text class="layer-t" x="32" y="558">MODEL (data carriers) &middot; model, report</text>
+
+    <!-- arrows -->
+    <path class="ln" d="M140,90 L380,170" marker-end="url(#ah2)"/>
+    <path class="ln" d="M400,90 L400,168" marker-end="url(#ah2)"/>
+    <path class="ln" d="M380,90 L150,168" marker-end="url(#ah2)"/>
+    <path class="ln" d="M660,90 L660,168" marker-end="url(#ah2)"/>
+    <path class="ln" d="M690,90 L910,168" marker-end="url(#ah2)"/>
+    <path class="ln" d="M630,90 L430,168" marker-end="url(#ah2)"/>
+    <path class="ln" d="M140,230 L250,308" marker-end="url(#ah2)"/>
+    <path class="ln" d="M400,230 L290,308" marker-end="url(#ah2)"/>
+    <path class="ln" d="M640,230 L540,308" marker-end="url(#ah2)"/>
+    <path class="ln" d="M620,230 L320,308" marker-end="url(#ah2)"/>
+    <path class="ln" d="M680,230 L780,308" marker-end="url(#ah2)"/>
+    <path class="ln" d="M700,230 L990,308" marker-end="url(#ah2)"/>
+    <path class="ln" d="M270,370 L270,448" marker-end="url(#ah2)"/>
+    <path class="ln" d="M530,370 L530,448" marker-end="url(#ah2)"/>
+
+    <!-- controllers -->
+    <rect class="box" x="40" y="40" width="200" height="50" rx="6"/><text class="card-l" x="140" y="62" text-anchor="middle">HomeController</text><text class="lbl-s" x="140" y="79" text-anchor="middle">GET /</text>
+    <rect class="box" x="300" y="40" width="200" height="50" rx="6"/><text class="card-l" x="400" y="62" text-anchor="middle">PatientController</text><text class="lbl-s" x="400" y="79" text-anchor="middle">/patient/new, /save, /{id}</text>
+    <rect class="box" x="560" y="40" width="200" height="50" rx="6"/><text class="card-l" x="660" y="62" text-anchor="middle">ReportController</text><text class="lbl-s" x="660" y="79" text-anchor="middle">/reports/* + /export</text>
+    <rect class="box" x="820" y="40" width="240" height="50" rx="6"/><text class="card-l" x="940" y="62" text-anchor="middle">GlobalExceptionHandler</text><text class="lbl-s" x="940" y="79" text-anchor="middle">@ControllerAdvice &rarr; error.jsp</text>
+
+    <!-- services -->
+    <rect class="box" x="40" y="180" width="200" height="50" rx="6"/><text class="card-l" x="140" y="202" text-anchor="middle">PatientValidator</text><text class="lbl-s" x="140" y="219" text-anchor="middle">all form rules</text>
+    <rect class="box" x="300" y="180" width="200" height="50" rx="6"/><text class="card-l" x="400" y="202" text-anchor="middle">PatientService</text><text class="lbl-s" x="400" y="219" text-anchor="middle">@Transactional register</text>
+    <rect class="box" x="560" y="180" width="200" height="50" rx="6"/><text class="card-l" x="660" y="202" text-anchor="middle">ReportService</text><text class="lbl-s" x="660" y="219" text-anchor="middle">screen data + exports</text>
+    <rect class="box" x="820" y="180" width="200" height="50" rx="6"/><text class="card-l" x="920" y="202" text-anchor="middle">ExportLimiter</text><text class="lbl-s" x="920" y="219" text-anchor="middle">max 3 downloads at once</text>
+
+    <!-- dao / report -->
+    <rect class="box" x="170" y="320" width="200" height="50" rx="6"/><text class="card-l" x="270" y="342" text-anchor="middle">PatientDao</text><text class="lbl-s" x="270" y="359" text-anchor="middle">insert / find / departments</text>
+    <rect class="box" x="430" y="320" width="200" height="50" rx="6"/><text class="card-l" x="530" y="342" text-anchor="middle">ReportDao</text><text class="lbl-s" x="530" y="359" text-anchor="middle">count / page / stream / summary</text>
+    <rect class="box" x="680" y="320" width="200" height="50" rx="6"/><text class="card-l" x="780" y="342" text-anchor="middle">ExcelExporter</text><text class="lbl-s" x="780" y="359" text-anchor="middle">Apache POI SXSSF</text>
+    <rect class="box" x="900" y="320" width="200" height="50" rx="6"/><text class="card-l" x="1000" y="342" text-anchor="middle">PdfExporter</text><text class="lbl-s" x="1000" y="359" text-anchor="middle">OpenPDF, chunked</text>
+
+    <!-- infra -->
+    <rect class="box" x="170" y="458" width="460" height="42" rx="6"/><text class="card-l" x="400" y="477" text-anchor="middle">NamedParameterJdbcTemplate &rarr; HikariCP &rarr; PostgreSQL</text><text class="lbl-s" x="400" y="493" text-anchor="middle">created in AppConfig</text>
+    <rect class="box" x="680" y="458" width="420" height="42" rx="6"/><text class="card-l" x="890" y="477" text-anchor="middle">AppConfig &middot; WebConfig &middot; WebAppInitializer</text><text class="lbl-s" x="890" y="493" text-anchor="middle">config: wires everything at start-up</text>
+
+    <!-- model -->
+    <rect class="box alt" x="40" y="572" width="190" height="50" rx="6"/><text class="card-l" x="135" y="594" text-anchor="middle">PatientForm</text><text class="lbl-s" x="135" y="611" text-anchor="middle">67 form fields + id, reg no</text>
+    <rect class="box alt" x="250" y="572" width="190" height="50" rx="6"/><text class="card-l" x="345" y="594" text-anchor="middle">ReportFilter</text><text class="lbl-s" x="345" y="611" text-anchor="middle">filters + paging</text>
+    <rect class="box alt" x="460" y="572" width="190" height="50" rx="6"/><text class="card-l" x="555" y="594" text-anchor="middle">Department</text><text class="lbl-s" x="555" y="611" text-anchor="middle">record</text>
+    <rect class="box alt" x="670" y="572" width="190" height="50" rx="6"/><text class="card-l" x="765" y="594" text-anchor="middle">Lookups</text><text class="lbl-s" x="765" y="611" text-anchor="middle">dropdown values</text>
+    <rect class="box alt" x="880" y="572" width="210" height="50" rx="6"/><text class="card-l" x="985" y="594" text-anchor="middle">ReportDefinition</text><text class="lbl-s" x="985" y="611" text-anchor="middle">title, headers, row stream</text>
+  </svg>
+  </div>
+  <p class="caption">Arrows mean "calls / depends on". Model classes are passed between all layers.</p>
+
+  <h3>Class reference</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Class</th><th>Package</th><th>Responsibility</th><th>Uses</th></tr></thead>
+    <tbody>
+      <tr><td><code>WebAppInitializer</code></td><td>config</td><td>Boots Spring in Tomcat (replaces web.xml servlet setup); maps DispatcherServlet to <code>/</code>; adds a UTF-8 encoding filter</td><td>AppConfig, WebConfig</td></tr>
+      <tr><td><code>AppConfig</code></td><td>config</td><td>Root context: HikariCP DataSource, runs <code>schema.sql</code>, JDBC templates, transaction manager; fixes the Asia/Calcutta time-zone alias</td><td>db.properties, schema.sql</td></tr>
+      <tr><td><code>WebConfig</code></td><td>config</td><td>Spring MVC: JSP view resolver, static resources, <code>messages.properties</code></td><td>&mdash;</td></tr>
+      <tr><td><code>HomeController</code></td><td>controller</td><td>Dashboard with total / today / this-month counts</td><td>PatientService</td></tr>
+      <tr><td><code>PatientController</code></td><td>controller</td><td>Shows the form, validates and saves it, shows a patient. Trims input, blocks internal fields from binding</td><td>PatientService, PatientValidator, Lookups</td></tr>
+      <tr><td><code>ReportController</code></td><td>controller</td><td>Both reports on screen and as downloads; sets file name and content type</td><td>ReportService, PatientService, ExportLimiter</td></tr>
+      <tr><td><code>GlobalExceptionHandler</code></td><td>controller</td><td>Turns any exception into a friendly error page; logs server errors</td><td>error.jsp</td></tr>
+      <tr><td><code>PatientService</code></td><td>service</td><td>Registers a patient in one transaction; derives age, BMI, defaults</td><td>PatientDao</td></tr>
+      <tr><td><code>PatientValidator</code></td><td>service</td><td>Every server-side rule: required fields, formats, allowed dropdown values, column lengths, numeric and date ranges, valid department</td><td>PatientDao, Lookups</td></tr>
+      <tr><td><code>ReportService</code></td><td>service</td><td>Report column definitions, grand totals, export orchestration (read-only transaction for streaming)</td><td>ReportDao, PatientDao, ExcelExporter, PdfExporter</td></tr>
+      <tr><td><code>ExportLimiter</code></td><td>service</td><td>Semaphore that allows <code>export.maxConcurrent</code> downloads at once; replies "busy" after 20 s</td><td>&mdash;</td></tr>
+      <tr><td><code>PatientDao</code></td><td>dao</td><td>SQL for the six inserts, full patient read, departments, dashboard counts</td><td>NamedParameterJdbcTemplate</td></tr>
+      <tr><td><code>ReportDao</code></td><td>dao</td><td>Report SQL: shared FROM/WHERE, count, page, streaming cursor, department summary</td><td>NamedParameterJdbcTemplate</td></tr>
+      <tr><td><code>ExcelExporter</code></td><td>report</td><td>Writes .xlsx: title, filter summary, styled header, frozen header row, typed number/date cells, totals row</td><td>Apache POI</td></tr>
+      <tr><td><code>PdfExporter</code></td><td>report</td><td>Writes A4 landscape PDF: title, repeated header, page footer "Page n", chunked flushing</td><td>OpenPDF</td></tr>
+      <tr><td><code>ReportDefinition</code></td><td>report</td><td>Record describing a report for either exporter (title, subtitle, headers, widths, row stream, total row)</td><td>&mdash;</td></tr>
+      <tr><td><code>PatientForm</code></td><td>model</td><td>Form-backing bean: the 67 entry/derived fields plus patient id, registration number, status and department name (71 properties); the DAO splits it across six tables</td><td>&mdash;</td></tr>
+      <tr><td><code>ReportFilter</code></td><td>model</td><td>From/to date, department, gender, category, keyword, page; builds the filter text printed in exports</td><td>&mdash;</td></tr>
+      <tr><td><code>Department</code></td><td>model</td><td>Record (id, code, name) with getters for JSP</td><td>&mdash;</td></tr>
+      <tr><td><code>Lookups</code></td><td>model</td><td>Fixed dropdown lists (titles, states, visit types &hellip;), used by the form and by the validator's allowed-value check</td><td>&mdash;</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Other source files</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>views/patient-form.jsp</code></td><td>Registration form: 6 sections, error message under every field</td></tr>
+      <tr><td><code>views/patient-view.jsp</code></td><td>All details of one patient; printable</td></tr>
+      <tr><td><code>views/report-register.jsp</code></td><td>Report 1: filters, 50 rows per page, pager, download buttons</td></tr>
+      <tr><td><code>views/report-summary.jsp</code></td><td>Report 2: filters, department table with grand total, download buttons</td></tr>
+      <tr><td><code>views/home.jsp</code>, <code>error.jsp</code></td><td>Dashboard and error page</td></tr>
+      <tr><td><code>views/common/*.jspf</code></td><td>Shared tag libraries, top navigation bar, footer</td></tr>
+      <tr><td><code>resources/js/patient-form.js</code></td><td>Age from date of birth, live BMI, show/hide insurance and permanent address, double-submit guard</td></tr>
+      <tr><td><code>resources/css/app.css</code></td><td>Responsive layout and print styles</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================== 9. SCREENS ============================== -->
+<section id="screens">
+  <h2><span class="num">9.</span>Screens &amp; URLs</h2>
+  <p>Base URL: <a href="http://localhost:8080/patient-registration/">http://localhost:8080/patient-registration/</a></p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Screen</th><th>Method &amp; path</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td>Dashboard</td><td><code>GET /</code></td><td>Total patients, registered today, this month; links to everything</td></tr>
+      <tr><td>New Registration</td><td><code>GET /patient/new</code></td><td>Empty registration form</td></tr>
+      <tr><td>Save registration</td><td><code>POST /patient/save</code></td><td>Validates and saves; on success redirects to the patient page</td></tr>
+      <tr><td>Patient details</td><td><code>GET /patient/{id}</code></td><td>All registration details of one patient (form fields, registration number, status), with a Print button</td></tr>
+      <tr><td>Report 1 &middot; Patient Register</td><td><code>GET /reports/register</code></td><td>Filtered, paginated list; registration number links to the patient</td></tr>
+      <tr><td>Report 1 download</td><td><code>GET /reports/register/export?format=excel|pdf</code></td><td>All matching rows (same filters as the screen)</td></tr>
+      <tr><td>Report 2 &middot; Department Summary</td><td><code>GET /reports/summary</code></td><td>One row per department plus a grand total</td></tr>
+      <tr><td>Report 2 download</td><td><code>GET /reports/summary/export?format=excel|pdf</code></td><td>Same table as a file</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Registration form sections</h3>
+  <div class="grid3">
+    <div class="card"><h4>1. Personal details (16)</h4><p>Registration date, category, title, first / middle / last name, gender, date of birth, age, blood group, marital status, nationality, religion, occupation, Aadhaar, language</p></div>
+    <div class="card"><h4>2. Contact &amp; address (12)</h4><p>Mobile, alternate phone, email, address lines 1&ndash;2, city, district, state, pincode, country, "permanent same as current", permanent address</p></div>
+    <div class="card"><h4>3. Emergency contact (5)</h4><p>Name, relationship, phone, alternate phone, address</p></div>
+    <div class="card"><h4>4. Insurance (10)</h4><p>Has insurance, provider, policy no, group no, coverage type, holder name, relationship to holder, valid from / to, sum insured</p></div>
+    <div class="card"><h4>5. Medical information (12)</h4><p>Height, weight, BMI (auto), vaccination, smoking, alcohol, disability, allergies, chronic conditions, medications, past surgeries, family history</p></div>
+    <div class="card"><h4>6. Visit / consultation (12)</h4><p>Department, doctor, visit type, visit date, priority, referral source, referred by, symptom duration, chief complaint, payment mode, fee, remarks</p></div>
+  </div>
+  <p>Plus 3 values set by the system (registration number, status, and the created/updated audit timestamps, counted as one): 67 entry and derived fields, 70 in total. The timestamps are stored in the database but not shown on screen.</p>
+</section>
+
+<!-- ============================== 10. VALIDATION ============================== -->
+<section id="validation">
+  <h2><span class="num">10.</span>Validation rules</h2>
+  <p>The browser performs quick checks (HTML5 <code>required</code>, <code>maxlength</code>, number and date inputs), but <strong>the server is the authority</strong>: <code>PatientValidator</code> re-checks everything, so a crafted request cannot store bad data.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Rule</th><th>Fields</th></tr></thead>
+    <tbody>
+      <tr><td>Required</td><td>First name, last name, gender, date of birth <em>or</em> age, category, mobile, address line 1, city, state, pincode, country, emergency name / relationship / phone, department, doctor, visit type, chief complaint, priority, payment mode. Permanent address when "same as current" is unticked. Provider, policy number and valid-to when insured.</td></tr>
+      <tr><td>Format</td><td>Phones: 10 digits &middot; Pincode: 6 digits &middot; Aadhaar: 12 digits &middot; Email: valid address</td></tr>
+      <tr><td>Allowed values</td><td>All 18 dropdowns must hold a value from <code>Lookups</code> (gender, title, state, category, visit type, priority, payment mode, &hellip;); department must be an active department</td></tr>
+      <tr><td>Length</td><td>Every free-text field is checked against its column size (e.g. occupation max 60, chief complaint max 300)</td></tr>
+      <tr><td>Numbers</td><td>Age 0&ndash;130 &middot; height 30&ndash;250 cm &middot; weight 1&ndash;400 kg &middot; fee 0&ndash;1,00,000 &middot; sum insured 0&ndash;10,00,00,000 &middot; fee and sum insured: at most 2 decimals (height and weight are rounded to 1 decimal by the database)</td></tr>
+      <tr><td>Dates</td><td>Registration date not in the future &middot; date of birth not after registration and not more than 130 years earlier &middot; visit date not in the future and not before registration &middot; policy valid-to not before valid-from</td></tr>
+      <tr><td>Type errors</td><td>Letters typed in a number or date field show "Enter a whole number" (age), "Enter a valid number" (decimal fields) or "Enter a valid date" (<code>messages.properties</code>, section 12.2)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================== 11. REPORTS ============================== -->
+<section id="reports">
+  <h2><span class="num">11.</span>Reports &amp; downloads</h2>
+  <div class="grid2">
+    <div class="card"><h4>Report 1 &middot; Patient Registration Register</h4>
+      <p><strong>Filters:</strong> from / to registration date, department, gender, category, search (registration no, first + last name, or mobile; "contains" match; middle name and title are not searched).<br>
+      <strong>Columns (14):</strong> Reg No, Reg Date, Patient Name, Gender, Age, Mobile, City, State, Department, Doctor, Visit Type, Category, Insured, Fee.<br>
+      <strong>Screen:</strong> 50 rows per page, newest first, with First / Prev / Next / Last.<br>
+      <strong>Download:</strong> all matching rows, not just the current page.</p></div>
+    <div class="card"><h4>Report 2 &middot; Department-wise Registration Summary</h4>
+      <p><strong>Filters:</strong> from / to date, gender, category.<br>
+      <strong>Columns (11):</strong> Department, Total, Male, Female, Other, New, Follow-up, Emergency, Insured, Avg Age, Total Fee.<br>
+      Every active department is listed, even with 0 patients. A <strong>GRAND TOTAL</strong> row is added; its average age is weighted by patient count.</p></div>
+  </div>
+  <h3>File formats</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th></th><th>Excel (.xlsx)</th><th>PDF</th></tr></thead>
+    <tbody>
+      <tr><td>Library</td><td>Apache POI 5.3 (SXSSF streaming)</td><td>OpenPDF 1.3.43</td></tr>
+      <tr><td>Layout</td><td>Title row, filter and generated-time row, coloured header, frozen header, borders</td><td>A4 landscape, title, filter line, coloured header repeated on each page, footer with page number</td></tr>
+      <tr><td>Values</td><td>Real numbers (<code>#,##0</code>, <code>#,##0.00</code>) and dates (<code>dd-mm-yyyy</code>), so totals and sorting work in Excel</td><td>Formatted text; numbers right-aligned</td></tr>
+      <tr><td>File name</td><td colspan="2"><code>patient_register_YYYYMMDD_HHMM</code> or <code>department_summary_YYYYMMDD_HHMM</code></td></tr>
+      <tr><td>1 lakh rows</td><td>&asymp; 6 s, 8.4 MB</td><td>&asymp; 11 s, 4,167 pages, 20 MB</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================== 12. CONFIG ============================== -->
+<section id="config">
+  <h2><span class="num">12.</span>Configuration</h2>
+  <p>The project has two properties files (both in <code>src/main/resources</code>, packaged into the WAR under <code>WEB-INF/classes</code>), plus build properties in <code>pom.xml</code>, container settings in <code>web.xml</code> and script settings in <code>env.bat</code>. All are shown below exactly as they are in the project. After changing any file under <code>src</code> or <code>pom.xml</code>, rebuild and redeploy (<code>build.bat</code>, then <code>deploy.bat</code>).</p>
+
+  <h3>12.1 <code>src/main/resources/db.properties</code></h3>
+<pre><code>db.url=jdbc:postgresql://localhost:5432/postgres?currentSchema=patientreg
+db.username=postgres
+db.password=Pass@1234
+db.pool.maxSize=10
+export.maxConcurrent=3</code></pre>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Key</th><th>Value</th><th>Read by</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>db.url</code></td><td><code>jdbc:postgresql://localhost:5432/postgres</code><br><code>?currentSchema=patientreg</code></td><td><code>AppConfig.dataSource()</code></td><td>Database <code>postgres</code> on the Docker container's port 5432; <code>currentSchema</code> makes unqualified table names resolve to schema <code>patientreg</code></td></tr>
+      <tr><td><code>db.username</code></td><td><code>postgres</code></td><td><code>AppConfig.dataSource()</code></td><td>Database user (superuser, see section 17)</td></tr>
+      <tr><td><code>db.password</code></td><td><code>Pass@1234</code></td><td><code>AppConfig.dataSource()</code></td><td>Database password (stored in plain text)</td></tr>
+      <tr><td><code>db.pool.maxSize</code></td><td><code>10</code></td><td><code>AppConfig.dataSource()</code></td><td>Maximum HikariCP connections shared by all users and downloads</td></tr>
+      <tr><td><code>export.maxConcurrent</code></td><td><code>3</code></td><td><code>ExportLimiter</code></td><td>Downloads allowed at the same time. Keep it well below <code>db.pool.maxSize</code> so screens always have free connections.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>12.2 <code>src/main/resources/messages.properties</code></h3>
+<pre><code># Messages for form fields whose text could not be converted (e.g. letters typed in a number field).
+typeMismatch=Invalid value
+typeMismatch.java.lang.Integer=Enter a whole number
+typeMismatch.java.math.BigDecimal=Enter a valid number
+typeMismatch.java.time.LocalDate=Enter a valid date</code></pre>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Key</th><th>Shown when</th><th>Example field</th></tr></thead>
+    <tbody>
+      <tr><td><code>typeMismatch</code></td><td>Any other conversion failure (fallback)</td><td>&mdash;</td></tr>
+      <tr><td><code>typeMismatch.java.lang.Integer</code></td><td>Text in a whole-number field</td><td>Age</td></tr>
+      <tr><td><code>typeMismatch.java.math.BigDecimal</code></td><td>Text in a decimal field</td><td>Height, weight, fee, sum insured</td></tr>
+      <tr><td><code>typeMismatch.java.time.LocalDate</code></td><td>Invalid date</td><td>Date of birth, registration / visit / policy dates</td></tr>
+    </tbody>
+  </table></div>
+  <p>Loaded by the <code>messageSource</code> bean in <code>WebConfig</code> (UTF-8).</p>
+
+  <h3>12.3 <code>pom.xml</code> build properties</h3>
+<pre><code>&lt;properties&gt;
+    &lt;maven.compiler.release&gt;21&lt;/maven.compiler.release&gt;
+    &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+    &lt;spring.version&gt;6.2.10&lt;/spring.version&gt;
+&lt;/properties&gt;</code></pre>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Property</th><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>maven.compiler.release</code></td><td><code>21</code></td><td>Compile for Java 21</td></tr>
+      <tr><td><code>project.build.sourceEncoding</code></td><td><code>UTF-8</code></td><td>Source file encoding</td></tr>
+      <tr><td><code>spring.version</code></td><td><code>6.2.10</code></td><td>Version used for spring-webmvc and spring-jdbc</td></tr>
+    </tbody>
+  </table></div>
+  <p>Other build settings: WAR packaging, final name <code>patient-registration</code> (so the URL is <code>/patient-registration</code>), compiler flag <code>-parameters</code>, and <code>failOnMissingWebXml=false</code>.</p>
+
+  <h3>12.4 <code>src/main/webapp/WEB-INF/web.xml</code></h3>
+<pre><code>&lt;web-app ... version="6.1"&gt;
+    &lt;session-config&gt;
+        &lt;session-timeout&gt;30&lt;/session-timeout&gt;          &lt;!-- minutes --&gt;
+        &lt;cookie-config&gt;
+            &lt;http-only&gt;true&lt;/http-only&gt;               &lt;!-- scripts cannot read the session cookie --&gt;
+        &lt;/cookie-config&gt;
+        &lt;tracking-mode&gt;COOKIE&lt;/tracking-mode&gt;        &lt;!-- keep ;jsessionid=... out of URLs --&gt;
+    &lt;/session-config&gt;
+    &lt;error-page&gt;
+        &lt;location&gt;/WEB-INF/views/error.jsp&lt;/location&gt; &lt;!-- errors raised outside Spring MVC --&gt;
+    &lt;/error-page&gt;
+&lt;/web-app&gt;</code></pre>
+
+  <h3>12.5 <code>env.bat</code> (used by every script)</h3>
+<pre><code>@echo off
+rem Shared paths: JDK and Tomcat from D:\Pravin, Maven bundled inside this project.
+set "PROJECT_HOME=%~dp0"
+set "PROJECT_HOME=%PROJECT_HOME:~0,-1%"
+set "JAVA_HOME=D:\Pravin\jdk-21.0.12.1"
+set "CATALINA_HOME=D:\Pravin\apache-tomcat-11.0.27"
+set "MAVEN_HOME=%PROJECT_HOME%\tools\apache-maven-3.9.9"
+set "PATH=%JAVA_HOME%\bin;%MAVEN_HOME%\bin;%PATH%"
+rem Docker containers (docker-compose.yml)
+set "PG_CONTAINER=pr-postgres"
+rem Memory caps for local Maven builds and tests (the app itself runs in Docker)
+set "CATALINA_OPTS=-Xms256m -Xmx768m"
+set "MAVEN_OPTS=-Xmx512m"</code></pre>
+  <p>Only <code>build.bat</code>, <code>test.bat</code> and <code>backup.bat</code> need it; running the application needs Docker only.</p>
+
+  <h3>12.6 <code>.env</code> (Docker settings, project root)</h3>
+<pre><code># Local POC settings for docker compose (plain text, like db.properties). Change for any shared/real use.
+POSTGRES_PASSWORD=Pass@1234
+CLICKHOUSE_ADMIN_PASSWORD=ChAdmin@1234
+CLICKHOUSE_APP_PASSWORD=Report@1234
+REPORTING_RO_PASSWORD=RoPass@1234
+DEBEZIUM_PASSWORD=Dbz@1234
+# rows generated by the optional seed profile
+SEED_ROWS=100000</code></pre>
+  <p>Inside the <code>app</code> container, environment variables override the properties files in the WAR (Spring maps <code>DB_URL</code> to <code>db.url</code>, <code>APP_REPORTING_CLICKHOUSE_URL</code> to <code>app.reporting.clickhouse.url</code>, and so on), so the same WAR runs on the host and in Docker:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Variable (docker-compose.yml)</th><th>Value in Docker</th></tr></thead>
+    <tbody>
+      <tr><td><code>DB_URL</code></td><td><code>jdbc:postgresql://postgres:5432/postgres?currentSchema=patientreg</code></td></tr>
+      <tr><td><code>DB_USERNAME</code> / <code>DB_PASSWORD</code></td><td><code>postgres</code> / <code>Pass@1234</code></td></tr>
+      <tr><td><code>APP_REPORTING_CLICKHOUSE_URL</code></td><td><code>jdbc:clickhouse://clickhouse:8123/analytics</code> (user <code>reporting_app</code> / <code>Report@1234</code>)</td></tr>
+      <tr><td><code>APP_REPORTING_META_URL</code></td><td><code>jdbc:postgresql://postgres:5432/postgres</code> (user <code>postgres</code> / <code>Pass@1234</code>)</td></tr>
+    </tbody>
+  </table></div>
+  <p>Other accounts: ClickHouse admin <code>admin</code> / <code>ChAdmin@1234</code>; PostgreSQL <code>reporting_ro</code> / <code>RoPass@1234</code> (ClickHouse reads <code>v_patient_report</code> through it, named collection <code>pg_reporting</code>); PostgreSQL <code>debezium</code> / <code>Dbz@1234</code> (replication; reads only the outbox).</p>
+
+  <h3>12.7 Tomcat</h3>
+  <p>The <code>app</code> image is the official <code>tomcat:11.0-jdk21-temurin</code> with only the WAR added, time zone <code>Asia/Kolkata</code> and <code>CATALINA_OPTS=-Xms256m -Xmx512m</code>. Tomcat's own configuration is unchanged (port 8080).</p>
+</section>
+
+<!-- ============================== 13. DEPLOY ============================== -->
+<section id="deploy">
+  <h2><span class="num">13.</span>Deployment steps</h2>
+  <p>The whole system runs in Docker, defined in <code>docker-compose.yml</code> (project <code>patient-registration</code>). To share the project, copy the folder (without <code>tools\</code>, <code>backup\</code> and <code>target</code> folders); the receiver needs only Docker Desktop.</p>
+  <h3>Prerequisites</h3>
+  <ul>
+    <li>Docker Desktop (about 4 GB of memory for Docker; everything together uses about 1.6 GB)</li>
+    <li>Ports 8080 (app), 5432 (PostgreSQL), 8123 (ClickHouse) free; 8083 too for the real-time profile</li>
+    <li>Internet only for the first start (images and libraries are downloaded; Maven and npm caches are reused afterwards)</li>
+  </ul>
+  <h3>First-time setup</h3>
+  <ol class="steps">
+    <li>In the project folder run <code>start.bat</code> (or <code>docker compose up -d --build</code>). The first run builds the app image from source (about 3 minutes).</li>
+    <li>Start-up order is automatic: <code>postgres</code> and <code>clickhouse</code> become healthy &rarr; <code>app</code> starts and creates schema <code>patientreg</code>, all tables, indexes and the 10 departments &rarr; <code>pg-setup</code> creates the test database <code>prtest</code>, accounts <code>reporting_ro</code> and <code>debezium</code> and the outbox publication &rarr; <code>analytics-setup</code> copies all patients into ClickHouse when it is empty and starts the one-minute sync.</li>
+    <li>Open <a href="http://localhost:8080/patient-registration/">http://localhost:8080/patient-registration/</a> (Analytics UI: <a href="http://localhost:8080/patient-registration/app/">/patient-registration/app/</a>).</li>
+    <li>Optional: real-time reports with <code>start.bat cdc</code> (adds Kafka and Debezium; new registrations reach the reports in about 2 seconds instead of up to a minute).</li>
+    <li>Optional: test data with <code>load-data.bat</code> (1 lakh patients; ClickHouse is reloaded afterwards).</li>
+  </ol>
+  <h3>Containers</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Service (container)</th><th>Image</th><th>Role</th><th>Memory cap</th></tr></thead>
+    <tbody>
+      <tr><td><code>postgres</code> (pr-postgres)</td><td>postgres:18</td><td>Live database. <code>wal_level=logical</code>, <code>max_slot_wal_keep_size=2GB</code>, 256 MB <code>/dev/shm</code>. Volume <code>pg-data</code>.</td><td>700 MB</td></tr>
+      <tr><td><code>clickhouse</code> (pr-clickhouse)</td><td>clickhouse/clickhouse-server:25.3</td><td>Analytics copy; databases <code>analytics</code> and <code>analytics_test</code>. Volume <code>clickhouse-data</code>.</td><td>1.2 GB</td></tr>
+      <tr><td><code>app</code> (pr-app)</td><td>built by <code>Dockerfile</code> (Maven build stage, Tomcat 11 runtime)</td><td>The WAR: JSP screens, reporting API, React UI</td><td>900 MB</td></tr>
+      <tr><td><code>pg-setup</code>, <code>analytics-setup</code></td><td>postgres:18, clickhouse</td><td>One-shot set-up at every start (idempotent)</td><td>&ndash;</td></tr>
+      <tr><td><code>kafka</code> (pr-kafka), profile <code>cdc</code></td><td>apache/kafka:3.9.0 (KRaft, single node)</td><td>Event buffer, 7-day retention. Volume <code>kafka-data</code>.</td><td>640 MB</td></tr>
+      <tr><td><code>debezium</code> (pr-debezium), profile <code>cdc</code></td><td>quay.io/debezium/connect:3.0.0.Final</td><td>Reads the outbox from the WAL, publishes topic <code>pr.patient.report</code>; REST on port 8083</td><td>800 MB</td></tr>
+      <tr><td><code>ch-cdc-setup</code>, <code>cdc-setup</code>, profile <code>cdc</code></td><td>clickhouse, debezium</td><td>One-shot: Kafka consumer tables in ClickHouse, then the connector <code>patient-outbox</code></td><td>&ndash;</td></tr>
+      <tr><td><code>seed</code>, <code>seed-backfill</code>, profile <code>seed</code></td><td>postgres:18, clickhouse</td><td>One-shot: bulk test patients, then reload ClickHouse</td><td>&ndash;</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Updating after a code change</h3>
+  <ol class="steps">
+    <li><code>deploy.bat</code> (or <code>docker compose up -d --build app</code>): rebuilds the image and replaces only the app container; the databases keep running. The app is back in about 15 seconds.</li>
+  </ol>
+  <h3>Scripts</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Script</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>start.bat [cdc]</code></td><td><code>docker compose up -d --build</code>, with <code>--profile cdc</code> when given <code>cdc</code></td></tr>
+      <tr><td><code>stop.bat</code></td><td>Stops all containers; data stays in the volumes</td></tr>
+      <tr><td><code>deploy.bat</code></td><td>Rebuilds and restarts the app container</td></tr>
+      <tr><td><code>load-data.bat [rows]</code></td><td>Generates bulk patients (default 100000) and reloads ClickHouse</td></tr>
+      <tr><td><code>backup.bat</code></td><td>Full backup of schemas <code>patientreg</code> and <code>reporting</code> with today's date</td></tr>
+      <tr><td><code>build.bat</code>, <code>test.bat</code></td><td>Developer machine only: Maven build / all automated tests on the host (JDK from <code>env.bat</code>); tests use the Docker databases through localhost</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Useful commands</h3>
+<pre><code>docker compose ps -a                                   REM state of every service
+docker compose logs -f app                             REM application log
+docker compose down                                    REM remove containers (volumes and data stay)
+curl http://localhost:8083/connectors/patient-outbox/status    REM Debezium connector (cdc)
+docker exec pr-clickhouse clickhouse-client --user admin --password ChAdmin@1234 -q "select count() from analytics.patient_report FINAL"</code></pre>
+  <div class="warn"><code>docker compose down -v</code> deletes the volumes, i.e. all data. Take a backup first.</div>
+  <h3>Migration to Docker (15-Oct-2026)</h3>
+  <p>The data of the original container <code>Postgres</code> was backed up (<code>backup\migration_2026-10-15_final.dump</code>) and restored into <code>pr-postgres</code> before the app's first start: 100,002 patients, 4 saved reports and <code>reg_no_seq</code> = 100002 were verified. The old containers <code>Postgres</code> and <code>pr-clickhouse-old</code> are <strong>stopped, not deleted</strong>; the host Tomcat in <code>D:\Pravin\apache-tomcat-11.0.27</code> is no longer used.</p>
+</section>
+
+<!-- ============================== 14. DATA ============================== -->
+<section id="data">
+  <h2><span class="num">14.</span>Bulk data (Phase 2)</h2>
+  <p><code>db\load-test-data.sql</code> (run through <code>load-data.bat</code>) generates patients entirely inside PostgreSQL. It is fast (&asymp; 16 s for 1 lakh), runs in a single transaction (all or nothing), and is deterministic for a given run date (fixed random seed; registration dates are relative to the day it runs). Running it again adds another set of patients rather than replacing them.</p>
+  <h3>What makes the data realistic</h3>
+  <ul>
+    <li><strong>Every column of all six patient tables is filled.</strong> Where a value would not naturally exist, the generator writes meaningful filler ("None known", "Self", "No significant family history").</li>
+    <li>Age mix of children, young adults, adults and seniors; date of birth gives exactly that age; registration dates spread over the last 2 years.</li>
+    <li>Title, marital status and occupation follow age and gender: children are Master/Baby, single, Child/Student; married women are Mrs.; seniors are mostly Retired.</li>
+    <li>26 Indian cities with matching district, state, pincode prefix and regional language.</li>
+    <li>Departments follow the patient: children mostly Paediatrics, gynaecology only for women 18&ndash;45, seniors more often Cardiology / Orthopaedics / Ophthalmology / Neurology. Each department has its own doctors and complaints.</li>
+    <li><strong>All generated patients are insured</strong> (so in Report 2 "Insured" equals "Total" for the bulk data). Insurance follows the category: BPL patients have Ayushman Bharat PM-JAY (Government Scheme), STAFF have Corporate cover, and children are covered under a parent's policy.</li>
+    <li>Chronic conditions grow more likely with age and come with matching medications; BMI is calculated from height and weight.</li>
+    <li>Contact details are fictitious; emails use <code>example.com</code> / <code>example.in</code> / <code>mail.example.org</code>.</li>
+  </ul>
+  <h3>Verified after loading</h3>
+  <div class="ok">Checks run on the 1 lakh generated rows (the 2 hand-entered test patients are excluded; they contain blank optional fields and one test entry of a married 10-year-old): 0 empty or NULL values across all 79 patient-table columns &middot; 100,000 rows in each patient table &middot; 0 violations of the consistency rules (gynaecology only for women, no married minors, age matches date of birth, children's policies held by a parent, BPL &rarr; Government Scheme, every patient has exactly one registration visit).</div>
+  <h3>Current distribution (snapshot)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Gender</th><th>Patients</th><th>Category</th><th>Patients</th></tr></thead>
+    <tbody>
+      <tr><td>Male</td><td>&asymp; 49,200</td><td>GENERAL</td><td>&asymp; 66,700</td></tr>
+      <tr><td>Female</td><td>&asymp; 48,800</td><td>SENIOR_CITIZEN</td><td>&asymp; 20,500</td></tr>
+      <tr><td>Other</td><td>&asymp; 2,000</td><td>BPL / STAFF / VIP</td><td>&asymp; 9,000 / 2,200 / 1,600</td></tr>
+    </tbody>
+  </table></div>
+  <p>Registration numbers run from <code>REG20240000003</code> to <code>REG20260100002</code>. Numbers 1 and 2 belong to patients entered by hand.</p>
+</section>
+
+<!-- ============================== 15. PERFORMANCE ============================== -->
+<section id="performance">
+  <h2><span class="num">15.</span>Performance at 1 lakh patients</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Operation</th><th>Measured</th></tr></thead>
+    <tbody>
+      <tr><td>Dashboard</td><td>&asymp; 0.03 s</td></tr>
+      <tr><td>Report 1, page 1 (count + 50 rows)</td><td>&asymp; 0.1 s</td></tr>
+      <tr><td>Report 1, last page (page 2,001, offset 100,000)</td><td>&asymp; 0.4 s</td></tr>
+      <tr><td>Report 1 with date range / department + gender filter</td><td>&asymp; 0.06 s</td></tr>
+      <tr><td>Search by name / mobile / registration no</td><td>&asymp; 0.2&ndash;0.3 s</td></tr>
+      <tr><td>Report 2 (department summary)</td><td>&asymp; 0.3 s</td></tr>
+      <tr><td>Patient details page</td><td>&asymp; 0.03 s</td></tr>
+      <tr><td>Full Excel download (100,002 rows)</td><td>&asymp; 6 s, 8.4 MB</td></tr>
+      <tr><td>Full PDF download (4,167 pages)</td><td>&asymp; 11 s, 20 MB</td></tr>
+      <tr><td>Tomcat memory</td><td>&asymp; 700 MB working set after a full Excel and PDF download (streaming keeps memory flat). The process peaked at about 1.6 GB during the 12-simultaneous-download stress test, before the download limit was added.</td></tr>
+    </tbody>
+  </table></div>
+  <h3>What made it fast</h3>
+  <ul>
+    <li><strong>Registration-visit flag.</strong> Reports originally found each patient's first visit with a per-row <code>LATERAL &hellip; LIMIT 1</code> lookup (about 0.5&ndash;0.7 s per count at 1 lakh). A boolean flag plus a partial unique index turned it into a plain join; the count now takes about 0.12 s.</li>
+    <li><strong>Sort-order index</strong> <code>(registration_date DESC, patient_id DESC)</code> for the register's default ordering.</li>
+    <li><strong>Trigram (pg_trgm) GIN indexes</strong> for "contains" search on name, registration number and mobile.</li>
+    <li><strong>Streaming downloads</strong> (database cursor + POI SXSSF + chunked PDF), so memory stays flat regardless of row count.</li>
+    <li><strong>Download limit.</strong> In a test with 12 simultaneous PDF downloads, before the limit every pooled connection was busy and the dashboard failed after 31 s. With the limit, 3 run, the rest get a "busy" page, and screens stay responsive (dashboard 0.26 s).</li>
+  </ul>
+</section>
+
+<!-- ============================== 16. BACKUP ============================== -->
+<section id="backup">
+  <h2><span class="num">16.</span>Backup &amp; restore</h2>
+  <p><code>backup.bat</code> writes a full backup (structure + all data) of schemas <code>patientreg</code> and <code>reporting</code> (saved reports) to <code>backup\patientreg_full_YYYY-MM-DD.dump</code> using <code>pg_dump</code> custom format (compressed). The <code>pg_trgm</code> extension is included, so the file restores into a completely empty database. ClickHouse needs no backup: it is a copy that <code>analytics-setup</code> rebuilds from PostgreSQL.</p>
+<pre><code>REM backup (what backup.bat runs)
+docker exec pr-postgres pg_dump -U postgres -d postgres -n patientreg -n reporting --extension=pg_trgm -Fc -Z 6 &gt; backup\patientreg_full_2026-10-15.dump
+
+REM restore into a fresh installation, before the app first starts (grants are re-created by pg-setup)
+docker compose up -d postgres
+docker exec -i pr-postgres pg_restore -U postgres -d postgres --no-owner --no-acl &lt; backup\patientreg_full_2026-10-15.dump
+docker compose up -d --build
+
+REM list what a backup contains
+docker exec -i pr-postgres pg_restore --list &lt; backup\patientreg_full_2026-10-15.dump</code></pre>
+  <div class="ok"><strong>Backup taken 15-Oct-2026</strong>: <code>patientreg_full_2026-10-15.dump</code> (17 MB). A test restore into an empty database matched the live data: identical row counts in all 7 tables (100,002 patients), all 21 indexes, the sequence position, and an identical checksum of the patient table.</div>
+  <p>To restore over the <em>live</em> database instead, stop the app first (<code>docker compose stop app</code>), add <code>--clean --if-exists</code> to <code>pg_restore</code> (this replaces the current data), then empty <code>analytics.patient_report</code> in ClickHouse and run <code>docker compose up analytics-setup</code> so the reports match.</p>
+  <div class="ok"><strong>Docker migration backup 15-Oct-2026</strong>: <code>migration_2026-10-15_final.dump</code> (17 MB, schemas <code>patientreg</code> + <code>reporting</code>) restored into the new <code>pr-postgres</code>: 100,002 patients in every patient table, 4 saved reports, sequence at 100002.</div>
+</section>
+
+<!-- ============================== 17. SECURITY ============================== -->
+<section id="security">
+  <h2><span class="num">17.</span>Security &amp; known limitations</h2>
+  <h3>Protections in place</h3>
+  <ul>
+    <li>All SQL uses bound parameters, so SQL injection is not possible. Search wildcards <code>%</code> / <code>_</code> typed by users are escaped.</li>
+    <li>All user data in pages is HTML-escaped (<code>&lt;c:out&gt;</code> and Spring form tags), which prevents cross-site scripting.</li>
+    <li>Allowed-value, length and range checks on the server; internal fields cannot be set from requests.</li>
+    <li>Friendly error pages; no stack traces or SQL are shown to users.</li>
+    <li>Session cookie is HTTP-only; no session id in URLs.</li>
+    <li>The six-table save is atomic (one transaction).</li>
+  </ul>
+  <h3>Known limitations (accepted for now)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Item</th><th>Impact</th><th>Possible fix</th></tr></thead>
+    <tbody>
+      <tr><td>No login or CSRF protection</td><td>Anyone who can reach port 8080 can view and download all patient data, or submit the form. Deliberately skipped for this local setup.</td><td>Spring Security with form login, roles and CSRF tokens</td></tr>
+      <tr><td>PDF fonts</td><td>Hindi, Marathi, Tamil and other non-Latin text prints as <code>???</code> in PDFs (Excel is fine). Deliberately skipped.</td><td>Embed a Unicode font such as Noto Sans; complex script shaping stays limited in OpenPDF</td></tr>
+      <tr><td>Database account</td><td>The app connects as superuser <code>postgres</code>, with the password in plain text in <code>db.properties</code></td><td>Dedicated least-privilege role; password from an environment variable or JNDI</td></tr>
+      <tr><td>Registration-number gaps</td><td>A failed save consumes a number (normal sequence behaviour)</td><td>A counter table updated in the transaction, if gap-free numbering is required</td></tr>
+      <tr><td>Excel row limit</td><td>An export stops silently at 1,048,000 rows (Excel's own limit is 1,048,576)</td><td>Add a "truncated" note row or split across sheets</td></tr>
+      <tr><td>Time zone override</td><td>The Asia/Calcutta &rarr; Asia/Kolkata fix changes the default time zone for the whole Tomcat JVM</td><td><code>-Duser.timezone=Asia/Kolkata</code> in Tomcat's <code>setenv.bat</code></td></tr>
+      <tr><td>Non-numeric patient id in URL</td><td><code>/patient/abc</code> shows the generic "something went wrong" page (HTTP 500) instead of "invalid request" (400)</td><td>Map type-mismatch exceptions to 400 in <code>GlobalExceptionHandler</code></td></tr>
+      <tr><td>Schema changes</td><td><code>schema.sql</code> only adds missing objects; it cannot rename or alter existing columns</td><td>A migration tool (Flyway or Liquibase, both open source)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================== 18. TROUBLESHOOTING ============================== -->
+<section id="troubleshooting">
+  <h2><span class="num">18.</span>Troubleshooting</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Symptom</th><th>Cause / fix</th></tr></thead>
+    <tbody>
+      <tr><td>Page does not open at <code>localhost:8080</code></td><td>The containers are not running: run <code>start.bat</code>. Check <code>docker compose ps -a</code> and <code>docker compose logs app</code>.</td></tr>
+      <tr><td>App fails to start with <code>invalid value for parameter "TimeZone": "Asia/Calcutta"</code></td><td>Already handled in <code>AppConfig</code>. If it reappears in another app, start the JVM with <code>-Duser.timezone=Asia/Kolkata</code>.</td></tr>
+      <tr><td>"Connection refused" / pool errors at start-up</td><td>The database container is stopped or unhealthy: <code>docker compose up -d</code>, then <code>docker compose ps</code>.</td></tr>
+      <tr><td>Download shows "server is busy"</td><td>3 downloads are already running. Wait and retry, or raise <code>export.maxConcurrent</code> (keep it well below <code>db.pool.maxSize</code>).</td></tr>
+      <tr><td>Port 8080 / 5432 / 8123 already in use</td><td>Another Tomcat or database is running on the host (for example the old host Tomcat or the old <code>Postgres</code> container). Stop it, then <code>start.bat</code>.</td></tr>
+      <tr><td>Image pull fails: "server gave HTTP response to HTTPS client" (quay.io)</td><td>Temporary network/proxy problem; run the command again.</td></tr>
+      <tr><td>Analytics shows old data with the <code>cdc</code> profile</td><td><code>curl http://localhost:8083/connectors/patient-outbox/status</code> must show RUNNING; rejected messages are in <code>analytics.pipeline_errors</code>. The one-minute sync still runs as a fallback.</td></tr>
+      <tr><td>Build fails offline: "plugin could not be resolved"</td><td>Maven needs the internet once to fetch a missing plugin into <code>tools\m2repo</code>; run <code>build.bat</code> with internet access.</td></tr>
+      <tr><td><code>.bat</code> files disappear from the project folder</td><td>Observed during development: <code>deploy.bat</code>, <code>load-data.bat</code> and <code>backup.bat</code> vanished after being run from an automated PowerShell session. Most likely antivirus or that session's sandbox. Check your antivirus history and add an exclusion for the project folder if needed. All scripts are short and documented above, so they can be recreated.</td></tr>
+      <tr><td>Hindi / Marathi names show <code>???</code> in a PDF</td><td>Known limitation (section 17); use the Excel download.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<footer>Patient Registration System &middot; project guide generated 15 October 2026 &middot; local document, not published</footer>
+</main>
+</div>
+
+<script>
+(function () {
+  var btn = document.getElementById('themeBtn');
+  var root = document.documentElement;
+  try { var saved = localStorage.getItem('pr-doc-theme'); if (saved) root.setAttribute('data-theme', saved); } catch (e) {}
+  btn.addEventListener('click', function () {
+    var current = root.getAttribute('data-theme');
+    if (!current) current = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    var next = current === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('pr-doc-theme', next); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>

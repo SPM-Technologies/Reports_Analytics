@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reporting Architecture Proposal</title>
+<style>
+:root {
+  --bg: #f5f7f9; --surface: #ffffff; --surface-2: #eef3f6; --text: #1d2730; --muted: #5d6b78;
+  --border: #d3dce3; --accent: #00707e; --accent-soft: #e0f1f3;
+  --code-bg: #f0f3f6; --warn-bg: #fff6e5; --warn-border: #e8b04a; --ok-bg: #e9f6ec; --ok-border: #58a86a;
+  --bad: #b3261e; --good: #2e7d32; --mid: #9a6700;
+  --svg-box: #ffffff; --svg-line: #4d5b67; --svg-text: #1d2730; --svg-muted: #6a7885; --svg-alt: #f2f7f9;
+  --svg-old: #fbeaea; --svg-old-line: #b3261e; --svg-new: #e6f4ea; --svg-new-line: #2e7d32; --svg-acc: #00707e;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12171c; --surface: #1a2128; --surface-2: #212a33; --text: #e3e9ee; --muted: #9aa8b4;
+    --border: #33404c; --accent: #3fb6c4; --accent-soft: #163339;
+    --code-bg: #212a33; --warn-bg: #2e2717; --warn-border: #b9893a; --ok-bg: #18291d; --ok-border: #4c8f5b;
+    --bad: #f08a80; --good: #7cc68a; --mid: #e0b24f;
+    --svg-box: #1f2830; --svg-line: #9aa8b4; --svg-text: #e3e9ee; --svg-muted: #9aa8b4; --svg-alt: #24303a;
+    --svg-old: #3a2324; --svg-old-line: #f08a80; --svg-new: #1d3324; --svg-new-line: #7cc68a; --svg-acc: #5cc8d4;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12171c; --surface: #1a2128; --surface-2: #212a33; --text: #e3e9ee; --muted: #9aa8b4;
+  --border: #33404c; --accent: #3fb6c4; --accent-soft: #163339;
+  --code-bg: #212a33; --warn-bg: #2e2717; --warn-border: #b9893a; --ok-bg: #18291d; --ok-border: #4c8f5b;
+  --bad: #f08a80; --good: #7cc68a; --mid: #e0b24f;
+  --svg-box: #1f2830; --svg-line: #9aa8b4; --svg-text: #e3e9ee; --svg-muted: #9aa8b4; --svg-alt: #24303a;
+  --svg-old: #3a2324; --svg-old-line: #f08a80; --svg-new: #1d3324; --svg-new-line: #7cc68a; --svg-acc: #5cc8d4;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 "Segoe UI", system-ui, -apple-system, Arial, sans-serif; }
+a { color: var(--accent); }
+code, pre { font-family: Consolas, "Cascadia Mono", "Courier New", monospace; font-size: 13px; }
+code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; border: 1px solid var(--border); line-height: 1.45; }
+pre code { background: none; padding: 0; }
+.layout { display: grid; grid-template-columns: 270px minmax(0, 1fr); min-height: 100vh; }
+nav.toc { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--surface); border-right: 1px solid var(--border); padding: 20px 16px; }
+nav.toc .brand { font-weight: 700; font-size: 16px; color: var(--accent); }
+nav.toc .sub { color: var(--muted); font-size: 12px; margin-bottom: 16px; }
+nav.toc ol { margin: 0; padding-left: 20px; }
+nav.toc li { margin: 3px 0; font-size: 13.5px; }
+nav.toc a { text-decoration: none; color: var(--text); }
+nav.toc a:hover { color: var(--accent); }
+.theme-btn { margin-top: 18px; font: inherit; font-size: 12px; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 5px 10px; cursor: pointer; }
+main { padding: 28px 40px 60px; max-width: 1180px; width: 100%; }
+header.hero { background: var(--surface); border: 1px solid var(--border); border-left: 5px solid var(--accent); border-radius: 8px; padding: 22px 26px; margin-bottom: 28px; }
+header.hero h1 { margin: 0 0 6px; font-size: 26px; }
+header.hero p { margin: 4px 0; color: var(--muted); }
+section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 22px 26px; margin-bottom: 22px; }
+section h2 { margin: 0 0 14px; font-size: 21px; padding-bottom: 8px; border-bottom: 2px solid var(--accent-soft); }
+section h2 .num { color: var(--accent); margin-right: 6px; }
+section h3 { font-size: 16.5px; margin: 22px 0 8px; }
+.table-wrap { overflow-x: auto; margin: 10px 0 14px; border: 1px solid var(--border); border-radius: 6px; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th { background: var(--surface-2); text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); }
+td { padding: 6px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tr.rec td { background: var(--ok-bg); }
+.good { color: var(--good); font-weight: 600; } .bad { color: var(--bad); font-weight: 600; } .mid { color: var(--mid); font-weight: 600; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
+.card h4 { margin: 0 0 6px; font-size: 14.5px; }
+.card p { margin: 0; font-size: 13.5px; color: var(--muted); }
+.note { border-left: 4px solid var(--warn-border); background: var(--warn-bg); padding: 10px 14px; border-radius: 4px; margin: 12px 0; font-size: 14px; }
+.ok { border-left: 4px solid var(--ok-border); background: var(--ok-bg); padding: 10px 14px; border-radius: 4px; margin: 12px 0; font-size: 14px; }
+.diagram { overflow-x: auto; background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 10px; margin: 10px 0 6px; }
+.diagram svg { display: block; margin: 0 auto; width: 100%; height: auto; min-width: 820px; }
+.caption { font-size: 12.5px; color: var(--muted); margin: 0 0 12px; }
+.box { fill: var(--svg-box); stroke: var(--svg-line); stroke-width: 1.2; }
+.box-old { fill: var(--svg-old); stroke: var(--svg-old-line); stroke-width: 1.4; }
+.box-new { fill: var(--svg-new); stroke: var(--svg-new-line); stroke-width: 1.4; }
+.zone { fill: var(--svg-alt); stroke: var(--svg-line); stroke-dasharray: 4 3; stroke-width: 1; }
+.lbl { fill: var(--svg-text); font: 600 13px "Segoe UI", Arial, sans-serif; }
+.lbl-s { fill: var(--svg-muted); font: 11.5px "Segoe UI", Arial, sans-serif; }
+.zone-t { fill: var(--svg-muted); font: 700 11px "Segoe UI", Arial, sans-serif; letter-spacing: .06em; }
+.ln { stroke: var(--svg-line); stroke-width: 1.6; fill: none; }
+.ln-old { stroke: var(--svg-old-line); stroke-width: 2; fill: none; }
+.ln-new { stroke: var(--svg-new-line); stroke-width: 2; fill: none; }
+.ah { fill: var(--svg-line); } .ah-old { fill: var(--svg-old-line); } .ah-new { fill: var(--svg-new-line); }
+.cell { stroke: var(--svg-line); stroke-width: .8; }
+.cell-on { fill: var(--svg-acc); } .cell-off { fill: var(--svg-box); }
+ol.steps li { margin: 6px 0; }
+footer { color: var(--muted); font-size: 12.5px; text-align: center; margin-top: 30px; }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  nav.toc { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+  main { padding: 16px; } section, header.hero { padding: 16px; }
+  .grid2, .grid3 { grid-template-columns: 1fr; }
+}
+@media print { nav.toc { display: none; } .layout { display: block; } body { background: #fff; } section { border: none; } }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc">
+  <div class="brand">Reporting Architecture</div>
+  <div class="sub">Proposal &middot; 15 Oct 2026 &middot; for discussion</div>
+  <ol>
+    <li><a href="#summary">Summary</a></li>
+    <li><a href="#problem">The problem today</a></li>
+    <li><a href="#goals">Goals</a></li>
+    <li><a href="#why">Why row-store scans hurt</a></li>
+    <li><a href="#options">Options compared</a></li>
+    <li><a href="#target">Recommended architecture</a></li>
+    <li><a href="#pipeline">Data pipeline in detail</a></li>
+    <li><a href="#model">Analytics data model</a></li>
+    <li><a href="#app">Application changes</a></li>
+    <li><a href="#oltp">Protecting the live database</a></li>
+    <li><a href="#security">Security &amp; compliance</a></li>
+    <li><a href="#stack">Open-source stack &amp; licences</a></li>
+    <li><a href="#poc">POC plan on this project</a></li>
+    <li><a href="#success">Success criteria</a></li>
+    <li><a href="#rollout">Rollout to the live product</a></li>
+    <li><a href="#risks">Risks &amp; mitigations</a></li>
+    <li><a href="#decisions">Decisions needed</a></li>
+  </ol>
+  <button class="theme-btn" type="button" id="themeBtn">Toggle light / dark</button>
+</nav>
+
+<main>
+<header class="hero">
+  <h1>Moving reports off the live database</h1>
+  <p>A proposal for scalable, isolated reporting on crores of records, using only open-source software, proven first on the Patient Registration POC.</p>
+  <p>Status: <strong>for discussion</strong>. Nothing has been built yet; the POC plan in section 13 is the next step once a direction is agreed.</p>
+</header>
+
+<!-- 1 -->
+<section id="summary">
+  <h2><span class="num">1.</span>Summary</h2>
+  <p><strong>Problem.</strong> Today every report runs as SQL against the same PostgreSQL database that handles registrations and day-to-day work. Report filters on arbitrary columns force PostgreSQL to scan and join large parts of the tables. With crores of rows and many clients pulling reports at once, those scans compete for the same CPU, disk, memory cache and connections as live transactions, so everyday work slows down.</p>
+  <p><strong>Recommendation.</strong> Split reads from writes (an approach known as <em>CQRS</em>):</p>
+  <ol>
+    <li>PostgreSQL stays the system of record. The existing screens and reports keep working unchanged.</li>
+    <li>Every change is streamed out of PostgreSQL in near real time by reading its change log (<em>change data capture</em>, CDC) with <strong>Debezium</strong>, through <strong>Apache Kafka</strong>.</li>
+    <li>The changes land in <strong>ClickHouse</strong>, a column-oriented analytics database built for fast filtering and aggregation over billions of rows and many concurrent users.</li>
+    <li>New reports (and, report by report, the old ones) read from ClickHouse. Heavy downloads become background jobs.</li>
+  </ol>
+  <div class="grid3">
+    <div class="card"><h4>Isolation</h4><p>Report queries never touch the live database. Its only extra work is writing its normal change log, which it already does, plus one small extra row per registration (section 7).</p></div>
+    <div class="card"><h4>Speed at scale</h4><p>Columnar storage reads only the columns a report uses, heavily compressed, and processes them in bulk. Filters on any column are fast without an index for each one.</p></div>
+    <div class="card"><h4>Low risk</h4><p>The old flow keeps running. Each report switches to the new store with a setting and switches back the same way. The data is seconds behind live.</p></div>
+  </div>
+  <p>Everything proposed is open source (Apache 2.0 or the PostgreSQL licence). The POC can be built in stages on this project; a rough estimate is 8&ndash;12 working days, refined in section 13.</p>
+</section>
+
+<!-- 2 -->
+<section id="problem">
+  <h2><span class="num">2.</span>The problem today</h2>
+  <div class="diagram">
+  <svg width="1000" height="300" viewBox="0 0 1000 300" role="img" aria-label="Current architecture: all traffic hits one PostgreSQL">
+    <defs>
+      <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+      <marker id="a1o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah-old"/></marker>
+    </defs>
+    <rect class="box" x="20" y="40" width="180" height="60" rx="8"/><text class="lbl" x="110" y="66" text-anchor="middle">Reception users</text><text class="lbl-s" x="110" y="84" text-anchor="middle">registrations, lookups</text>
+    <rect class="box" x="20" y="190" width="180" height="60" rx="8"/><text class="lbl" x="110" y="216" text-anchor="middle">Report users (many)</text><text class="lbl-s" x="110" y="234" text-anchor="middle">filters on any column, exports</text>
+    <rect class="box" x="300" y="110" width="200" height="70" rx="8"/><text class="lbl" x="400" y="139" text-anchor="middle">JSP / Spring app</text><text class="lbl-s" x="400" y="157" text-anchor="middle">one connection pool</text>
+    <rect class="box-old" x="620" y="80" width="340" height="130" rx="10"/>
+    <text class="lbl" x="790" y="108" text-anchor="middle">PostgreSQL (single database)</text>
+    <text class="lbl-s" x="790" y="130" text-anchor="middle">short OLTP writes and reads</text>
+    <text class="lbl-s" x="790" y="148" text-anchor="middle">+ long report scans, joins, sorts, counts</text>
+    <text class="lbl-s" x="790" y="166" text-anchor="middle">shared CPU &middot; disk &middot; buffer cache &middot; connections</text>
+    <text class="lbl" x="790" y="194" text-anchor="middle" style="fill:var(--bad)">contention &rarr; slow everyday work</text>
+    <path class="ln" d="M200,70 L298,135" marker-end="url(#a1)"/>
+    <path class="ln-old" d="M200,220 L298,160" marker-end="url(#a1o)"/>
+    <path class="ln" d="M500,135 L618,130" marker-end="url(#a1)"/>
+    <path class="ln-old" d="M500,158 L618,165" marker-end="url(#a1o)"/>
+  </svg>
+  </div>
+  <p class="caption">Today: transactional work and reporting share one database and one connection pool.</p>
+  <h3>What the POC already showed (1 lakh patients)</h3>
+  <ul>
+    <li>With 12 simultaneous PDF downloads, every pooled connection was held by a report. The dashboard waited 31 s and then failed. A download limit (3 at a time) now protects this POC, but it only rations the problem; it doesn't remove it.</li>
+    <li>Reports join 5 tables and count every matching row on each page view. That is fine at 1 lakh (0.1&ndash;0.4 s), but this work grows roughly in proportion to row count, so at crores the same pattern means much longer scans, larger sorts that spill to disk, and more cache churn for live traffic.</li>
+    <li>"Contains" search and filters on columns without an index degrade into full scans. Adding an index for every filterable column slows every insert and update on the live system.</li>
+  </ul>
+</section>
+
+<!-- 3 -->
+<section id="goals">
+  <h2><span class="num">3.</span>Goals</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Goal</th></tr></thead>
+    <tbody>
+      <tr><td>G1</td><td>Report load must not slow down registrations or other live activity, no matter how many clients run reports.</td></tr>
+      <tr><td>G2</td><td>Fast filters on any column, plus grouping and totals, over crores of rows.</td></tr>
+      <tr><td>G3</td><td>Many concurrent report users, plus large Excel/PDF exports.</td></tr>
+      <tr><td>G4</td><td>Near-real-time data (seconds behind live), with "data as of" shown on reports.</td></tr>
+      <tr><td>G5</td><td>The existing process keeps working unchanged; new reports and features are added alongside, and each report can be switched individually.</td></tr>
+      <tr><td>G6</td><td>Open-source or free software only, with no licence fees.</td></tr>
+      <tr><td>G7</td><td>Provable on this POC with small, reversible changes before touching the live product.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 4 -->
+<section id="why">
+  <h2><span class="num">4.</span>Why row-store scans hurt, and what a column store changes</h2>
+  <div class="diagram">
+  <svg width="980" height="250" viewBox="0 0 980 250" role="img" aria-label="Row store reads whole rows; column store reads only needed columns">
+    <text class="lbl" x="20" y="24">Row store (PostgreSQL): a filter on gender + dept reads whole rows</text>
+    <g>
+      <!-- 6 rows x 10 cols, all highlighted -->
+      <rect class="cell cell-on" x="20" y="40" width="40" height="22"/><rect class="cell cell-on" x="60" y="40" width="40" height="22"/><rect class="cell cell-on" x="100" y="40" width="40" height="22"/><rect class="cell cell-on" x="140" y="40" width="40" height="22"/><rect class="cell cell-on" x="180" y="40" width="40" height="22"/><rect class="cell cell-on" x="220" y="40" width="40" height="22"/><rect class="cell cell-on" x="260" y="40" width="40" height="22"/><rect class="cell cell-on" x="300" y="40" width="40" height="22"/><rect class="cell cell-on" x="340" y="40" width="40" height="22"/><rect class="cell cell-on" x="380" y="40" width="40" height="22"/>
+      <rect class="cell cell-on" x="20" y="62" width="40" height="22"/><rect class="cell cell-on" x="60" y="62" width="40" height="22"/><rect class="cell cell-on" x="100" y="62" width="40" height="22"/><rect class="cell cell-on" x="140" y="62" width="40" height="22"/><rect class="cell cell-on" x="180" y="62" width="40" height="22"/><rect class="cell cell-on" x="220" y="62" width="40" height="22"/><rect class="cell cell-on" x="260" y="62" width="40" height="22"/><rect class="cell cell-on" x="300" y="62" width="40" height="22"/><rect class="cell cell-on" x="340" y="62" width="40" height="22"/><rect class="cell cell-on" x="380" y="62" width="40" height="22"/>
+      <rect class="cell cell-on" x="20" y="84" width="40" height="22"/><rect class="cell cell-on" x="60" y="84" width="40" height="22"/><rect class="cell cell-on" x="100" y="84" width="40" height="22"/><rect class="cell cell-on" x="140" y="84" width="40" height="22"/><rect class="cell cell-on" x="180" y="84" width="40" height="22"/><rect class="cell cell-on" x="220" y="84" width="40" height="22"/><rect class="cell cell-on" x="260" y="84" width="40" height="22"/><rect class="cell cell-on" x="300" y="84" width="40" height="22"/><rect class="cell cell-on" x="340" y="84" width="40" height="22"/><rect class="cell cell-on" x="380" y="84" width="40" height="22"/>
+      <rect class="cell cell-on" x="20" y="106" width="40" height="22"/><rect class="cell cell-on" x="60" y="106" width="40" height="22"/><rect class="cell cell-on" x="100" y="106" width="40" height="22"/><rect class="cell cell-on" x="140" y="106" width="40" height="22"/><rect class="cell cell-on" x="180" y="106" width="40" height="22"/><rect class="cell cell-on" x="220" y="106" width="40" height="22"/><rect class="cell cell-on" x="260" y="106" width="40" height="22"/><rect class="cell cell-on" x="300" y="106" width="40" height="22"/><rect class="cell cell-on" x="340" y="106" width="40" height="22"/><rect class="cell cell-on" x="380" y="106" width="40" height="22"/>
+      <rect class="cell cell-on" x="20" y="128" width="40" height="22"/><rect class="cell cell-on" x="60" y="128" width="40" height="22"/><rect class="cell cell-on" x="100" y="128" width="40" height="22"/><rect class="cell cell-on" x="140" y="128" width="40" height="22"/><rect class="cell cell-on" x="180" y="128" width="40" height="22"/><rect class="cell cell-on" x="220" y="128" width="40" height="22"/><rect class="cell cell-on" x="260" y="128" width="40" height="22"/><rect class="cell cell-on" x="300" y="128" width="40" height="22"/><rect class="cell cell-on" x="340" y="128" width="40" height="22"/><rect class="cell cell-on" x="380" y="128" width="40" height="22"/>
+    </g>
+    <text class="lbl-s" x="20" y="172">Each row is stored together, so all 10 columns are read from disk</text>
+    <text class="lbl-s" x="20" y="188">to evaluate 2. The work grows with rows &times; total row width.</text>
+
+    <text class="lbl" x="530" y="24">Column store (ClickHouse): reads only the 2 columns used</text>
+    <g>
+      <rect class="cell cell-off" x="530" y="40" width="40" height="110"/><rect class="cell cell-on" x="570" y="40" width="40" height="110"/><rect class="cell cell-off" x="610" y="40" width="40" height="110"/><rect class="cell cell-off" x="650" y="40" width="40" height="110"/><rect class="cell cell-on" x="690" y="40" width="40" height="110"/><rect class="cell cell-off" x="730" y="40" width="40" height="110"/><rect class="cell cell-off" x="770" y="40" width="40" height="110"/><rect class="cell cell-off" x="810" y="40" width="40" height="110"/><rect class="cell cell-off" x="850" y="40" width="40" height="110"/><rect class="cell cell-off" x="890" y="40" width="40" height="110"/>
+    </g>
+    <text class="lbl-s" x="530" y="172">Each column is a separate compressed file. Low-variety columns</text>
+    <text class="lbl-s" x="530" y="188">(gender, department, state) compress extremely well, are processed</text>
+    <text class="lbl-s" x="530" y="204">in large vectorised batches, and data skipping (sorted parts with</text>
+    <text class="lbl-s" x="530" y="220">min/max metadata per block) avoids reading irrelevant blocks.</text>
+  </svg>
+  </div>
+  <p>Reports are exactly the workload column stores are built for: few columns, many rows, filters, grouping and totals. Live transactions (insert or update one patient) are exactly what PostgreSQL is built for. Using each for its strength is the core of this proposal.</p>
+</section>
+
+<!-- 5 -->
+<section id="options">
+  <h2><span class="num">5.</span>Options compared</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Option</th><th>What it is</th><th>Isolates live DB?</th><th>Crores + any-column filters</th><th>Freshness</th><th>New software</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr><td><strong>0. Tune in place</strong></td><td>Partition tables by month, BRIN indexes on dates, a separate pool and <code>statement_timeout</code> for reports, export limits (already done), keyset paging</td><td class="bad">No</td><td class="mid">Helps fixed filters only</td><td>Live</td><td>None</td><td>Do the cheap parts anyway; not enough alone</td></tr>
+      <tr><td><strong>1. Read replica</strong></td><td>PostgreSQL streaming replica; reports query the copy</td><td class="good">Yes (separate server)</td><td class="mid">Same row-store scans, just elsewhere</td><td>Sub-second</td><td>None (PostgreSQL)</td><td>Good stop-gap; long reports can be cancelled on the replica or delay its cleanup</td></tr>
+      <tr><td><strong>2. Summary tables / materialized views</strong></td><td>Pre-computed totals refreshed on a schedule</td><td class="mid">Partly (refresh still runs on the live DB)</td><td class="bad">Only for fixed, known reports</td><td>Minutes to hours</td><td>None</td><td>Useful for dashboards; doesn't help ad-hoc filters</td></tr>
+      <tr><td><strong>3. Search engine</strong> (OpenSearch)</td><td>CDC into a search index</td><td class="good">Yes</td><td class="mid">Excellent text search and filters; aggregations OK; no joins</td><td>Seconds</td><td>OpenSearch (+ CDC)</td><td>Best for <em>finding a patient</em>; heavy on memory and weaker for big analytical reports</td></tr>
+      <tr class="rec"><td><strong>4. Column-store analytics DB via CDC</strong> (ClickHouse)</td><td>Debezium reads PostgreSQL's change log &rarr; Kafka &rarr; ClickHouse; reports query ClickHouse</td><td class="good">Yes</td><td class="good">Designed for it</td><td>Seconds</td><td>Debezium, Kafka, ClickHouse</td><td class="good">Recommended</td></tr>
+      <tr><td><strong>5. Lakehouse</strong> (Parquet files + DuckDB / Trino)</td><td>Periodic export to columnar files on disk or object storage</td><td class="good">Yes</td><td class="good">Good</td><td>Minutes to hours (batch)</td><td>Several components</td><td>Good later for archive and history; too batch-oriented for live reports</td></tr>
+      <tr><td><strong>6. Extend PostgreSQL</strong> (Citus, columnar extensions)</td><td>Distributed or columnar tables inside PostgreSQL</td><td class="mid">Same cluster</td><td class="mid">Good</td><td>Live</td><td>Extension</td><td>Shares resources with OLTP; Citus is AGPL; some columnar features elsewhere are under non-open licences</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Why ClickHouse over the alternatives</h3>
+  <ul>
+    <li><strong>Apache Doris / StarRocks</strong> (also Apache 2.0, also columnar) handle large multi-table joins better. They are a valid alternative if reports need heavy joins; ClickHouse is chosen for its simple single-binary setup, very wide adoption and documentation, and because we will flatten the data into one wide table anyway (section 8).</li>
+    <li><strong>Apache Druid / Pinot</strong> are excellent for real-time event analytics but have more moving parts (multiple node types and deep storage); that is more than this use case needs.</li>
+    <li>A <strong>read replica</strong> is the simplest isolation step and can be added later for other reasons (high availability). It still scans rows, so it doesn't solve G2/G3 at crores.</li>
+  </ul>
+</section>
+
+<!-- 6 -->
+<section id="target">
+  <h2><span class="num">6.</span>Recommended architecture</h2>
+  <div class="diagram">
+  <svg width="1100" height="470" viewBox="0 0 1100 470" role="img" aria-label="Target architecture with CDC to ClickHouse">
+    <defs>
+      <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+      <marker id="a2n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah-new"/></marker>
+    </defs>
+    <rect class="zone" x="250" y="20" width="250" height="430" rx="10"/><text class="zone-t" x="262" y="40">SPRING / JSP APP</text>
+    <rect class="zone" x="560" y="20" width="520" height="190" rx="10"/><text class="zone-t" x="572" y="40">WRITE SIDE (unchanged system of record)</text>
+    <rect class="zone" x="560" y="240" width="520" height="210" rx="10"/><text class="zone-t" x="572" y="260">READ SIDE (new, for reporting)</text>
+
+    <rect class="box" x="20" y="70" width="190" height="56" rx="8"/><text class="lbl" x="115" y="94" text-anchor="middle">Reception users</text><text class="lbl-s" x="115" y="112" text-anchor="middle">register, update, look up</text>
+    <rect class="box" x="20" y="300" width="190" height="56" rx="8"/><text class="lbl" x="115" y="324" text-anchor="middle">Report users</text><text class="lbl-s" x="115" y="342" text-anchor="middle">any-column filters, exports</text>
+
+    <rect class="box" x="270" y="60" width="210" height="60" rx="6"/><text class="lbl" x="375" y="85" text-anchor="middle">Existing screens</text><text class="lbl-s" x="375" y="103" text-anchor="middle">+ existing /reports (unchanged)</text>
+    <rect class="box-new" x="270" y="270" width="210" height="60" rx="6"/><text class="lbl" x="375" y="295" text-anchor="middle">New reports module</text><text class="lbl-s" x="375" y="313" text-anchor="middle">/analytics &middot; per-report switch</text>
+    <rect class="box-new" x="270" y="360" width="210" height="60" rx="6"/><text class="lbl" x="375" y="385" text-anchor="middle">Export jobs</text><text class="lbl-s" x="375" y="403" text-anchor="middle">background queue &rarr; files</text>
+
+    <rect class="box" x="590" y="70" width="200" height="110" rx="8"/><text class="lbl" x="690" y="98" text-anchor="middle">PostgreSQL</text><text class="lbl-s" x="690" y="117" text-anchor="middle">OLTP tables + outbox</text><text class="lbl-s" x="690" y="134" text-anchor="middle">writes its change log (WAL)</text><text class="lbl-s" x="690" y="151" text-anchor="middle">wal_level = logical</text>
+    <rect class="box-new" x="850" y="70" width="200" height="56" rx="8"/><text class="lbl" x="950" y="94" text-anchor="middle">Debezium</text><text class="lbl-s" x="950" y="112" text-anchor="middle">reads WAL via a replication slot</text>
+    <rect class="box-new" x="850" y="150" width="200" height="50" rx="8"/><text class="lbl" x="950" y="172" text-anchor="middle">Apache Kafka</text><text class="lbl-s" x="950" y="189" text-anchor="middle">durable change stream</text>
+    <rect class="box-new" x="700" y="290" width="350" height="130" rx="8"/><text class="lbl" x="875" y="316" text-anchor="middle">ClickHouse</text>
+    <text class="lbl-s" x="875" y="336" text-anchor="middle">Kafka engine &rarr; materialized view &rarr;</text>
+    <text class="lbl-s" x="875" y="353" text-anchor="middle">patient_report (one wide, flat, columnar table)</text>
+    <text class="lbl-s" x="875" y="370" text-anchor="middle">partitioned by month &middot; sorted by date, department</text>
+    <text class="lbl-s" x="875" y="387" text-anchor="middle">query limits, users, row policies</text>
+    <rect class="box" x="580" y="394" width="100" height="46" rx="6"/><text class="lbl" x="630" y="414" text-anchor="middle">Superset</text><text class="lbl-s" x="630" y="430" text-anchor="middle">optional BI</text>
+
+    <path class="ln" d="M210,98 L268,92" marker-end="url(#a2)"/>
+    <path class="ln-new" d="M210,328 L268,302" marker-end="url(#a2n)"/>
+    <path class="ln-new" d="M210,338 L268,385" marker-end="url(#a2n)"/>
+    <path class="ln" d="M480,92 L588,110" marker-end="url(#a2)"/>
+    <path class="ln-new" d="M790,98 L848,98" marker-end="url(#a2n)"/>
+    <path class="ln-new" d="M950,126 L950,148" marker-end="url(#a2n)"/>
+    <path class="ln-new" d="M950,200 L950,288" marker-end="url(#a2n)"/>
+    <path class="ln-new" d="M480,300 L698,330" marker-end="url(#a2n)"/>
+    <path class="ln-new" d="M480,390 L698,375" marker-end="url(#a2n)"/>
+    <path class="ln" d="M680,412 L698,412" marker-end="url(#a2)"/>
+    <text class="lbl-s" x="375" y="142" text-anchor="middle">dashed: old reports stay on PostgreSQL</text>
+    <path class="ln" d="M440,120 L588,160" stroke-dasharray="5 4" marker-end="url(#a2)"/>
+  </svg>
+  </div>
+  <p class="caption">Green = new. The write path is unchanged apart from one outbox insert per registration. Reports read only from ClickHouse; the dashed arrow shows old reports can keep using PostgreSQL until they are switched.</p>
+  <h3>How a change flows</h3>
+  <ol class="steps">
+    <li>A user registers a patient. The app saves the six tables exactly as today and, in the same transaction, writes one <strong>outbox</strong> row containing the flattened report record (section 7.2).</li>
+    <li>PostgreSQL writes the transaction to its change log (WAL), which it already does for crash safety.</li>
+    <li>Debezium reads the change log through a replication slot. This is a streaming read of the log, <em>not</em> a query on the tables, and it publishes the outbox event to a Kafka topic.</li>
+    <li>ClickHouse consumes the topic continuously (Kafka table engine) and a materialized view writes each event into <code>patient_report</code>.</li>
+    <li>The new report pages query ClickHouse. Each page shows "data as of hh:mm:ss" from the latest ingested event. End-to-end delay is typically a few seconds; the POC will measure it.</li>
+  </ol>
+</section>
+
+<!-- 7 -->
+<section id="pipeline">
+  <h2><span class="num">7.</span>Data pipeline in detail</h2>
+  <h3>7.1 Change data capture with Debezium</h3>
+  <ul>
+    <li>PostgreSQL setting <code>wal_level = logical</code> (one-time change plus restart). Debezium uses the built-in <code>pgoutput</code> plugin, so nothing needs installing inside PostgreSQL.</li>
+    <li>A publication limited to the tables we stream (only the outbox table in the recommended design), and one replication slot.</li>
+    <li>Kafka gives durability and replay: if ClickHouse is down, events wait in Kafka; if Kafka is down, PostgreSQL keeps the change log in the slot until Debezium catches up (with a cap, see section 10).</li>
+  </ul>
+  <h3>7.2 Flattening the data: transactional outbox (recommended)</h3>
+  <p>A registration touches six tables. Column stores work best with one wide, pre-joined table, and joining six streamed tables inside ClickHouse at crores is expensive. The <strong>outbox pattern</strong> solves this at the source:</p>
+<pre><code>-- in PatientService.register(), inside the existing transaction, after the six inserts
+INSERT INTO report_outbox (aggregate_id, event_type, payload)        -- payload = flattened JSON
+VALUES (:patientId, 'PatientRegistered', :json);
+DELETE FROM report_outbox WHERE aggregate_id = :patientId;            -- table stays empty;
+                                                                       -- the INSERT is still in the WAL</code></pre>
+  <ul>
+    <li>The app already holds every field in <code>PatientForm</code> at save time, so building the JSON costs almost nothing.</li>
+    <li>Debezium's <em>Outbox Event Router</em> sends the payload to topic <code>patient.report</code>.</li>
+    <li>The event can carry only the fields reports need, which also keeps sensitive data out (section 11).</li>
+    <li>Future edits and cancellations publish <code>PatientUpdated</code> / <code>PatientDeleted</code> events the same way, with a version number.</li>
+  </ul>
+  <div class="note"><strong>Alternative without touching the save code:</strong> stream the six tables as they are and rebuild the flat table inside ClickHouse on a schedule (a <em>refreshable materialized view</em>). This means zero application change, but more ClickHouse work, minutes rather than seconds of delay for the flat table, and more data copied. It's a good fallback if changing the live save path is not allowed.</div>
+  <h3>7.3 Initial load (backfill) of existing crores</h3>
+  <ol class="steps">
+    <li>Create a view <code>v_patient_report</code> in PostgreSQL that produces exactly the outbox JSON's columns (a join of the six tables).</li>
+    <li>Start CDC first, so nothing is missed from that moment.</li>
+    <li>Bulk-copy history with ClickHouse's built-in <code>postgresql()</code> table function, month by month, off-hours or from a read replica:
+<pre><code>INSERT INTO patient_report
+SELECT *, 0 AS version, 0 AS is_deleted
+FROM postgresql('pg-host:5432', 'postgres', 'v_patient_report', 'reporting_ro', '***', 'patientreg')
+WHERE registration_date &gt;= '2024-01-01' AND registration_date &lt; '2024-02-01';</code></pre></li>
+    <li>Rows copied twice (by backfill and by CDC) collapse automatically: the table keeps the highest version per patient (section 8).</li>
+  </ol>
+  <h3>7.4 Freshness, failures and correctness</h3>
+  <ul>
+    <li><strong>Lag</strong>: shown on every report ("data as of"), and monitored. If ClickHouse falls behind, reports still work, just with older data.</li>
+    <li><strong>Exactly-once in effect</strong>: delivery is at-least-once; duplicates are removed by version-based de-duplication.</li>
+    <li><strong>Reconciliation job</strong> (nightly): compare per-day counts and fee totals between PostgreSQL and ClickHouse and alert on any difference. During the POC and early rollout this is the proof that both sides agree.</li>
+  </ul>
+</section>
+
+<!-- 8 -->
+<section id="model">
+  <h2><span class="num">8.</span>Analytics data model (ClickHouse)</h2>
+<pre><code>CREATE TABLE patient_report
+(
+    patient_id         UInt64,
+    registration_no    String,
+    registration_date  Date,
+    patient_name       String,
+    gender             LowCardinality(String),
+    age_years          UInt8,
+    age_band           LowCardinality(String),      -- 0-13, 14-24, 25-44, 45-59, 60+
+    patient_category   LowCardinality(String),
+    mobile_masked      String,                      -- e.g. 98XXXXXX10, no Aadhaar at all
+    city               LowCardinality(String),
+    state              LowCardinality(String),
+    dept_id            UInt16,
+    dept_name          LowCardinality(String),
+    consulting_doctor  LowCardinality(String),
+    visit_type         LowCardinality(String),
+    priority           LowCardinality(String),
+    payment_mode       LowCardinality(String),
+    is_insured         UInt8,
+    coverage_type      LowCardinality(String),
+    registration_fee   Decimal(10, 2),
+    chief_complaint    String,
+    chronic_conditions String,
+    -- ... any other report column, all flat
+    version            UInt64,                      -- from the event; highest wins
+    is_deleted         UInt8,
+    ingested_at        DateTime DEFAULT now(),
+    INDEX idx_name patient_name TYPE ngrambf_v1(3, 65536, 3, 0) GRANULARITY 4   -- fast "contains" search
+)
+ENGINE = ReplacingMergeTree(version, is_deleted)
+PARTITION BY toYYYYMM(registration_date)
+ORDER BY (registration_date, dept_id, patient_id);</code></pre>
+  <div class="grid2">
+    <div class="card"><h4>Why this shape</h4><p>One flat row per patient means no joins at query time. <code>LowCardinality</code> dictionary-encodes repeating values. Monthly partitions make date filters skip whole months. Sorting by date and department makes the most common filters read only the relevant blocks.</p></div>
+    <div class="card"><h4>Updates and deletes</h4><p><code>ReplacingMergeTree</code> keeps the latest version of each patient and drops deleted ones during background merges. Queries that must be exact use <code>FINAL</code> (or <code>argMax</code>); recent ClickHouse versions make <code>FINAL</code> efficient.</p></div>
+  </div>
+  <h3>Example report queries</h3>
+<pre><code>-- Report 2 (department summary) on any period: one pass over 3-4 columns
+SELECT dept_name, count() AS total, countIf(gender = 'Male') AS male, countIf(gender = 'Female') AS female,
+       countIf(is_insured = 1) AS insured, round(avg(age_years), 1) AS avg_age, sum(registration_fee) AS fee
+FROM patient_report FINAL
+WHERE registration_date BETWEEN '2026-01-01' AND '2026-09-30' AND is_deleted = 0
+GROUP BY dept_name ORDER BY dept_name;
+
+-- Column-level filter on any column, no extra index needed
+SELECT registration_no, patient_name, city, dept_name
+FROM patient_report FINAL
+WHERE state = 'Maharashtra' AND chronic_conditions LIKE '%Diabetes%' AND age_band = '60+'
+ORDER BY registration_date DESC LIMIT 50;</code></pre>
+  <p><strong>Aggregate tables</strong> for dashboards can be added as <em>refreshable</em> materialized views. Insert-triggered aggregate views would double-count updated patients, so they are avoided for data that can change.</p>
+</section>
+
+<!-- 9 -->
+<section id="app">
+  <h2><span class="num">9.</span>Application changes (Spring / JSP)</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Change</th><th>Detail</th><th>Touches old flow?</th></tr></thead>
+    <tbody>
+      <tr><td>Second data source</td><td>ClickHouse JDBC driver (<code>com.clickhouse:clickhouse-jdbc</code>, Apache 2.0) with its own small HikariCP pool. Report traffic can no longer take live-database connections.</td><td>No</td></tr>
+      <tr><td><code>ReportSource</code> interface</td><td>Two implementations: <code>PostgresReportSource</code> (today's <code>ReportDao</code>) and <code>ClickHouseReportSource</code>. A setting per report, e.g. <code>report.register.source=postgres|clickhouse</code>, so each report can be switched and switched back without a code change.</td><td>Old reports keep using PostgreSQL until switched</td></tr>
+      <tr><td>New <code>/analytics</code> module</td><td>New reports with column-level filters on any whitelisted column (dynamic, parameterised SQL), trends by month, age band &times; department, insurance mix, top complaints, and so on.</td><td>No (new pages)</td></tr>
+      <tr><td>Background exports</td><td>An "export job" table, a small worker pool, a "My downloads" page, files kept for N hours. Identical requests (same filters) reuse one file. Users no longer hold a connection while a 4,000-page PDF is built.</td><td>No (new)</td></tr>
+      <tr><td>Caching</td><td>A short-lived in-memory cache (Caffeine, Apache 2.0) for counts and summaries keyed by filter, so repeated identical requests from many clients cost one query.</td><td>No</td></tr>
+      <tr><td>Keyset paging</td><td>"Next page after the last row seen" instead of a large OFFSET, so deep pages are as fast as page 1.</td><td>No</td></tr>
+      <tr><td>Outbox write</td><td>One extra insert and delete in <code>PatientService.register()</code> (section 7.2).</td><td><strong>Yes, small</strong> (same transaction)</td></tr>
+      <tr><td>"Data as of" banner</td><td><code>max(ingested_at)</code> shown on every new report.</td><td>No</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 10 -->
+<section id="oltp">
+  <h2><span class="num">10.</span>Protecting the live database</h2>
+  <ul>
+    <li><strong>Change-log retention cap</strong>: if Debezium stops, its replication slot makes PostgreSQL keep the change log, which can fill the disk. Set <code>max_slot_wal_keep_size</code> to cap it, and alert on slot lag. If the cap is hit, the slot is invalidated and the read side is re-synced by backfill, so the live database is never put at risk.</li>
+    <li><strong>Minimal publication</strong>: publish only the outbox table, so Debezium reads only the changes it needs.</li>
+    <li><strong>Backfill off-hours</strong>, in monthly chunks, preferably from a read replica.</li>
+    <li><strong>Guard rails for any report still on PostgreSQL</strong>: a separate database role with <code>statement_timeout</code> and a connection limit; the download limit already in the POC.</li>
+    <li><strong>Guard rails in ClickHouse</strong>: per-user settings profiles and quotas (<code>max_execution_time</code>, <code>max_memory_usage</code>, concurrent-query limits), so one heavy report can't starve other report users either.</li>
+  </ul>
+</section>
+
+<!-- 11 -->
+<section id="security">
+  <h2><span class="num">11.</span>Security &amp; compliance</h2>
+  <p>Patient records are sensitive personal data (for example under India's Digital Personal Data Protection Act, 2023). Copying them to a second store increases exposure, so the design keeps that copy as small and as controlled as possible:</p>
+  <ul>
+    <li><strong>Data minimisation</strong>: the outbox payload contains only report fields; no Aadhaar, masked mobile numbers, and no free-text medical notes unless a report really needs them.</li>
+    <li><strong>Access control</strong>: separate ClickHouse users per application and role; <em>row policies</em> (for example, a department head sees only their department); read-only reporting users.</li>
+    <li><strong>Kafka</strong>: topics restricted to the pipeline's service accounts, with short retention (for example 7 days), since ClickHouse holds the long-term copy.</li>
+    <li><strong>Encryption and audit</strong>: TLS between components in production; disk encryption on servers; ClickHouse's <code>query_log</code> records who ran what.</li>
+    <li><strong>Retention</strong>: ClickHouse <code>TTL</code> rules can drop or anonymise data older than the agreed retention period automatically.</li>
+  </ul>
+</section>
+
+<!-- 12 -->
+<section id="stack">
+  <h2><span class="num">12.</span>Open-source stack &amp; licences</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Component</th><th>Role</th><th>Licence</th><th>Needed for</th></tr></thead>
+    <tbody>
+      <tr><td>PostgreSQL</td><td>Live database (existing)</td><td>PostgreSQL Licence</td><td>Existing</td></tr>
+      <tr><td>Debezium (on Kafka Connect)</td><td>Change data capture</td><td>Apache 2.0</td><td>Core</td></tr>
+      <tr><td>Apache Kafka (KRaft mode, no ZooKeeper)</td><td>Durable change stream</td><td>Apache 2.0</td><td>Core</td></tr>
+      <tr><td>ClickHouse server</td><td>Columnar analytics database</td><td>Apache 2.0</td><td>Core</td></tr>
+      <tr><td>ClickHouse JDBC driver</td><td>App &rarr; ClickHouse</td><td>Apache 2.0</td><td>Core</td></tr>
+      <tr><td>Caffeine</td><td>In-app result cache</td><td>Apache 2.0</td><td>Recommended</td></tr>
+      <tr><td>Kafka UI (provectus)</td><td>Browse topics and lag during POC</td><td>Apache 2.0</td><td>Optional</td></tr>
+      <tr><td>Apache Superset</td><td>Self-service dashboards on ClickHouse</td><td>Apache 2.0</td><td>Optional</td></tr>
+      <tr><td>Apache JMeter</td><td>Load testing in the POC</td><td>Apache 2.0</td><td>POC</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Deliberately not chosen</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Tool</th><th>Reason</th></tr></thead>
+    <tbody>
+      <tr><td>Redpanda (Kafka alternative)</td><td>Business Source Licence (not open source)</td></tr>
+      <tr><td>Confluent Community Licence components</td><td>Source-available, not open source; Debezium and Apache Kafka cover the need</td></tr>
+      <tr><td>PeerDB (Postgres &rarr; ClickHouse replication)</td><td>Elastic Licence 2.0 (source-available)</td></tr>
+      <tr><td>Elasticsearch</td><td>OpenSearch (Apache 2.0) is the simpler licence choice if a search engine is ever added</td></tr>
+      <tr><td>Grafana, Metabase</td><td>AGPL: open source and fine for internal use, but Superset (Apache 2.0) avoids AGPL obligations entirely</td></tr>
+    </tbody>
+  </table></div>
+  <p class="caption">Licences as published by each project at the time of writing; re-confirm the exact versions you adopt.</p>
+</section>
+
+<!-- 13 -->
+<section id="poc">
+  <h2><span class="num">13.</span>POC plan on this project</h2>
+  <h3>13.1 Constraints of this machine</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Resource</th><th>Measured</th><th>Impact</th></tr></thead>
+    <tbody>
+      <tr><td>RAM</td><td>7.7 GB total, about 1.4 GB free at the time of checking</td><td>The full stack is tight. Run with small memory settings, close other apps, start lean (stage A).</td></tr>
+      <tr><td>Docker memory limit</td><td>about 3.9 GB</td><td>Budget: PostgreSQL about 0.5 GB, ClickHouse about 1&ndash;1.5 GB, Kafka about 0.6 GB (512 MB heap), Debezium Connect about 0.6 GB. It fits only just; raising the WSL limit (<code>.wslconfig</code>, e.g. 5 GB) gives headroom.</td></tr>
+      <tr><td>CPU</td><td>4 logical cores</td><td>Fine for functional tests; load tests will be indicative, not production-grade numbers.</td></tr>
+      <tr><td>Disk</td><td>C: 36 GB free, D: 308 GB free</td><td>Docker's data normally lives on C:. Scaling to crores needs Docker Desktop's disk image moved to D: (setting: Resources &rarr; Advanced &rarr; Disk image location). Today 1 lakh patients take about 318 MB in PostgreSQL, so 1 crore would be roughly 30 GB before ClickHouse.</td></tr>
+      <tr><td>PostgreSQL</td><td><code>wal_level = replica</code></td><td>Must become <code>logical</code>: <code>ALTER SYSTEM SET wal_level = 'logical'</code> then <code>docker restart Postgres</code> (a brief outage of the POC database).</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>13.2 Stages</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Stage</th><th>What gets built</th><th>Proves</th><th>Estimate</th></tr></thead>
+    <tbody>
+      <tr><td><strong>A. Lean analytics</strong></td><td>ClickHouse container; <code>v_patient_report</code> view; backfill with <code>postgresql()</code>; a simple incremental copy every minute (new patient ids only); one new <code>/analytics</code> page reading ClickHouse; the second data source in the app.</td><td>Query speed and the app integration, with the smallest possible stack (no Kafka yet)</td><td>1&ndash;2 days</td></tr>
+      <tr><td><strong>B. Real CDC</strong></td><td><code>wal_level=logical</code>; Kafka (KRaft) and Debezium Connect containers; outbox write in <code>PatientService</code>; ClickHouse Kafka engine and materialized view; lag display; failure drills (stop Kafka or ClickHouse, restart, confirm nothing is lost; watch slot lag).</td><td>Seconds-level freshness and resilience, with no report load on PostgreSQL</td><td>2&ndash;3 days</td></tr>
+      <tr><td><strong>C. App features</strong></td><td><code>ReportSource</code> switch for Report 1 and 2; background export jobs and a "My downloads" page; Caffeine cache; keyset paging; 3&ndash;4 new reports with any-column filters; nightly reconciliation.</td><td>The old flow untouched, new functionality working side by side, per-report switching</td><td>3&ndash;4 days</td></tr>
+      <tr><td><strong>D. Scale &amp; load test</strong></td><td>Generate 50 lakh to 1 crore patients (after moving Docker's disk to D:); JMeter scenario: N report users + continuous registrations, run once against old reports and once against new.</td><td>G1 and G2 with numbers: live-work latency under report load, report latency at scale</td><td>2&ndash;3 days</td></tr>
+    </tbody>
+  </table></div>
+  <p class="caption">Estimates are for one developer, are indicative, and will be revisited after stage A.</p>
+
+  <h3>13.3 Additional containers (indicative)</h3>
+<pre><code>clickhouse   clickhouse/clickhouse-server           ports 8123 (HTTP), 9000 (native)
+kafka        apache/kafka  (KRaft, single node)      port 9092    KAFKA_HEAP_OPTS=-Xmx512m
+connect      quay.io/debezium/connect               port 8083    HEAP_OPTS=-Xmx512m
+kafka-ui     provectuslabs/kafka-ui   (optional)     port 8080 -&gt; map to 8081 (Tomcat uses 8080)</code></pre>
+</section>
+
+<!-- 14 -->
+<section id="success">
+  <h2><span class="num">14.</span>Success criteria for the POC</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Criterion</th><th>How measured</th></tr></thead>
+    <tbody>
+      <tr><td>S1</td><td>Registration response time under heavy report load stays within about 10% of the no-load baseline (new path), while the old path visibly degrades</td><td>JMeter p95 for <code>POST /patient/save</code>, with and without N concurrent report users</td></tr>
+      <tr><td>S2</td><td>New report queries return in about 1&ndash;2 s or less at the stage-D data size (target to confirm)</td><td>JMeter / ClickHouse <code>query_log</code> p95</td></tr>
+      <tr><td>S3</td><td>Change-to-report delay under 10 s at p95</td><td>Event time vs <code>ingested_at</code></td></tr>
+      <tr><td>S4</td><td>Zero mismatches between PostgreSQL and ClickHouse</td><td>Reconciliation of per-day counts and fee totals</td></tr>
+      <tr><td>S5</td><td>Existing screens and reports behave exactly as before</td><td>Re-run the current functional checks</td></tr>
+      <tr><td>S6</td><td>Survives component restarts without data loss</td><td>Failure drills in stage B</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 15 -->
+<section id="rollout">
+  <h2><span class="num">15.</span>Rollout to the live product (after a successful POC)</h2>
+  <ol class="steps">
+    <li><strong>Shadow mode</strong>: run the pipeline in production with no user-facing change; reconciliation runs nightly.</li>
+    <li><strong>New reports first</strong>: release only the new <code>/analytics</code> reports and background exports.</li>
+    <li><strong>Switch old reports one at a time</strong> via the per-report setting, starting with the heaviest. Rollback is flipping the setting back.</li>
+    <li><strong>Retire PostgreSQL-side report queries</strong> once all reports have moved, which removes the remaining report load from the live database.</li>
+    <li>Production hardening: ClickHouse replication (2 replicas), a 3-broker Kafka, monitoring of lag, slot size and query times, backups of ClickHouse.</li>
+  </ol>
+</section>
+
+<!-- 16 -->
+<section id="risks">
+  <h2><span class="num">16.</span>Risks &amp; mitigations</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Risk</th><th>Mitigation</th></tr></thead>
+    <tbody>
+      <tr><td>Reports are seconds behind live (eventual consistency)</td><td>"Data as of" on every report. Screens that need exact live data (a single patient's record) stay on PostgreSQL.</td></tr>
+      <tr><td>Change log fills the live database's disk if the pipeline stops</td><td><code>max_slot_wal_keep_size</code> cap, slot-lag alerts, re-sync by backfill</td></tr>
+      <tr><td>More systems to run (Kafka, Debezium, ClickHouse)</td><td>Start with single-node POC images; all three are widely used with large communities; Stage A proves value before Kafka is added</td></tr>
+      <tr><td>Schema changes (new field)</td><td>Add it to the outbox payload and <code>ALTER TABLE patient_report ADD COLUMN</code> (cheap in ClickHouse); backfill the column if history is needed</td></tr>
+      <tr><td>A second copy of patient data</td><td>Minimised payload, masking, access control, row policies, TTL (section 11)</td></tr>
+      <tr><td>Duplicates or out-of-order events</td><td>Version-based <code>ReplacingMergeTree</code>; <code>FINAL</code> for exact queries; reconciliation</td></tr>
+      <tr><td>POC machine resources</td><td>Lean stage A first; small JVM heaps; raise the WSL memory limit; move Docker's disk to D:</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 17 -->
+<section id="decisions">
+  <h2><span class="num">17.</span>Decisions needed before starting</h2>
+  <ol class="steps">
+    <li><strong>Direction</strong>: go with the recommended CDC &rarr; ClickHouse design, or start smaller with a read replica only?</li>
+    <li><strong>Flattening approach</strong>: the outbox (one small change in the save code, seconds-fresh flat table) or table-level CDC with no save-path change (more ClickHouse work, minutes-fresh)?</li>
+    <li><strong>New reports for the POC</strong>: which 3&ndash;4 reports or column filters matter most for the live product?</li>
+    <li><strong>POC data size</strong>: 50 lakh or 1 crore (the latter needs Docker's disk moved to D:)?</li>
+    <li><strong>Permissions on this machine</strong>: OK to set <code>wal_level=logical</code> and restart the <code>Postgres</code> container, add containers, and raise the Docker/WSL memory limit?</li>
+  </ol>
+  <div class="ok">Suggested next step: approve stage A. It adds only ClickHouse, needs no change to the live save path or PostgreSQL settings, and gives real query timings on this project within 1&ndash;2 days, before committing to Kafka and Debezium.</div>
+</section>
+
+<footer>Reporting architecture proposal &middot; Patient Registration POC &middot; 15 October 2026 &middot; local document, not published</footer>
+</main>
+</div>
+<script>
+(function () {
+  var btn = document.getElementById('themeBtn'), root = document.documentElement;
+  try { var saved = localStorage.getItem('pr-doc-theme'); if (saved) root.setAttribute('data-theme', saved); } catch (e) {}
+  btn.addEventListener('click', function () {
+    var cur = root.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    var next = cur === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('pr-doc-theme', next); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>

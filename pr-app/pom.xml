@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.hospital</groupId>
+        <artifactId>patient-registration-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
+    <artifactId>pr-app</artifactId>
+    <packaging>war</packaging>
+    <name>Patient Registration web application (assembles all modules)</name>
+    <dependencies>
+        <dependency><groupId>com.hospital</groupId><artifactId>pr-shared</artifactId></dependency>
+        <dependency><groupId>com.hospital</groupId><artifactId>pr-identity</artifactId></dependency>
+        <dependency><groupId>com.hospital</groupId><artifactId>pr-registration</artifactId></dependency>
+        <dependency><groupId>com.hospital</groupId><artifactId>pr-reporting</artifactId></dependency>
+        <!-- provided: builds first and is on the test classpath, but is NOT packaged as a jar (see webResources) -->
+        <dependency><groupId>com.hospital</groupId><artifactId>pr-ui</artifactId><scope>provided</scope></dependency>
+        <dependency><groupId>org.springframework</groupId><artifactId>spring-webmvc</artifactId></dependency>
+        <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-databind</artifactId></dependency>
+        <dependency><groupId>org.slf4j</groupId><artifactId>slf4j-api</artifactId></dependency>
+        <dependency><groupId>org.slf4j</groupId><artifactId>slf4j-simple</artifactId></dependency>
+        <dependency><groupId>org.apache.logging.log4j</groupId><artifactId>log4j-api</artifactId></dependency>
+        <dependency><groupId>org.apache.logging.log4j</groupId><artifactId>log4j-to-slf4j</artifactId></dependency>
+        <dependency><groupId>jakarta.servlet.jsp.jstl</groupId><artifactId>jakarta.servlet.jsp.jstl-api</artifactId></dependency>
+        <dependency><groupId>org.glassfish.web</groupId><artifactId>jakarta.servlet.jsp.jstl</artifactId></dependency>
+        <dependency><groupId>jakarta.servlet</groupId><artifactId>jakarta.servlet-api</artifactId></dependency>
+        <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId></dependency>
+        <dependency><groupId>org.assertj</groupId><artifactId>assertj-core</artifactId></dependency>
+        <dependency><groupId>org.hamcrest</groupId><artifactId>hamcrest</artifactId></dependency>
+        <dependency><groupId>org.springframework</groupId><artifactId>spring-test</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>com.tngtech.archunit</groupId><artifactId>archunit-junit5</artifactId></dependency>
+        <dependency><groupId>org.springframework.security</groupId><artifactId>spring-security-test</artifactId></dependency>
+        <dependency><groupId>org.postgresql</groupId><artifactId>postgresql</artifactId></dependency>
+    </dependencies>
+    <build>
+        <finalName>patient-registration</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <!-- The React build is copied into the WAR as plain files under /app. Serving it from inside a jar
+                         keeps the jar locked on Windows, which breaks Tomcat hot redeploys. -->
+                    <webResources>
+                        <resource>
+                            <directory>${project.basedir}/../pr-ui/target/classes/META-INF/resources/app</directory>
+                            <targetPath>app</targetPath>
+                        </resource>
+                    </webResources>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

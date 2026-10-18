@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Patient Registration Guide</title>
+<style>
+:root {
+  --bg: #f5f7f9; --surface: #ffffff; --surface-2: #eef3f6; --text: #1d2730; --muted: #5d6b78;
+  --border: #d3dce3; --accent: #00707e; --accent-soft: #e0f1f3;
+  --code-bg: #f0f3f6; --warn-bg: #fff6e5; --warn-border: #e8b04a; --ok-bg: #e9f6ec; --ok-border: #58a86a;
+  --svg-box: #ffffff; --svg-head: #00707e; --svg-head-text: #ffffff; --svg-line: #4d5b67; --svg-text: #1d2730;
+  --svg-muted: #6a7885; --svg-fk: #b35c00; --svg-pk: #00707e; --svg-alt: #f2f7f9; --svg-id: #5b6fd8; --svg-rep: #8d6cc4;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12171c; --surface: #1a2128; --surface-2: #212a33; --text: #e3e9ee; --muted: #9aa8b4;
+    --border: #33404c; --accent: #3fb6c4; --accent-soft: #163339;
+    --code-bg: #212a33; --warn-bg: #2e2717; --warn-border: #b9893a; --ok-bg: #18291d; --ok-border: #4c8f5b;
+    --svg-box: #1f2830; --svg-head: #2a8f9b; --svg-head-text: #ffffff; --svg-line: #9aa8b4; --svg-text: #e3e9ee;
+    --svg-muted: #9aa8b4; --svg-fk: #f0a35a; --svg-pk: #5cc8d4; --svg-alt: #24303a; --svg-id: #8c9cf0; --svg-rep: #b79ae6;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12171c; --surface: #1a2128; --surface-2: #212a33; --text: #e3e9ee; --muted: #9aa8b4;
+  --border: #33404c; --accent: #3fb6c4; --accent-soft: #163339;
+  --code-bg: #212a33; --warn-bg: #2e2717; --warn-border: #b9893a; --ok-bg: #18291d; --ok-border: #4c8f5b;
+  --svg-box: #1f2830; --svg-head: #2a8f9b; --svg-head-text: #ffffff; --svg-line: #9aa8b4; --svg-text: #e3e9ee;
+  --svg-muted: #9aa8b4; --svg-fk: #f0a35a; --svg-pk: #5cc8d4; --svg-alt: #24303a; --svg-id: #8c9cf0; --svg-rep: #b79ae6;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 "Segoe UI", system-ui, -apple-system, Arial, sans-serif; }
+a { color: var(--accent); }
+code, pre { font-family: Consolas, "Cascadia Mono", "Courier New", monospace; font-size: 13px; }
+code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; border: 1px solid var(--border); line-height: 1.45; }
+pre code { background: none; padding: 0; }
+.layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 100vh; }
+nav.toc { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--surface); border-right: 1px solid var(--border); padding: 20px 16px; }
+nav.toc .brand { font-weight: 700; font-size: 16px; color: var(--accent); }
+nav.toc .sub { color: var(--muted); font-size: 12px; margin-bottom: 16px; }
+nav.toc ol { margin: 0; padding-left: 20px; }
+nav.toc li { margin: 3px 0; font-size: 13.5px; }
+nav.toc a { text-decoration: none; color: var(--text); }
+nav.toc a:hover { color: var(--accent); }
+.theme-btn { margin-top: 18px; font: inherit; font-size: 12px; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 5px 10px; cursor: pointer; }
+main { padding: 28px 40px 60px; max-width: 1200px; width: 100%; }
+header.hero { background: var(--surface); border: 1px solid var(--border); border-left: 5px solid var(--accent); border-radius: 8px; padding: 22px 26px; margin-bottom: 28px; }
+header.hero h1 { margin: 0 0 6px; font-size: 26px; }
+header.hero p { margin: 4px 0; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.chip { background: var(--accent-soft); border-radius: 12px; padding: 2px 10px; font-size: 12.5px; }
+section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 22px 26px; margin-bottom: 22px; }
+section h2 { margin: 0 0 14px; font-size: 21px; padding-bottom: 8px; border-bottom: 2px solid var(--accent-soft); }
+section h2 .num { color: var(--accent); margin-right: 6px; }
+section h3 { font-size: 16.5px; margin: 22px 0 8px; }
+.table-wrap { overflow-x: auto; margin: 10px 0 14px; border: 1px solid var(--border); border-radius: 6px; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th { background: var(--surface-2); text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); }
+td { padding: 6px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
+.card h4 { margin: 0 0 6px; }
+.card p { margin: 0; font-size: 13.5px; color: var(--muted); }
+.stat { font-size: 22px; font-weight: 700; color: var(--accent); }
+.note { border-left: 4px solid var(--warn-border); background: var(--warn-bg); padding: 10px 14px; border-radius: 4px; margin: 12px 0; font-size: 14px; }
+.ok { border-left: 4px solid var(--ok-border); background: var(--ok-bg); padding: 10px 14px; border-radius: 4px; margin: 12px 0; font-size: 14px; }
+.diagram { overflow-x: auto; background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 10px; margin: 10px 0 6px; }
+.diagram svg { display: block; margin: 0 auto; width: 100%; height: auto; min-width: 900px; }
+.caption { font-size: 12.5px; color: var(--muted); margin: 0 0 12px; }
+.box { fill: var(--svg-box); stroke: var(--svg-line); stroke-width: 1.2; }
+.layer { fill: var(--svg-alt); stroke: var(--svg-line); stroke-dasharray: 4 3; stroke-width: 1; }
+.layer-t { fill: var(--svg-muted); font: 700 11px "Segoe UI", Arial, sans-serif; letter-spacing: .06em; }
+.head { fill: var(--svg-head); }
+.head-id { fill: var(--svg-id); }
+.head-rep { fill: var(--svg-rep); }
+.htext { fill: var(--svg-head-text); font: 600 12.5px "Segoe UI", Arial, sans-serif; }
+.t { fill: var(--svg-text); font: 11.5px Consolas, "Courier New", monospace; }
+.lbl { fill: var(--svg-text); font: 600 12.5px "Segoe UI", Arial, sans-serif; }
+.lbl-s { fill: var(--svg-muted); font: 11px "Segoe UI", Arial, sans-serif; }
+.ln { stroke: var(--svg-line); stroke-width: 1.4; fill: none; }
+.lnd { stroke: var(--svg-line); stroke-width: 1.3; fill: none; stroke-dasharray: 5 4; }
+.fkl { stroke: var(--svg-fk); stroke-width: 1.4; fill: none; }
+.arrowhead { fill: var(--svg-line); }
+ol.steps { padding-left: 22px; }
+ol.steps li { margin: 6px 0; }
+footer { color: var(--muted); font-size: 12.5px; text-align: center; margin-top: 30px; }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  main, section { min-width: 0; }
+  td, th, p, li, code { overflow-wrap: anywhere; }
+  nav.toc { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+  main { padding: 16px; }
+  section, header.hero { padding: 16px; }
+  .grid2, .grid3 { grid-template-columns: 1fr; }
+}
+@media print { nav.toc, .theme-btn { display: none; } .layout { display: block; } }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc" aria-label="Contents">
+  <div class="brand">Patient Registration</div>
+  <div class="sub">Project guide v3.1 &middot; 16 Oct 2026</div>
+  <ol>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#stack">Technology stack</a></li>
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#structure">Modules &amp; project structure</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#er">ER diagram</a></li>
+    <li><a href="#tables">Database tables</a></li>
+    <li><a href="#clickhouse">ClickHouse objects</a></li>
+    <li><a href="#java">Java classes &amp; relations</a></li>
+    <li><a href="#screens">Screens &amp; URLs</a></li>
+    <li><a href="#access">Users, roles &amp; hospitals</a></li>
+    <li><a href="#custom">Customisation</a></li>
+    <li><a href="#validation">Validation rules</a></li>
+    <li><a href="#reports">Reports &amp; downloads</a></li>
+    <li><a href="#config">Configuration (all properties)</a></li>
+    <li><a href="#deploy">Deployment steps</a></li>
+    <li><a href="#data">Bulk data</a></li>
+    <li><a href="#backup">Backup &amp; restore</a></li>
+    <li><a href="#testing">Testing</a></li>
+    <li><a href="#security">Security &amp; limitations</a></li>
+    <li><a href="#troubleshooting">Troubleshooting</a></li>
+  </ol>
+  <button class="theme-btn" type="button" id="themeBtn">Toggle light / dark</button>
+  <p class="sub" style="margin-top:14px">Related: <a href="Reports-Comparison-JSP-vs-Analytics.html">Reports comparison</a> &middot; <a href="Stage-5-Completion-Report.html">Stage 5 report</a> &middot; <a href="Final-Review-Report.html">Final review</a> &middot; <a href="Solution-Architecture.html">Solution architecture</a></p>
+</nav>
+
+<main>
+<header class="hero">
+  <h1>Patient Registration System</h1>
+  <p>A multi-hospital patient registration application (Spring MVC + JSP) with a separate, self-service analytics module (ClickHouse + React report builder, fed in real time by Debezium/Kafka), packaged as one WAR and run entirely in Docker. Proof of concept; everything is open source and runs locally.</p>
+  <p>Location: <code>D:\Pravin\patient-registration</code> &middot; App: <a href="http://localhost:8080/patient-registration/">http://localhost:8080/patient-registration/</a> &middot; Analytics: <a href="http://localhost:8080/patient-registration/app/">/patient-registration/app/</a></p>
+  <div class="chips">
+    <span class="chip">Java 21</span><span class="chip">Spring MVC 6.2</span><span class="chip">Spring Security 6.4</span><span class="chip">JSP + JSTL</span>
+    <span class="chip">Tomcat 11</span><span class="chip">PostgreSQL 18</span><span class="chip">ClickHouse 25.3</span><span class="chip">Kafka 3.9</span>
+    <span class="chip">Debezium 3.0</span><span class="chip">React 18 + TypeScript</span><span class="chip">Docker Compose</span><span class="chip">100% open source</span>
+  </div>
+</header>
+
+<!-- ============================== 1 ============================== -->
+<section id="overview">
+  <h2><span class="num">1.</span>Overview</h2>
+  <p>Reception staff register patients through one long form; management uses two classic reports and, since stage 2, a Power-BI-like report builder. Several hospitals share one installation, each seeing only its own patients. Built in phases and stages:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Step</th><th>What it added</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Phase 1</td><td>Registration form (70 fields, 6 tables + department), patient view, Report 1 Patient Register, Report 2 Department Summary, Excel/PDF</td><td>Done</td></tr>
+      <tr><td>Phase 2</td><td>1 lakh generated patients with every field filled; tuning and measurements</td><td>Done</td></tr>
+      <tr><td>Stage 0-1</td><td>Multi-module Maven build, one WAR, module boundaries enforced by ArchUnit</td><td>Done</td></tr>
+      <tr><td>Stage 2</td><td>ClickHouse reporting copy, semantic field catalogue, reporting API, React report builder in the same WAR</td><td>Done</td></tr>
+      <tr><td>Stage 3</td><td>Saved reports, templates, charts, CSV/Excel/PDF downloads of any report</td><td>Done</td></tr>
+      <tr><td>Stage 4</td><td>Real-time pipeline: transactional outbox &rarr; Debezium &rarr; Kafka &rarr; ClickHouse; everything in Docker</td><td>Done</td></tr>
+      <tr><td>Stage 5a</td><td>Sign-in, users, roles, several hospitals with full data isolation (row-level security), audit log, administration screens</td><td>Done</td></tr>
+      <tr><td>Stage 5b</td><td>Full customisation: hospitals' own form fields, lists, departments and doctors; custom roles; per-field report rules; formulas; pivot, subtotals, top N, highlighting, drill-down; dashboards; sharing; branded downloads</td><td>Done</td></tr>
+      <tr><td>Stage 6</td><td>Load tests at crore scale</td><td>Postponed (memory of this machine; user decision)</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Key numbers (16 Oct 2026)</h3>
+  <div class="grid3">
+    <div class="card"><div class="stat">1,30,002</div><p>Patients: H001 1,00,002 &middot; H002 20,000 &middot; H003 10,000 (PostgreSQL and ClickHouse match)</p></div>
+    <div class="card"><div class="stat">3</div><p>Hospitals with their own number series, departments, settings</p></div>
+    <div class="card"><div class="stat">24 + 9</div><p>PostgreSQL tables (3 schemas) + ClickHouse objects in <code>analytics</code> (report table, Kafka tables, heartbeat, errors, 4 views)</p></div>
+    <div class="card"><div class="stat">6</div><p>Maven modules in one WAR</p></div>
+    <div class="card"><div class="stat">5</div><p>Docker containers (3 by default + Kafka, Debezium with profile <code>cdc</code>)</p></div>
+    <div class="card"><div class="stat">178 + 23</div><p>Automated tests: Java (JUnit/MockMvc/ArchUnit, incl. parameterised runs) + browser (Playwright)</p></div>
+  </div>
+</section>
+
+<!-- ============================== 2 ============================== -->
+<section id="stack">
+  <h2><span class="num">2.</span>Technology stack</h2>
+  <p>Every component is open source with no licence fee.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Layer</th><th>Technology</th><th>Version</th><th>Licence</th><th>Used for</th></tr></thead>
+    <tbody>
+      <tr><td>Runtime</td><td>Eclipse Temurin JDK (in Docker); host JDK <code>D:\Pravin\jdk-21.0.12.1</code> for host builds</td><td>21</td><td>GPLv2 + CPE</td><td>Running the app</td></tr>
+      <tr><td>Web server</td><td>Apache Tomcat (image <code>tomcat:11.0-jdk21-temurin</code>, container <code>pr-app</code>)</td><td>11.0</td><td>Apache 2.0</td><td>Hosts <code>/patient-registration</code></td></tr>
+      <tr><td>Framework</td><td>Spring Framework (webmvc, jdbc, tx), no Spring Boot</td><td>6.2.10</td><td>Apache 2.0</td><td>MVC, DI, transactions, JDBC templates</td></tr>
+      <tr><td>Security</td><td>Spring Security (web, config)</td><td>6.4.9</td><td>Apache 2.0</td><td>Form login, CSRF, sessions, BCrypt</td></tr>
+      <tr><td>Views</td><td>JSP + Jakarta JSTL 3.0 + Spring form tags</td><td>&mdash;</td><td>EPL 2.0</td><td>Registration, legacy reports, settings, administration</td></tr>
+      <tr><td>Front end (analytics)</td><td>React, TypeScript, Vite, TanStack Table, Apache ECharts</td><td>18.3.1 / 5.6.3 / 5.4.11 / 8.20.5 / 5.5.1</td><td>MIT / Apache 2.0</td><td>Report builder at <code>/app/</code></td></tr>
+      <tr><td>OLTP database</td><td>PostgreSQL (image <code>postgres:18</code>, container <code>pr-postgres</code>, <code>wal_level=logical</code>)</td><td>18</td><td>PostgreSQL</td><td>Schemas <code>identity</code>, <code>patientreg</code>, <code>reporting</code></td></tr>
+      <tr><td>Analytics database</td><td>ClickHouse (image <code>clickhouse/clickhouse-server:25.3</code>, container <code>pr-clickhouse</code>)</td><td>25.3</td><td>Apache 2.0</td><td>Database <code>analytics</code> (tests: <code>analytics_test</code>)</td></tr>
+      <tr><td>Streaming</td><td>Apache Kafka (KRaft, image <code>apache/kafka:3.9.0</code>) + Debezium Connect (<code>quay.io/debezium/connect:3.0.0.Final</code>)</td><td>3.9 / 3.0</td><td>Apache 2.0</td><td>Real-time change data capture (profile <code>cdc</code>)</td></tr>
+      <tr><td>JDBC</td><td>PgJDBC, ClickHouse JDBC, HikariCP</td><td>42.7.4 / 0.7.2 / 5.1.0</td><td>BSD-2 / Apache 2.0</td><td>Connections and pools</td></tr>
+      <tr><td>JSON</td><td>Jackson (databind, jsr310)</td><td>2.18.2</td><td>Apache 2.0</td><td>REST API</td></tr>
+      <tr><td>Downloads</td><td>Apache POI (SXSSF), OpenPDF, own CSV writer</td><td>5.3.0 / 1.3.43</td><td>Apache 2.0 / LGPL-MPL</td><td>.xlsx, .pdf, .csv streaming</td></tr>
+      <tr><td>Search</td><td>pg_trgm</td><td>bundled</td><td>PostgreSQL</td><td>"contains" search in the legacy register</td></tr>
+      <tr><td>Build</td><td>Maven (bundled in <code>tools\</code>), frontend-maven-plugin, Node (in <code>tools\node</code>)</td><td>3.9.9</td><td>Apache 2.0 / MIT</td><td>One WAR incl. the React build</td></tr>
+      <tr><td>Tests</td><td>JUnit 5, AssertJ 3.26, Spring Test/MockMvc, Spring Security Test, ArchUnit 1.3, Playwright 1.48 (installed Edge)</td><td>&mdash;</td><td>EPL / Apache / MIT</td><td>Unit, integration, architecture, browser tests</td></tr>
+      <tr><td>Packaging</td><td>Docker, Docker Compose (multi-stage <code>Dockerfile</code>)</td><td>&mdash;</td><td>Apache 2.0</td><td>Whole system starts with one command</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================== 3 ============================== -->
+<section id="architecture">
+  <h2><span class="num">3.</span>Architecture</h2>
+  <p>A <b>modular monolith</b> in one WAR: the registration side (JSP) and the reporting side (REST API + React) live in separate Maven modules that may not depend on each other; they share only small contracts in <code>pr-shared</code> (signed-in user, hospitals, export writers). The reporting side never reads the registration tables: it reads ClickHouse, which is filled from a published snapshot.</p>
+  <div class="diagram">
+  <svg viewBox="0 0 1160 470" role="img" aria-label="Architecture: browser, Tomcat WAR with modules, PostgreSQL, Kafka, Debezium, ClickHouse">
+    <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arrowhead"/></marker></defs>
+    <rect class="box" x="15" y="170" width="130" height="110" rx="8"/>
+    <text class="lbl" x="80" y="200" text-anchor="middle">Browser</text>
+    <text class="lbl-s" x="80" y="220" text-anchor="middle">JSP pages</text>
+    <text class="lbl-s" x="80" y="236" text-anchor="middle">React app /app/</text>
+    <text class="lbl-s" x="80" y="252" text-anchor="middle">one session cookie</text>
+
+    <rect class="layer" x="175" y="20" width="560" height="430" rx="10"/>
+    <text class="layer-t" x="190" y="40">CONTAINER pr-app &middot; TOMCAT 11 &middot; patient-registration.war</text>
+    <rect class="box" x="195" y="60" width="520" height="46" rx="6"/>
+    <text class="lbl" x="455" y="80" text-anchor="middle">Spring Security filter chain &middot; TenantFilter (user's hospitals &rarr; TenantContext)</text>
+    <text class="lbl-s" x="455" y="97" text-anchor="middle">form login, CSRF cookie, session; every request knows the user and the hospitals they may use</text>
+    <rect class="box" x="195" y="125" width="160" height="150" rx="6"/>
+    <text class="lbl" x="275" y="148" text-anchor="middle">pr-registration</text>
+    <text class="lbl-s" x="275" y="168" text-anchor="middle">PatientController</text>
+    <text class="lbl-s" x="275" y="184" text-anchor="middle">ReportController (legacy)</text>
+    <text class="lbl-s" x="275" y="200" text-anchor="middle">SettingsController</text>
+    <text class="lbl-s" x="275" y="216" text-anchor="middle">services, DAOs, validator</text>
+    <text class="lbl-s" x="275" y="232" text-anchor="middle">publishSnapshot &rarr; outbox</text>
+    <text class="lbl-s" x="275" y="256" text-anchor="middle">JSP views</text>
+    <rect class="box" x="375" y="125" width="160" height="150" rx="6"/>
+    <text class="lbl" x="455" y="148" text-anchor="middle">pr-identity</text>
+    <text class="lbl-s" x="455" y="168" text-anchor="middle">login, users, hospitals</text>
+    <text class="lbl-s" x="455" y="184" text-anchor="middle">roles (built-in + own)</text>
+    <text class="lbl-s" x="455" y="200" text-anchor="middle">audit log</text>
+    <text class="lbl-s" x="455" y="216" text-anchor="middle">admin screens</text>
+    <text class="lbl-s" x="455" y="232" text-anchor="middle">/api/v1/me</text>
+    <rect class="box" x="555" y="125" width="160" height="150" rx="6"/>
+    <text class="lbl" x="635" y="148" text-anchor="middle">pr-reporting</text>
+    <text class="lbl-s" x="635" y="168" text-anchor="middle">/api/v1 (query, export)</text>
+    <text class="lbl-s" x="635" y="184" text-anchor="middle">field catalogue + rules</text>
+    <text class="lbl-s" x="635" y="200" text-anchor="middle">QueryBuilder, formulas</text>
+    <text class="lbl-s" x="635" y="216" text-anchor="middle">saved reports, dashboards</text>
+    <text class="lbl-s" x="635" y="232" text-anchor="middle">report settings</text>
+    <rect class="box" x="195" y="287" width="520" height="60" rx="6"/>
+    <text class="lbl" x="455" y="310" text-anchor="middle">pr-shared: Tenant, Permission, TenantAwareDataSource, AuditTrail, exporters</text>
+    <text class="lbl-s" x="455" y="333" text-anchor="middle">pr-ui (React build) served at /app &middot; pr-app wires it all (RootConfig, WebConfig, SchemaMigrator)</text>
+    <rect class="box" x="195" y="360" width="250" height="70" rx="6"/>
+    <text class="lbl" x="320" y="385" text-anchor="middle">PostgreSQL pools (HikariCP)</text>
+    <text class="lbl-s" x="320" y="403" text-anchor="middle">role patientreg_app, NOBYPASSRLS</text>
+    <text class="lbl-s" x="320" y="419" text-anchor="middle">app.hospital_ids set on every borrow</text>
+    <rect class="box" x="465" y="360" width="250" height="70" rx="6"/>
+    <text class="lbl" x="590" y="385" text-anchor="middle">ClickHouse pool (read-only)</text>
+    <text class="lbl-s" x="590" y="403" text-anchor="middle">account reporting_app</text>
+    <text class="lbl-s" x="590" y="419" text-anchor="middle">row filter needs SQL_hospitals</text>
+
+    <rect class="box" x="790" y="40" width="170" height="110" rx="8"/>
+    <text class="lbl" x="875" y="68" text-anchor="middle">pr-postgres</text>
+    <text class="lbl-s" x="875" y="88" text-anchor="middle">PostgreSQL 18 :5432</text>
+    <text class="lbl-s" x="875" y="104" text-anchor="middle">identity, patientreg,</text>
+    <text class="lbl-s" x="875" y="120" text-anchor="middle">reporting (+ RLS)</text>
+    <text class="lbl-s" x="875" y="136" text-anchor="middle">WAL, slot pr_outbox_slot</text>
+    <rect class="box" x="790" y="190" width="170" height="70" rx="8"/>
+    <text class="lbl" x="875" y="218" text-anchor="middle">pr-debezium :8083</text>
+    <text class="lbl-s" x="875" y="238" text-anchor="middle">outbox EventRouter</text>
+    <rect class="box" x="990" y="190" width="155" height="70" rx="8"/>
+    <text class="lbl" x="1067" y="218" text-anchor="middle">pr-kafka</text>
+    <text class="lbl-s" x="1067" y="238" text-anchor="middle">pr.patient.report</text>
+    <rect class="box" x="900" y="320" width="230" height="110" rx="8"/>
+    <text class="lbl" x="1015" y="348" text-anchor="middle">pr-clickhouse :8123</text>
+    <text class="lbl-s" x="1015" y="368" text-anchor="middle">analytics.patient_report</text>
+    <text class="lbl-s" x="1015" y="384" text-anchor="middle">Kafka engine + MVs (real time)</text>
+    <text class="lbl-s" x="1015" y="400" text-anchor="middle">1-minute sync via postgresql()</text>
+    <text class="lbl-s" x="1015" y="416" text-anchor="middle">ReplacingMergeTree(version, is_deleted)</text>
+
+    <path class="ln" d="M145,225 L173,225" marker-end="url(#ah)"/>
+    <path class="ln" d="M320,430 L320,442 L757,442 L757,110 L788,110" marker-end="url(#ah)"/>
+    <path class="ln" d="M715,395 L898,385" marker-end="url(#ah)"/>
+    <path class="ln" d="M875,150 L875,188" marker-end="url(#ah)"/>
+    <path class="ln" d="M960,225 L988,225" marker-end="url(#ah)"/>
+    <path class="ln" d="M1067,260 L1067,318" marker-end="url(#ah)"/>
+    <path class="lnd" d="M960,95 C1140,95 1150,250 1110,318" marker-end="url(#ah)"/>
+    <text class="lbl-s" x="1080" y="120" text-anchor="middle">1-minute sync</text>
+  </svg>
+  </div>
+  <p class="caption">Solid: request and data paths. Dashed: the always-on one-minute sync, the safety net besides the real-time path.</p>
+  <h3>Two Spring contexts</h3>
+  <div class="grid2">
+    <div class="card"><h4>Root &mdash; <code>RootConfig</code></h4><p>Imports SharedConfig, IdentityConfig (+ SecurityConfig), RegistrationConfig, ReportingConfig. Data sources, JDBC templates, transaction manager (OLTP marked <code>@Primary</code>), services, DAOs, exporters. Static <code>SchemaMigrator</code> runs the SQL scripts before any pool exists.</p></div>
+    <div class="card"><h4>Web &mdash; <code>WebConfig</code></h4><p>Spring MVC, JSP resolver, messages, multipart resolver, Jackson (ISO dates), resource handlers for <code>/app/**</code> (unknown routes get <code>index.html</code>). Scans only web/api packages: <code>registration.web</code>, <code>reporting.api</code>, <code>reporting.web</code>, <code>identity.web</code>, <code>identity.api</code>.</p></div>
+  </div>
+  <p><code>WebAppInitializer</code> registers the UTF-8 filter, Spring Security's <code>DelegatingFilterProxy</code>, the dispatcher (with multipart config, 1 MB). The design is Spring-Boot-ready: plain configuration classes and constructor injection, no XML beans.</p>
+</section>
+
+<!-- ============================== 4 ============================== -->
+<section id="structure">
+  <h2><span class="num">4.</span>Modules &amp; project structure</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Module</th><th>Packages (under <code>com.hospital.patientreg</code>)</th><th>Purpose</th><th>May depend on</th></tr></thead>
+    <tbody>
+      <tr><td><code>pr-shared</code></td><td>shared.export, shared.tenant, shared.fields</td><td>Export writers and <code>Branding</code>; the signed-in user (<code>Tenant</code>, <code>HospitalAccess</code>, <code>Permission</code>, <code>TenantContext</code>), <code>TenantAwareDataSource</code>, <code>AuditTrail</code>; custom-field contract</td><td>&mdash;</td></tr>
+      <tr><td><code>pr-identity</code></td><td>identity.{config, security, service, dao, model, web, api}</td><td>Hospitals, users, roles, login, tenant filter, audit, administration</td><td>shared</td></tr>
+      <tr><td><code>pr-registration</code></td><td>registration.{config, web, service, dao, model}</td><td>Registration, patient view, legacy reports, registration settings</td><td>shared</td></tr>
+      <tr><td><code>pr-reporting</code></td><td>reporting.{config, semantic, query, formula, custom, saved, export, api, web}</td><td>Analytics API, catalogue, formulas, saved reports, dashboards, report settings</td><td>shared</td></tr>
+      <tr><td><code>pr-ui</code></td><td>(TypeScript) src/App.tsx, components/*, api.ts, definition.ts</td><td>React report builder</td><td>REST API only</td></tr>
+      <tr><td><code>pr-app</code></td><td>app (RootConfig, WebConfig, WebAppInitializer, SchemaMigrator)</td><td>WAR: wiring, JSPs, CSS/JS, <code>app-grants.sql</code>; all integration tests</td><td>all</td></tr>
+    </tbody>
+  </table></div>
+  <p><code>ArchitectureTest</code> (ArchUnit) fails the build if registration and reporting depend on each other or on identity.</p>
+<pre><code>D:\Pravin\patient-registration\
+├── pom.xml                    parent (versions, modules)
+├── Dockerfile                 multi-stage: Maven build -&gt; Tomcat 11 image
+├── docker-compose.yml, .env   the whole system (section 16)
+├── start.bat [cdc] / stop.bat / deploy.bat / load-data.bat [rows] [hospital] / backup.bat / restore.bat &lt;dump&gt; / build.bat / test.bat / env.bat
+├── .gitattributes, .gitignore, .dockerignore   line endings (LF for container scripts, CRLF for .bat), what is not shared
+├── CLAUDE.md, README.md
+├── Docs\                      this guide, comparison, stage report, architecture (archive\ = older versions)
+├── backup\                    database dumps and source snapshots
+├── db\load-test-data.sql      bulk data generator (per hospital)
+├── infra\
+│   ├── postgres\              pg-setup scripts (reporting_ro, debezium roles, publication)
+│   ├── clickhouse\            schema\, pipeline\ (010 sync, 020 Kafka, backfill), users.d\, config.d\, migrations\
+│   ├── clickhouse-schema.sh   idempotent DDL for analytics and analytics_test
+│   └── debezium\patient-outbox.json   connector configuration
+├── tools\                     apache-maven-3.9.9, m2repo, node (all local)
+├── pr-shared\ pr-identity\ pr-registration\ pr-reporting\ pr-ui\ pr-app\
+│   (Java in src\main\java, SQL and properties in src\main\resources,
+│    JSPs in pr-app\src\main\webapp\WEB-INF\views\{, admin\, settings\, common\})</code></pre>
+</section>
+
+<!-- ============================== 5 ============================== -->
+<section id="how">
+  <h2><span class="num">5.</span>How it works</h2>
+  <h3>5.1 Start-up</h3>
+  <ol class="steps">
+    <li><code>docker compose up</code> starts <code>pr-postgres</code> and <code>pr-clickhouse</code> (on its first start ClickHouse creates <code>analytics</code> and <code>analytics_test</code>). When both are healthy <code>pr-app</code> starts; when the app is healthy (its sign-in page answers) the one-shot <code>pg-setup</code> creates the test database <code>prtest</code>, the pipeline accounts and the publication; then <code>analytics-setup</code> re-applies the ClickHouse table DDL, copies all patients when ClickHouse is empty and (re)creates the one-minute sync.</li>
+    <li><code>SchemaMigrator</code> (a <code>BeanFactoryPostProcessor</code>, so before any pool) connects as the administrator <code>postgres</code> (retrying for about a minute while PostgreSQL starts), creates/updates the application role <code>patientreg_app</code> (no superuser, NOBYPASSRLS) and runs <code>identity-schema.sql</code> &rarr; <code>schema.sql</code> &rarr; <code>reporting-schema.sql</code> &rarr; <code>app-grants.sql</code>. All scripts are idempotent; this is the only migration mechanism.</li>
+    <li><code>IdentityBootstrap</code> syncs the built-in roles and creates the super administrator <code>admin</code> if there are no users. With <code>DEMO_DATA=true</code> (<code>.env</code>) <code>DemoDataBootstrap</code> adds the demo hospitals H002/H003 and the demo users if missing. Creating a hospital publishes <code>HospitalCreatedEvent</code>, on which registration seeds its 10 departments. Report templates are upserted by <code>reporting-schema.sql</code>.</li>
+    <li>The app answers at <code>/patient-registration/</code>; unauthenticated pages redirect to <code>/login</code>, the API answers 401.</li>
+  </ol>
+  <h3>5.2 Sign-in and the hospital of each request</h3>
+  <ol class="steps">
+    <li>Form login (<code>/login</code>), BCrypt passwords; after 5 wrong passwords for one user name from one address that address is paused for 1 minute, doubling with each further block up to 15 minutes (in memory; behind Docker every browser has the same address, so short pauses keep anyone from locking a colleague out for long); refused attempts are audited; generic error messages.</li>
+    <li><code>TenantFilter</code> builds a <code>Tenant</code> (user, hospitals with role and permissions, active hospital) and puts it in <code>TenantContext</code>. Roles and access changes take effect on the next request (<code>AccessVersion</code> / <code>session_epoch</code>).</li>
+    <li><code>TenantAwareDataSource</code> sets <code>app.hospital_ids</code> and <code>app.user_id</code> on every connection borrowed by the app and clears them on return. PostgreSQL row-level security policies read them: no tenant, no rows.</li>
+    <li>JSP screens work in the <b>active</b> hospital (chosen in the header); Analytics covers <b>all</b> hospitals where the user has the Analytics permission.</li>
+  </ol>
+  <h3>5.3 Registering a patient</h3>
+  <ol class="steps">
+    <li><code>GET /patient/new</code>: the form shows the hospital's departments and doctors, its own dropdown values, its own fields in each section, and hides optional standard fields the hospital does not use.</li>
+    <li><code>POST /patient/save</code>: <code>PatientValidator</code> checks every standard and custom field (section 13). Internal fields (<code>patientId</code>, <code>hospitalId</code>, <code>registrationNo</code>, <code>status</code>, <code>bmi</code>, <code>deptName</code>) are never bound from the request.</li>
+    <li><code>PatientService.register</code>, one transaction: next number from <code>hospital_reg_counter</code> (format <code>H001-REG2026</code> + 7 digits, per hospital and year, gap-free), insert into <code>patient</code> (with <code>custom_fields</code> JSON) and the 5 child tables (registration visit flagged), then <code>publishSnapshot</code>: the reporting snapshot is written to <code>report_outbox</code> and deleted again in the same transaction (Debezium reads the insert from the WAL). Audit entry <code>PATIENT_REGISTERED</code>.</li>
+    <li>Redirect to <code>/patient/{id}</code> (another hospital's id answers 404).</li>
+  </ol>
+  <h3>5.4 From PostgreSQL to ClickHouse</h3>
+  <p><code>patientreg.v_patient_report</code> is the published contract: one flat row per patient, no Aadhaar, masked mobile, and only the hospital's own fields that are active, reportable and not hidden. Two paths fill <code>analytics.patient_report</code>: Kafka (seconds) and the refreshable materialized view <code>mv_patient_report_sync</code> (every minute, changes of the last 15 minutes). Both carry <code>version = patient.row_version</code>, so ReplacingMergeTree keeps the newest. When a field's report exposure changes, the affected patients get a new version and are re-copied by the sync.</p>
+  <h3>5.5 Running an Analytics report</h3>
+  <ol class="steps">
+    <li>The React app loads <code>/api/v1/me</code>, <code>/datasets</code> (the effective catalogue for this user), <code>/reports</code> and <code>/dashboards</code>.</li>
+    <li>On Run it posts a JSON definition to <code>/api/v1/query</code>. <code>EffectiveCatalog</code> applies the hospitals' field rules and adds own fields (<code>cf_&lt;hospital&gt;_&lt;key&gt;</code>) and shared formulas (<code>sf_&lt;id&gt;</code>); <code>QueryBuilder</code> validates everything against it, compiles formulas (<code>FormulaCompiler</code>, allow-listed functions, bound text), and builds the SQL with <code>FINAL</code>, <code>is_deleted = 0</code>, <code>hospital_id IN (...)</code> and <code>SETTINGS SQL_hospitals='...'</code>.</li>
+    <li>Paging, sorting, totals, subtotals (ROLLUP), top N + Others, conditions on totals (HAVING), display modes (window functions) and pivot data are computed in ClickHouse; the browser renders table, pivot or chart, highlights and drill-down.</li>
+  </ol>
+  <h3>5.6 Downloads</h3>
+  <p>Legacy: <code>ReportService</code> streams from a PostgreSQL cursor into POI SXSSF / OpenPDF. Analytics: <code>ExportService</code> validates and counts first (limits: PDF 50,000, Excel 10 lakh, CSV 20 lakh rows), then streams from ClickHouse. Both go through <code>ExportLimiter</code> (3 at a time, 20 s wait, then 503), need the Export permission, follow each hospital's allowed formats, carry its branding, and are audited.</p>
+  <h3>5.7 Errors</h3>
+  <p>JSP side: <code>GlobalExceptionHandler</code> &rarr; <code>error.jsp</code> with a plain message. API side: <code>ApiExceptionHandler</code> &rarr; RFC 7807 problem+json (<code>detail</code>, and <code>position</code> for formula errors). Stack traces are only logged.</p>
+</section>
+
+<!-- ============================== 6 ============================== -->
+<section id="er">
+  <h2><span class="num">6.</span>ER diagram</h2>
+  <p>Three schemas. Every patient-related row carries <code>hospital_id</code>; composite foreign keys <code>(hospital_id, patient_id)</code> and <code>(hospital_id, dept_id)</code> make cross-hospital links impossible. Key columns only; full columns in section 7.</p>
+  <div class="diagram">
+  <svg viewBox="0 0 1180 760" role="img" aria-label="Entity relationship diagram of the identity, patientreg and reporting schemas">
+    <!-- relationship lines -->
+    <path class="fkl" d="M190,150 L190,205"/>
+    <path class="fkl" d="M300,80 L420,80"/>
+    <path class="fkl" d="M300,95 C360,95 360,300 420,300"/>
+    <path class="fkl" d="M190,305 L190,340"/>
+    <path class="fkl" d="M300,285 C345,300 345,670 300,680"/>
+    <path class="fkl" d="M580,300 L660,300"/>
+    <path class="fkl" d="M580,320 C620,320 620,420 660,420"/>
+    <path class="fkl" d="M580,340 C640,340 640,520 660,520"/>
+    <path class="fkl" d="M580,360 C640,360 640,620 660,620"/>
+    <path class="fkl" d="M580,290 C620,290 620,190 660,190"/>
+    <path class="fkl" d="M820,190 L880,190"/>
+    <path class="fkl" d="M960,250 L960,215"/>
+    <path class="fkl" d="M100,150 C60,200 60,640 100,660"/>
+
+    <!-- identity -->
+    <rect class="box" x="80" y="40" width="220" height="110" rx="6"/><rect class="head-id" x="80" y="40" width="220" height="24" rx="6"/>
+    <text class="htext" x="90" y="57">identity.hospital</text>
+    <text class="t" x="90" y="80">PK hospital_id</text><text class="t" x="90" y="96">hospital_code (H001)</text><text class="t" x="90" y="112">name, city, active</text><text class="t" x="90" y="128">created_at, updated_at</text>
+    <rect class="box" x="80" y="205" width="220" height="100" rx="6"/><rect class="head-id" x="80" y="205" width="220" height="24" rx="6"/>
+    <text class="htext" x="90" y="222">identity.app_user_hospital</text>
+    <text class="t" x="90" y="245">PK/FK user_id</text><text class="t" x="90" y="261">PK/FK hospital_id</text><text class="t" x="90" y="277">FK role -&gt; identity.role</text>
+    <rect class="box" x="80" y="340" width="220" height="130" rx="6"/><rect class="head-id" x="80" y="340" width="220" height="24" rx="6"/>
+    <text class="htext" x="90" y="357">identity.app_user</text>
+    <text class="t" x="90" y="380">PK user_id</text><text class="t" x="90" y="396">username, full_name</text><text class="t" x="90" y="412">password_hash (BCrypt)</text><text class="t" x="90" y="428">super_admin, active</text><text class="t" x="90" y="444">failed_logins, locked_until</text><text class="t" x="90" y="460">session_epoch</text>
+    <rect class="box" x="80" y="520" width="220" height="90" rx="6"/><rect class="head-id" x="80" y="520" width="220" height="24" rx="6"/>
+    <text class="htext" x="90" y="537">identity.audit_log</text>
+    <text class="t" x="90" y="560">PK audit_id, at</text><text class="t" x="90" y="576">user_id, username, hospital_id</text><text class="t" x="90" y="592">action, detail, client_address</text>
+    <rect class="box" x="80" y="640" width="220" height="90" rx="6"/><rect class="head-id" x="80" y="640" width="220" height="24" rx="6"/>
+    <text class="htext" x="90" y="657">identity.role</text>
+    <text class="t" x="90" y="680">PK role_key (ADMIN, H1_...)</text><text class="t" x="90" y="696">FK hospital_id (null: built-in)</text><text class="t" x="90" y="712">label, permissions[], builtin</text>
+
+    <!-- patientreg -->
+    <rect class="box" x="420" y="40" width="160" height="80" rx="6"/><rect class="head" x="420" y="40" width="160" height="24" rx="6"/>
+    <text class="htext" x="430" y="57">hospital_reg_counter</text>
+    <text class="t" x="430" y="80">PK hospital_id, reg_year</text><text class="t" x="430" y="96">last_no</text>
+    <rect class="box" x="420" y="250" width="160" height="140" rx="6"/><rect class="head" x="420" y="250" width="160" height="24" rx="6"/>
+    <text class="htext" x="430" y="267">patient</text>
+    <text class="t" x="430" y="290">PK patient_id</text><text class="t" x="430" y="306">FK hospital_id</text><text class="t" x="430" y="322">registration_no</text><text class="t" x="430" y="338">names, gender, dob ...</text><text class="t" x="430" y="354">custom_fields JSONB</text><text class="t" x="430" y="370">row_version</text>
+    <rect class="box" x="420" y="140" width="160" height="75" rx="6"/><rect class="head" x="420" y="140" width="160" height="24" rx="6"/>
+    <text class="htext" x="430" y="157">custom_field_def</text>
+    <text class="t" x="430" y="180">PK hospital_id, field_key</text><text class="t" x="430" y="196">type, options, reportable</text>
+    <rect class="box" x="660" y="270" width="160" height="60" rx="6"/><rect class="head" x="660" y="270" width="160" height="24" rx="6"/>
+    <text class="htext" x="670" y="287">patient_contact</text><text class="t" x="670" y="310">PK/FK patient_id (1:1)</text>
+    <rect class="box" x="660" y="395" width="160" height="60" rx="6"/><rect class="head" x="660" y="395" width="160" height="24" rx="6"/>
+    <text class="htext" x="670" y="412">patient_insurance</text><text class="t" x="670" y="435">PK/FK patient_id (1:1)</text>
+    <rect class="box" x="660" y="490" width="190" height="60" rx="6"/><rect class="head" x="660" y="490" width="190" height="24" rx="6"/>
+    <text class="htext" x="670" y="507">patient_emergency_contact</text><text class="t" x="670" y="530">PK/FK patient_id (1:1)</text>
+    <rect class="box" x="660" y="590" width="190" height="60" rx="6"/><rect class="head" x="660" y="590" width="190" height="24" rx="6"/>
+    <text class="htext" x="670" y="607">patient_medical_info</text><text class="t" x="670" y="630">PK/FK patient_id (1:1)</text>
+    <rect class="box" x="660" y="150" width="160" height="80" rx="6"/><rect class="head" x="660" y="150" width="160" height="24" rx="6"/>
+    <text class="htext" x="670" y="167">patient_visit</text>
+    <text class="t" x="670" y="190">FK patient_id (1:n)</text><text class="t" x="670" y="206">FK dept_id, registration_visit</text>
+    <rect class="box" x="880" y="150" width="160" height="65" rx="6"/><rect class="head" x="880" y="150" width="160" height="24" rx="6"/>
+    <text class="htext" x="890" y="167">department</text><text class="t" x="890" y="190">PK dept_id; UQ hospital,dept</text><text class="t" x="890" y="206">dept_code, dept_name</text>
+    <rect class="box" x="880" y="250" width="160" height="60" rx="6"/><rect class="head" x="880" y="250" width="160" height="24" rx="6"/>
+    <text class="htext" x="890" y="267">doctor</text><text class="t" x="890" y="290">FK (hospital_id, dept_id)</text>
+    <rect class="box" x="880" y="40" width="160" height="80" rx="6"/><rect class="head" x="880" y="40" width="160" height="24" rx="6"/>
+    <text class="htext" x="890" y="57">lookup_value</text><text class="t" x="890" y="80">PK hospital_id, list_key,</text><text class="t" x="890" y="96">value; sort_order, active</text>
+    <rect class="box" x="1050" y="40" width="125" height="80" rx="6"/><rect class="head" x="1050" y="40" width="125" height="24" rx="6"/>
+    <text class="htext" x="1056" y="57" style="font-size:11px">form_field_setting</text><text class="t" x="1056" y="80">PK hospital_id,</text><text class="t" x="1056" y="96">field; hidden</text>
+    <rect class="box" x="880" y="350" width="160" height="60" rx="6"/><rect class="head" x="880" y="350" width="160" height="24" rx="6"/>
+    <text class="htext" x="890" y="367">report_outbox</text><text class="t" x="890" y="390">always empty (WAL)</text>
+    <text class="lbl-s" x="900" y="430">+ cdc_heartbeat, view v_patient_report</text>
+
+    <!-- reporting -->
+    <rect class="layer" x="880" y="460" width="290" height="285" rx="8"/>
+    <text class="layer-t" x="895" y="480">SCHEMA reporting (all: hospital_id + RLS)</text>
+    <rect class="box" x="895" y="492" width="260" height="44" rx="5"/><rect class="head-rep" x="895" y="492" width="260" height="20" rx="5"/>
+    <text class="htext" x="903" y="507">saved_report</text><text class="t" x="903" y="528">template_key, visibility, created_by</text>
+    <rect class="box" x="895" y="542" width="260" height="44" rx="5"/><rect class="head-rep" x="895" y="542" width="260" height="20" rx="5"/>
+    <text class="htext" x="903" y="557">dashboard</text><text class="t" x="903" y="578">definition (tiles, filters), visibility</text>
+    <rect class="box" x="895" y="592" width="260" height="44" rx="5"/><rect class="head-rep" x="895" y="592" width="260" height="20" rx="5"/>
+    <text class="htext" x="903" y="607">calculated_field</text><text class="t" x="903" y="628">label, formula, result_type, aggregate</text>
+    <rect class="box" x="895" y="642" width="260" height="44" rx="5"/><rect class="head-rep" x="895" y="642" width="260" height="20" rx="5"/>
+    <text class="htext" x="903" y="657">field_setting</text><text class="t" x="903" y="678">field, label, visibility</text>
+    <rect class="box" x="895" y="692" width="260" height="44" rx="5"/><rect class="head-rep" x="895" y="692" width="260" height="20" rx="5"/>
+    <text class="htext" x="903" y="707">export_setting</text><text class="t" x="903" y="728">prefix, header, footer, logo, formats</text>
+    <text class="lbl-s" x="420" y="700">Orange lines: foreign keys. Blue heads: identity; teal: patientreg; purple: reporting.</text>
+    <text class="lbl-s" x="420" y="716">patient, department, lists, field settings, custom fields and the counter reference identity.hospital; child tables and doctors use composite keys.</text>
+  </svg>
+  </div>
+</section>
+
+<!-- ============================== 7 ============================== -->
+<section id="tables">
+  <h2><span class="num">7.</span>Database tables</h2>
+  <p>PostgreSQL database <code>postgres</code>. <b>RLS</b> = row-level security enabled and forced (policy <code>hospital_isolation</code>).</p>
+  <h3>Schema identity</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Table</th><th>Columns</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>hospital</code></td><td>hospital_id, hospital_code varchar(6), name varchar(120), city varchar(60), active, created_at, updated_at</td><td>H001 Main Hospital (Mumbai), H002 City Hospital (Pune), H003 Sunrise Hospital (Nagpur)</td></tr>
+      <tr><td><code>app_user</code></td><td>user_id, username varchar(40), full_name varchar(100), password_hash varchar(100), super_admin, active, failed_logins, locked_until, last_login_at, created_at, updated_at, session_epoch</td><td>BCrypt hashes; session_epoch ends sessions after access changes</td></tr>
+      <tr><td><code>app_user_hospital</code></td><td>user_id, hospital_id, role varchar(40)</td><td>one role per user and hospital; several hospitals per user</td></tr>
+      <tr><td><code>role</code></td><td>role_key varchar(40), hospital_id, label varchar(60), permissions varchar(30)[], builtin, updated_at</td><td>built-in ADMIN, REGISTRATION, REPORTS, ANALYST; own roles <code>H&lt;id&gt;_&lt;NAME&gt;</code></td></tr>
+      <tr><td><code>audit_log</code></td><td>audit_id, at, user_id, username varchar(40), hospital_id, action varchar(40), detail varchar(500), client_address varchar(64)</td><td>append-only for the app role</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Schema patientreg</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Table</th><th>Columns</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>patient</code> (RLS)</td><td>patient_id, registration_no varchar(30), registration_date, title, first_name, middle_name, last_name varchar(60), gender, date_of_birth, age_years, blood_group, marital_status, nationality, religion, occupation, national_id varchar(20), preferred_language, patient_category, status, created_at, updated_at, row_version, hospital_id, custom_fields jsonb</td><td>24 columns; unique (hospital_id, registration_no)</td></tr>
+      <tr><td><code>patient_contact</code> (RLS)</td><td>patient_id, mobile, alternate_phone, email, address_line1, address_line2, city, district, state, pincode, country, perm_same_as_current, permanent_address, hospital_id</td><td>1:1</td></tr>
+      <tr><td><code>patient_emergency_contact</code> (RLS)</td><td>patient_id, contact_name, relationship, phone, alternate_phone, address, hospital_id</td><td>1:1</td></tr>
+      <tr><td><code>patient_insurance</code> (RLS)</td><td>patient_id, has_insurance, provider_name, policy_number, group_number, policy_holder_name, holder_relationship, valid_from, valid_to, coverage_type, sum_insured, hospital_id</td><td>1:1</td></tr>
+      <tr><td><code>patient_medical_info</code> (RLS)</td><td>patient_id, height_cm, weight_kg, bmi, known_allergies, chronic_conditions, current_medications, past_surgeries, family_history, smoking_status, alcohol_use, disability, vaccination_status, hospital_id</td><td>1:1</td></tr>
+      <tr><td><code>patient_visit</code> (RLS)</td><td>visit_id, patient_id, dept_id, consulting_doctor, visit_type, visit_date, referred_by, referral_source, chief_complaint, symptom_duration, priority, payment_mode, registration_fee, remarks, registration_visit, hospital_id</td><td>1:n; one registration visit per patient (partial unique index)</td></tr>
+      <tr><td><code>department</code> (RLS)</td><td>dept_id, dept_code, dept_name, active, hospital_id</td><td>10 per hospital</td></tr>
+      <tr><td><code>doctor</code> (RLS)</td><td>doctor_id, hospital_id, dept_id, name, active</td><td>stage 5b, per department</td></tr>
+      <tr><td><code>lookup_value</code> (RLS)</td><td>hospital_id, list_key, value varchar(60), sort_order, active</td><td>a hospital's own dropdown values; none = built-in list</td></tr>
+      <tr><td><code>form_field_setting</code> (RLS)</td><td>hospital_id, field, hidden</td><td>optional standard fields the hospital does not use</td></tr>
+      <tr><td><code>custom_field_def</code> (RLS)</td><td>hospital_id, field_key, label, data_type, section, sort_order, required, min_value, max_value, max_length, options varchar(60)[], help_text, reportable, sensitivity, active, version, created_at, updated_at</td><td>never deleted, only deactivated</td></tr>
+      <tr><td><code>hospital_reg_counter</code> (RLS)</td><td>hospital_id, reg_year, last_no</td><td>gap-free numbers per hospital and year</td></tr>
+      <tr><td><code>report_outbox</code></td><td>id, aggregatetype, aggregateid, type, payload jsonb, created_at</td><td>stays empty; only its WAL inserts are read by Debezium</td></tr>
+      <tr><td><code>cdc_heartbeat</code></td><td>id, ts</td><td>Debezium heartbeat (pipeline freshness)</td></tr>
+      <tr><td><code>v_patient_report</code> (view)</td><td>patient_id, registration_no, registration_date, patient_name, gender, age_years, age_band, patient_category, blood_group, marital_status, city, district, state, mobile_masked, dept_id, dept_name, consulting_doctor, visit_type, priority, referral_source, payment_mode, registration_fee, is_insured, coverage_type, insurance_provider, version, is_deleted, source_ts, hospital_id, hospital_code, hospital_name, custom_fields</td><td>owner's rights, no RLS: pipeline accounts and <code>publish_snapshot</code> only</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Schema reporting</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Table</th><th>Columns</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>saved_report</code> (RLS)</td><td>id, name, description, definition text (JSON), template_key, created_at, updated_at, hospital_id, created_by, created_by_name, visibility</td><td>templates have no hospital; PRIVATE only for the author</td></tr>
+      <tr><td><code>dashboard</code> (RLS)</td><td>id, hospital_id, name, description, definition (tiles, filters), visibility, created_by, created_by_name, created_at, updated_at</td><td>max 12 tiles, 10 filters</td></tr>
+      <tr><td><code>calculated_field</code> (RLS)</td><td>id, hospital_id, dataset_id, label, formula varchar(2000), description, result_type, aggregate, active, version, created_by, created_by_name, created_at, updated_at</td><td>max 100 per hospital; key <code>sf_&lt;id&gt;</code></td></tr>
+      <tr><td><code>field_setting</code> (RLS)</td><td>hospital_id, dataset_id, field, label, visibility, updated_at</td><td>NORMAL / MASKED / HIDDEN / ADMIN_ONLY</td></tr>
+      <tr><td><code>export_setting</code> (RLS)</td><td>hospital_id, title_prefix, header_text, footer_text, logo bytea, logo_type, allowed_formats, updated_at</td><td>logo PNG/JPEG &le; 200 KB, &le; 2000&times;2000 px</td></tr>
+    </tbody>
+  </table></div>
+  <p>Functions: <code>patientreg.publish_snapshot</code>, <code>patientreg.current_hospitals</code>, <code>patientreg.seed_departments</code>, <code>reporting.current_hospitals</code>, <code>reporting.current_user_id</code>, <code>reporting.reports_using_shared_field</code> (security definer, count only).</p>
+</section>
+
+<!-- ============================== 8 ============================== -->
+<section id="clickhouse">
+  <h2><span class="num">8.</span>ClickHouse objects</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Object</th><th>What it is</th></tr></thead>
+    <tbody>
+      <tr><td><code>analytics.patient_report</code></td><td>ReplacingMergeTree(version, is_deleted), <code>ORDER BY (hospital_id, registration_date, patient_id)</code>, partitioned by month, skip indexes on department and name; same columns as the view, <code>custom_fields Map(String, String)</code>. Queried with <code>FINAL</code>.</td></tr>
+      <tr><td><code>mv_patient_report_sync</code></td><td>Refreshable MV, every minute, copies rows changed in the last 15 minutes from PostgreSQL (named collection <code>pg_reporting</code>, account <code>reporting_ro</code>).</td></tr>
+      <tr><td><code>kafka_patient_report</code> + <code>mv_kafka_patient_report</code> / <code>_errors</code></td><td>Kafka engine on topic <code>pr.patient.report</code>; bad messages go to <code>pipeline_errors</code>.</td></tr>
+      <tr><td><code>kafka_heartbeat</code>, <code>mv_kafka_heartbeat</code>, <code>pipeline_heartbeat</code></td><td>Freshness ("Data as of") of the real-time path.</td></tr>
+      <tr><td>users</td><td><code>admin</code> (DDL), <code>reporting_app</code> (read-only, row filter requiring <code>SQL_hospitals</code>, grants on the report and heartbeat tables only).</td></tr>
+    </tbody>
+  </table></div>
+  <p>DDL: <code>infra/clickhouse/schema/</code>; pipeline: <code>infra/clickhouse/pipeline/010_incremental_copy.sql</code>, <code>020_realtime_kafka.sql</code>, <code>backfill.sql</code>; one-off upgrades: <code>infra/clickhouse/migrations/</code>.</p>
+</section>
+
+<!-- ============================== 9 ============================== -->
+<section id="java">
+  <h2><span class="num">9.</span>Java classes &amp; relations</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Module / package</th><th>Main classes</th><th>Relations</th></tr></thead>
+    <tbody>
+      <tr><td>app</td><td>WebAppInitializer, RootConfig, WebConfig, SchemaMigrator</td><td>imports every module's config</td></tr>
+      <tr><td>shared.tenant</td><td>Tenant, HospitalAccess, Permission, TenantContext, TenantAwareDataSource, AuditTrail, HospitalCreatedEvent</td><td>used by all modules; filled by identity's TenantFilter</td></tr>
+      <tr><td>shared.export</td><td>ExcelExporter, PdfExporter, CsvExporter, ReportDefinition, Branding, BrandingProvider, ExportLimiter</td><td>used by legacy ReportService and analytics ExportService</td></tr>
+      <tr><td>shared.fields</td><td>CustomFieldDirectory, ReportableCustomField</td><td>implemented by registration (ReportableFieldsPublisher), read by reporting (EffectiveCatalog)</td></tr>
+      <tr><td>identity.config / security</td><td>SecurityConfig (config), TenantFilter, AppUserDetailsService, LoginThrottle, LoginEvents, AccessVersion</td><td>Spring Security chain</td></tr>
+      <tr><td>identity.service / dao / web</td><td>UserAdminService, RoleAdminService, HospitalAdminService, IdentityBootstrap, DemoDataBootstrap, IdentityDao, AdminUserController, AdminRoleController, AdminHospitalController, AuditController, AccountController, LoginController, MeApiController</td><td>controllers &rarr; services &rarr; IdentityDao</td></tr>
+      <tr><td>registration.web</td><td>HomeController, PatientController, ReportController, SettingsController, GlobalExceptionHandler</td><td>&rarr; PatientService, ReportService, SettingsAdminService</td></tr>
+      <tr><td>registration.service / dao / model</td><td>PatientService, PatientValidator, ReportService, RegistrationSettings, SettingsAdminService, ReportableFieldsPublisher; PatientDao, ReportDao, SettingsDao; PatientForm, CustomFieldDef, CustomFieldInput, ListSetting, Doctor, Department, Lookups, ReportFilter</td><td>services own transactions; DAOs use NamedParameterJdbcTemplate</td></tr>
+      <tr><td>reporting.semantic</td><td>DatasetCatalog, Dataset, Field, FieldType (from <code>reporting/datasets/patients.json</code>)</td><td>base catalogue</td></tr>
+      <tr><td>reporting.custom</td><td>EffectiveCatalog, CustomisationRepository, CalculatedFieldService, FieldSetting, SharedCalculatedField, ExportSettings</td><td>catalogue per user = base + rules + own fields + shared formulas</td></tr>
+      <tr><td>reporting.formula</td><td>Lexer, FormulaCompiler, FieldResolver, FormulaType, FormulaException, CalculatedFields</td><td>formula text &rarr; ClickHouse SQL with bound parameters</td></tr>
+      <tr><td>reporting.query</td><td>QueryRequest, QueryBuilder, QueryPlan, QueryService, FilterNode, UserQueryLimiter</td><td>definition &rarr; SQL &rarr; QueryResult</td></tr>
+      <tr><td>reporting.saved / export / api / web</td><td>SavedReportService, SavedReportRepository, DashboardService; ExportService; ReportingApiController, SavedReportController, DashboardController, CustomisationApiController, ApiExceptionHandler; ReportSettingsController</td><td>REST and settings screens</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================== 10 ============================== -->
+<section id="screens">
+  <h2><span class="num">10.</span>Screens &amp; URLs</h2>
+  <p>Base: <code>http://localhost:8080/patient-registration</code></p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>URL</th><th>Screen / API</th><th>Permission</th></tr></thead>
+    <tbody>
+      <tr><td><code>/login</code>, <code>POST /logout</code>, <code>/account/password</code>, <code>POST /session/hospital</code></td><td>Sign in/out, change password, switch active hospital</td><td>&mdash;</td></tr>
+      <tr><td><code>/</code></td><td>Dashboard (counts of the active hospital)</td><td>signed in</td></tr>
+      <tr><td><code>/patient/new</code>, <code>POST /patient/save</code>, <code>/patient/{id}</code></td><td>Registration form, patient view</td><td>REGISTER / VIEW_PATIENT</td></tr>
+      <tr><td><code>/reports/register[/export]</code>, <code>/reports/summary[/export]</code></td><td>Legacy reports and Excel/PDF</td><td>LEGACY_REPORTS (+ EXPORT)</td></tr>
+      <tr><td><code>/settings/fields</code>, <code>/fields/new</code>, <code>/fields/{key}</code>, <code>POST /fields/hidden</code></td><td>Own form fields, hidden standard fields</td><td>MANAGE_SETTINGS</td></tr>
+      <tr><td><code>/settings/lists</code>, <code>/settings/departments</code></td><td>Dropdown values; departments and doctors</td><td>MANAGE_SETTINGS</td></tr>
+      <tr><td><code>/settings/report-fields</code>, <code>/settings/downloads</code>, <code>/settings/downloads/logo</code></td><td>Report field rules; branding and allowed formats</td><td>MANAGE_SETTINGS</td></tr>
+      <tr><td><code>/admin/users</code>, <code>/admin/hospitals</code>, <code>/admin/roles</code>, <code>/admin/audit</code></td><td>Administration</td><td>MANAGE_USERS (hospitals: super admin)</td></tr>
+      <tr><td><code>/app/</code>, <code>GET /api/v1/me</code></td><td>Analytics (React), the signed-in user</td><td>signed in</td></tr>
+      <tr><td><code>/datasets</code>, <code>/datasets/{id}</code>, <code>/datasets/{id}/fields/{f}/values</code>, <code>/freshness</code></td><td>User, catalogue, value suggestions, data freshness</td><td>ANALYTICS</td></tr>
+      <tr><td><code>POST /api/v1/query</code>, <code>POST /api/v1/query/export</code></td><td>Run, download</td><td>ANALYTICS (+ EXPORT)</td></tr>
+      <tr><td><code>/api/v1/reports[/{id}]</code>, <code>/api/v1/dashboards[/{id}]</code></td><td>Saved reports and dashboards (GET, POST, PUT, DELETE)</td><td>ANALYTICS; sharing PUBLISH_SHARED</td></tr>
+      <tr><td><code>POST /api/v1/formulas/validate</code>, <code>/api/v1/calculated-fields[/{id}[/usage]]</code></td><td>Check formulas; shared calculated fields</td><td>ANALYTICS; changes PUBLISH_SHARED</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================== 11 ============================== -->
+<section id="access">
+  <h2><span class="num">11.</span>Users, roles &amp; hospitals</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Permission</th><th>Allows</th><th>ADMIN</th><th>REGISTRATION</th><th>REPORTS</th><th>ANALYST</th></tr></thead>
+    <tbody>
+      <tr><td>REGISTER</td><td>register patients</td><td>&#10003;</td><td>&#10003;</td><td></td><td></td></tr>
+      <tr><td>VIEW_PATIENT</td><td>open patients, see full mobile</td><td>&#10003;</td><td>&#10003;</td><td></td><td></td></tr>
+      <tr><td>LEGACY_REPORTS</td><td>JSP reports</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+      <tr><td>ANALYTICS</td><td>report builder</td><td>&#10003;</td><td></td><td>&#10003;</td><td>&#10003;</td></tr>
+      <tr><td>EXPORT</td><td>downloads</td><td>&#10003;</td><td></td><td>&#10003;</td><td>&#10003;</td></tr>
+      <tr><td>PUBLISH_SHARED</td><td>share reports, dashboards, formulas</td><td>&#10003;</td><td></td><td></td><td>&#10003;</td></tr>
+      <tr><td>MANAGE_SETTINGS</td><td>Settings screens</td><td>&#10003;</td><td></td><td></td><td></td></tr>
+      <tr><td>MANAGE_USERS</td><td>users and roles of the hospital</td><td>&#10003;</td><td></td><td></td><td></td></tr>
+    </tbody>
+  </table></div>
+  <p>Hospitals can define their own roles as any combination of permissions they hold themselves; nobody can change a role they hold. A user may have a different role in each hospital.</p>
+  <h3>Demo users (plain text, local POC)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>User</th><th>Password</th><th>Access</th></tr></thead>
+    <tbody>
+      <tr><td><code>admin</code></td><td><code>Admin@1234</code></td><td>Super administrator; ADMIN at H001, H002, H003</td></tr>
+      <tr><td><code>h001.admin</code>, <code>h002.admin</code></td><td><code>Demo@1234</code></td><td>ADMIN of one hospital</td></tr>
+      <tr><td><code>h001.reg</code>, <code>h002.reg</code>, <code>h003.reg</code></td><td><code>Demo@1234</code></td><td>REGISTRATION</td></tr>
+      <tr><td><code>h001.reports</code>, <code>h002.reports</code></td><td><code>Demo@1234</code></td><td>REPORTS</td></tr>
+      <tr><td><code>group.reports</code></td><td><code>Demo@1234</code></td><td>REPORTS at H001 + H002 + H003</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================== 12 ============================== -->
+<section id="custom">
+  <h2><span class="num">12.</span>Customisation (stage 5b)</h2>
+  <div class="grid2">
+    <div class="card"><h4>Registration form (Settings)</h4><p>Own fields: text, long text, number, decimal, date, yes/no, dropdown, multi-select; section, order, required, limits, help text, "Available in Analytics", Normal / Masked (text only) / Hidden. Hide optional standard fields. Own dropdown values. Departments and doctors per hospital.</p></div>
+    <div class="card"><h4>Report fields (Settings)</h4><p>Per standard field: Normal, Masked (free text only), Hidden, Administrators only; own label. Applied to lists, filters, sorting, formulas, suggestions and downloads in Analytics, and to the classic Patient Register and Department Summary with their downloads. Derived fields follow their source (age band follows age, month follows date).</p></div>
+    <div class="card"><h4>Report builder</h4><p>Calculated fields (formula language, ~45 functions, checked with error position); display as % of total / group, running total, rank, change; subtotals; top N + Others; conditions on totals; pivot; highlighting; drill-down.</p></div>
+    <div class="card"><h4>Sharing &amp; dashboards</h4><p>Reports and dashboards private or for the hospital; shared calculated fields; dashboards of up to 12 tiles with filters for all tiles; each tile runs with the viewer's rights.</p></div>
+  </div>
+  <p>A new form field is <b>not</b> in reports until an administrator ticks "Available in Analytics". Fields that are not shown in reports never leave the registration database. Full comparison with the old reports: <a href="Reports-Comparison-JSP-vs-Analytics.html">Reports comparison</a>.</p>
+</section>
+
+<!-- ============================== 13 ============================== -->
+<section id="validation">
+  <h2><span class="num">13.</span>Validation rules</h2>
+  <ul>
+    <li>Server-side validation is authoritative: required fields, formats (mobile 10 digits, pincode 6 digits, e-mail), lengths equal to column sizes, numeric ranges (height, weight, fee), date logic (birth not in the future, insurance validity order), dropdown values against the hospital's list, department and doctor of the hospital.</li>
+    <li>Own fields: required (also for forged empty multi-selects), number / whole number, at most 4 decimals and 13 digits, min/max, date 1900-2299, yes/no, allowed options, length, no control characters. Values of unknown or inactive fields are dropped.</li>
+    <li>Settings: field key <code>[a-z][a-z0-9_]{1,29}</code>, unique per hospital; dropdowns 2-100 values without <code>,</code> or <code>;</code>; min &le; max within NUMERIC(14,4); masking only for text fields.</li>
+    <li>Formulas: at most 2,000 characters, 400 tokens, nesting 40, 20 per report, 100 shared per hospital; unknown functions and fields refused with their position; stored with field names, shown with labels.</li>
+    <li>Reports: at most 40 columns, 6 group columns, 50 conditions (filter depth 4, 1,000 values per list), page size 1&ndash;500 (the screen offers 25&ndash;500), offset &le; 10 lakh, top N &le; 1,000, pivot 10,000 groups / 50 columns, 3 queries at a time per user; without the download permission a patient list can be paged to row 5,000; saved report definitions &le; 50,000 characters, dashboards &le; 20,000 (12 tiles, 10 filters).</li>
+    <li>Settings limits: 100 own fields per hospital, 200 values per dropdown list, 200 doctors per department; field labels must stay unique.</li>
+    <li>Downloads: PDF 50,000 rows, Excel 10 lakh, CSV 20 lakh (Analytics; the classic register PDF/Excel has the same caps); one download per user at a time, 3 in total; export queries end after 300 s.</li>
+  </ul>
+</section>
+
+<!-- ============================== 14 ============================== -->
+<section id="reports">
+  <h2><span class="num">14.</span>Reports &amp; downloads</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th></th><th>Legacy JSP</th><th>Analytics</th></tr></thead>
+    <tbody>
+      <tr><td>Reports</td><td>Patient Register (50 per page, filters, search), Department Summary</td><td>Templates: Patient Register (Report 1), Department Summary (Report 2), Patients by Department and Gender, Monthly Registrations; any own report</td></tr>
+      <tr><td>Source</td><td>PostgreSQL (live)</td><td>ClickHouse (seconds behind)</td></tr>
+      <tr><td>Formats</td><td>Excel, PDF</td><td>Excel (10 lakh rows), PDF (50,000), CSV (20 lakh); subtotals and Others included; pivots download as the flat list</td></tr>
+      <tr><td>Branding</td><td colspan="2">Title prefix, header, footer and logo per hospital; each hospital may switch formats off (managers of settings are exempt)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================== 15 ============================== -->
+<section id="config">
+  <h2><span class="num">15.</span>Configuration (all properties, plain text)</h2>
+  <p>Inside Docker the environment variables of <code>docker-compose.yml</code> override the property files (Spring's system environment wins: <code>DB_URL</code> &rarr; <code>db.url</code>, etc.).</p>
+  <h3><code>pr-registration/src/main/resources/db.properties</code></h3>
+<pre><code>db.url=jdbc:postgresql://localhost:5432/postgres?currentSchema=patientreg
+db.username=patientreg_app
+db.password=PrApp@1234
+db.pool.maxSize=10
+db.admin.username=postgres
+db.admin.password=Pass@1234
+export.maxConcurrent=3</code></pre>
+  <h3><code>pr-identity/src/main/resources/identity.properties</code></h3>
+<pre><code>identity.bootstrap.username=admin
+identity.bootstrap.password=Admin@1234
+identity.login.maxFailures=5
+identity.login.lockMinutes=15          # longest pause; blocks start at 1 minute and double
+identity.demo.enabled=false             # Docker: IDENTITY_DEMO_ENABLED from DEMO_DATA in .env
+identity.demo.password=Demo@1234</code></pre>
+  <h3><code>pr-reporting/src/main/resources/reporting.properties</code></h3>
+<pre><code>app.reporting.clickhouse.url=jdbc:clickhouse://localhost:8123/analytics
+app.reporting.clickhouse.username=reporting_app
+app.reporting.clickhouse.password=Report@1234
+app.reporting.clickhouse.pool.maxSize=4
+app.reporting.query.maxPageSize=500
+app.reporting.query.maxGroups=10000
+app.reporting.meta.url=jdbc:postgresql://localhost:5432/postgres
+app.reporting.meta.username=patientreg_app
+app.reporting.meta.password=PrApp@1234
+app.reporting.meta.pool.maxSize=2</code></pre>
+  <h3><code>pr-app/src/main/resources/messages.properties</code></h3>
+<pre><code>typeMismatch=Invalid value
+typeMismatch.java.lang.Integer=Enter a whole number
+typeMismatch.java.math.BigDecimal=Enter a valid number
+typeMismatch.java.time.LocalDate=Enter a valid date</code></pre>
+  <h3><code>.env</code> (Docker Compose)</h3>
+<pre><code>POSTGRES_PASSWORD=Pass@1234
+CLICKHOUSE_ADMIN_PASSWORD=ChAdmin@1234
+CLICKHOUSE_APP_PASSWORD=Report@1234
+REPORTING_RO_PASSWORD=RoPass@1234
+DEBEZIUM_PASSWORD=Dbz@1234
+SEED_ROWS=100000
+APP_DB_PASSWORD=PrApp@1234
+BOOTSTRAP_ADMIN_PASSWORD=Admin@1234
+SEED_HOSPITAL=1
+DEMO_DATA=true
+DEMO_PASSWORD=Demo@1234</code></pre>
+  <h3>Environment of the <code>app</code> service</h3>
+<pre><code>DB_URL=jdbc:postgresql://postgres:5432/postgres?currentSchema=patientreg
+DB_USERNAME=patientreg_app
+DB_PASSWORD=${APP_DB_PASSWORD}
+DB_ADMIN_USERNAME=postgres
+DB_ADMIN_PASSWORD=${POSTGRES_PASSWORD}
+IDENTITY_BOOTSTRAP_PASSWORD=${BOOTSTRAP_ADMIN_PASSWORD}
+IDENTITY_DEMO_ENABLED=${DEMO_DATA:-false}
+IDENTITY_DEMO_PASSWORD=${DEMO_PASSWORD:-Demo@1234}
+APP_REPORTING_CLICKHOUSE_URL=jdbc:clickhouse://clickhouse:8123/analytics
+APP_REPORTING_CLICKHOUSE_PASSWORD=${CLICKHOUSE_APP_PASSWORD}
+APP_REPORTING_META_URL=jdbc:postgresql://postgres:5432/postgres
+APP_REPORTING_META_USERNAME=patientreg_app
+APP_REPORTING_META_PASSWORD=${APP_DB_PASSWORD}</code></pre>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Account</th><th>Password</th><th>Used by</th></tr></thead>
+    <tbody>
+      <tr><td>PostgreSQL <code>postgres</code></td><td><code>Pass@1234</code></td><td>SchemaMigrator, backups, admin</td></tr>
+      <tr><td>PostgreSQL <code>patientreg_app</code></td><td><code>PrApp@1234</code></td><td>the application (RLS applies)</td></tr>
+      <tr><td>PostgreSQL <code>reporting_ro</code></td><td><code>RoPass@1234</code></td><td>ClickHouse sync/backfill (view only)</td></tr>
+      <tr><td>PostgreSQL <code>debezium</code></td><td><code>Dbz@1234</code></td><td>Debezium (replication of the outbox)</td></tr>
+      <tr><td>ClickHouse <code>admin</code></td><td><code>ChAdmin@1234</code></td><td>DDL, pipeline</td></tr>
+      <tr><td>ClickHouse <code>reporting_app</code></td><td><code>Report@1234</code></td><td>the application (read-only, row filter)</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Test properties (<code>pr-app/src/test/resources</code>)</h3>
+<pre><code># db.properties
+db.url=jdbc:postgresql://localhost:5432/prtest?currentSchema=patientreg
+db.username=patientreg_app
+db.password=PrApp@1234
+db.pool.maxSize=3
+db.admin.username=postgres
+db.admin.password=Pass@1234
+export.maxConcurrent=3
+# reporting.properties
+app.reporting.clickhouse.url=jdbc:clickhouse://localhost:8123/analytics_test
+app.reporting.clickhouse.username=reporting_app
+app.reporting.clickhouse.password=Report@1234
+app.reporting.clickhouse.pool.maxSize=2
+app.reporting.query.maxPageSize=500
+app.reporting.query.maxGroups=10000
+app.reporting.meta.url=jdbc:postgresql://localhost:5432/prtest
+app.reporting.meta.username=patientreg_app
+app.reporting.meta.password=PrApp@1234
+app.reporting.meta.pool.maxSize=2</code></pre>
+  <h3>ClickHouse app account (<code>infra/clickhouse/users.d/reporting-users.xml</code>)</h3>
+  <p>Profile <code>reporting_interactive</code>: readonly=2, max_execution_time 30 s, max_memory_usage 400 MB, max_result_rows 1 lakh, max_threads 4; per-query settings may only stay within 1&ndash;300 s, 1 byte&ndash;400 MB, 1&ndash;20,00,001 rows, 1&ndash;4 threads (downloads raise rows and time within these bounds). Quota <code>reporting_quota</code>: per minute 1,200 queries, 300 errors, 30 minutes of execution. Networks: localhost and private networks only. Grants: SELECT on <code>patient_report</code> and <code>pipeline_heartbeat</code> only, with the row filter on <code>SQL_hospitals</code>.</p>
+</section>
+
+<!-- ============================== 16 ============================== -->
+<section id="deploy">
+  <h2><span class="num">16.</span>Deployment steps</h2>
+  <h3>On any machine with only Docker</h3>
+  <ol class="steps">
+    <li>Copy the project folder (or the repository).</li>
+    <li><code>docker compose up -d --build</code> (or <code>start.bat</code>): PostgreSQL, ClickHouse and the app. The image build compiles everything inside Docker (Maven and Node are not needed on the host).</li>
+    <li>Real time reporting: <code>docker compose --profile cdc up -d --build</code> (or <code>start.bat cdc</code>) adds Kafka and Debezium and registers the connector.</li>
+    <li>Demo hospitals and users: created automatically at start because <code>.env</code> has <code>DEMO_DATA=true</code> (H002 City Hospital, H003 Sunrise Hospital and the users of section 11; set it to <code>false</code> for an empty installation).</li>
+    <li>Sample patients: <code>load-data.bat 100000 1</code>, <code>load-data.bat 20000 2</code>, <code>load-data.bat 10000 3</code> (or <code>SEED_ROWS=.. SEED_HOSPITAL=.. docker compose --profile seed run --rm seed</code>, then <code>run --rm --no-deps seed-backfill</code>). The exact demo data of this machine (1,00,002 / 20,000 / 10,000) is in <code>backup/patientreg_full_2026-10-16_after-stage5.dump</code>: <code>restore.bat</code> it.</li>
+    <li>Open <a href="http://localhost:8080/patient-registration/">http://localhost:8080/patient-registration/</a> and sign in as <code>admin</code> / <code>Admin@1234</code>.</li>
+  </ol>
+  <h3>Day to day</h3>
+<pre><code>docker compose up -d --build app            # redeploy after a code change (deploy.bat)
+docker compose logs -f app
+docker compose --profile cdc --profile seed stop   # stop.bat (data kept in volumes)
+curl -s http://localhost:8083/connectors/patient-outbox/status
+docker exec pr-clickhouse clickhouse-client --user admin --password ChAdmin@1234 -q "select count() from analytics.patient_report FINAL"
+bash infra/clickhouse/migrations/2026-10-16_stage5b_custom_fields.sh   # one-off upgrade of an existing ClickHouse to stage 5b</code></pre>
+  <h3>Host build (optional)</h3>
+<pre><code>cd /d/Pravin/patient-registration
+MAVEN_OPTS=-Xmx512m JAVA_HOME="D:/Pravin/jdk-21.0.12.1" ./tools/apache-maven-3.9.9/bin/mvn -o -B \
+  -Dmaven.repo.local="D:/Pravin/patient-registration/tools/m2repo" install      # -DskipTests to skip tests</code></pre>
+  <div class="note">Resources on this POC machine: every service has a memory limit; all five containers together use about 1.6&ndash;2 GB (measured 1.9 GB with the <code>cdc</code> profile).</div>
+</section>
+
+<!-- ============================== 17 ============================== -->
+<section id="data">
+  <h2><span class="num">17.</span>Bulk data</h2>
+  <p><code>db/load-test-data.sql</code> generates realistic patients with every column filled, for one hospital (<code>-v hospital=N</code>), keeping its number series; then the ClickHouse backfill reloads the reporting copy. Current data: H001 1,00,002, H002 20,000, H003 10,000. Note: the generator marks every patient as insured, so "Insured %" is 100.</p>
+</section>
+
+<!-- ============================== 18 ============================== -->
+<section id="backup">
+  <h2><span class="num">18.</span>Backup &amp; restore</h2>
+<pre><code>backup.bat                      # backup\patientreg_full_YYYY-MM-DD_HHmm.dump (identity, patientreg, reporting + pg_trgm)
+restore.bat backup\&lt;file&gt;.dump  # replaces ALL data (asks for YES):
+#   stops app and Debezium, DROP SCHEMA identity, patientreg, reporting CASCADE, pg_restore --no-owner --no-acl,
+#   TRUNCATE analytics.patient_report, docker compose up -d (app re-creates role and grants, pg-setup the pipeline
+#   accounts and publication, analytics-setup reloads ClickHouse because it is empty)</code></pre>
+  <p>Existing backups in <code>backup\</code>: <code>patientreg_full_2026-10-16_after-stage5.dump</code> (newest, the demo data), <code>before-stage5a_2026-10-15.dump</code>, <code>migration_2026-10-15_2124.dump</code>, <code>migration_2026-10-15_final.dump</code>, <code>patientreg_full_2026-10-15.dump</code> and source snapshots. Dumps contain patient data: keep them private. ClickHouse can always be rebuilt from PostgreSQL.</p>
+</section>
+
+<!-- ============================== 19 ============================== -->
+<section id="testing">
+  <h2><span class="num">19.</span>Testing</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Suite</th><th>Count</th><th>Covers</th></tr></thead>
+    <tbody>
+      <tr><td>pr-shared, pr-registration, pr-reporting unit tests</td><td>3 + 13 + 22</td><td>exporters; validator; QueryBuilder, FormulaCompiler</td></tr>
+      <tr><td>pr-app integration (MockMvc through the real security chain, real PostgreSQL <code>prtest</code> and ClickHouse <code>analytics_test</code>)</td><td>140</td><td>WebSmokeTest, ReportingApiTest, ReportingEdgeCaseTest (parameterised), ReportingUiTest, OutboxContractTest, HospitalIsolationTest, AdminScreensTest, CustomisationTest, FinalReviewTest, ArchitectureTest</td></tr>
+      <tr><td>Playwright (installed Edge) against the running containers</td><td>23</td><td>reporting.spec.ts, hospitals.spec.ts, customisation.spec.ts</td></tr>
+    </tbody>
+  </table></div>
+<pre><code>mvn ... install                                   # all Java tests (containers must run)
+mvn ... -pl pr-app -am -Dtest=CustomisationTest -Dsurefire.failIfNoSpecifiedTests=false install
+cd pr-ui &amp;&amp; PATH="/d/Pravin/patient-registration/tools/node:$PATH" npx playwright test</code></pre>
+  <p>Also run once on a clean copy of the project with empty volumes (16 Oct 2026): fresh install, demo data, seeding, the one-minute sync, the real-time path (3 s), repeated start-up, <code>down</code>/<code>up</code>, and a backup/restore round trip. Results and the edge cases tried: <a href="Stage-5-Completion-Report.html">Stage 5 completion report</a>, <a href="Final-Review-Report.html">Final review report</a>.</p>
+</section>
+
+<!-- ============================== 20 ============================== -->
+<section id="security">
+  <h2><span class="num">20.</span>Security &amp; known limitations</h2>
+  <ul>
+    <li>Hospital isolation in four layers: PostgreSQL RLS, composite keys, permission checks per hospital, forced hospital filter in every ClickHouse query plus the ClickHouse row filter. Another hospital's record answers 404.</li>
+    <li>CSRF tokens on every form and API call; Content-Security-Policy (only own scripts, no framing), Referrer-Policy, SameSite=Lax and HttpOnly cookies; audit log of sign-ins (also refused ones), registrations, exports and every settings, role, formula and dashboard change.</li>
+    <li>No escalation through administration: roles can only be created, given or changed within the administrator's own permissions in that hospital; nobody changes a role they hold; only a super administrator changes a super administrator's hospitals; nobody loses their last hospital.</li>
+    <li>Without the download permission a patient list can be paged only to row 5,000; downloads: one per user at a time, row caps per format (also for the classic register), formats each hospital allows.</li>
+    <li>Only the app port 8080 is published; PostgreSQL, ClickHouse and Kafka Connect REST listen on 127.0.0.1 only; the Debezium password is not shown by its REST API (<code>${env:DBZ_PASSWORD}</code>); the ClickHouse app account cannot lift its limits; the application role cannot write the outbox (only <code>publish_snapshot</code>) nor change or delete templates.</li>
+    <li>No SQL ever comes from the browser; formulas compile through an allow-list with bound values.</li>
+    <li>The reporting copy holds no Aadhaar, masked mobiles, and only reportable own fields.</li>
+  </ul>
+  <div class="note"><b>Known limitations (POC):</b> passwords in plain text in property files and <code>.env</code>; local users only (no SSO); PDF prints non-Latin text as "???" (Unicode fonts skipped); no optimistic locking on concurrent edits of the same setting (last save wins); pivots download flat; crore-scale load tests not done yet; deletes or SQL-script changes made outside the application need a ClickHouse backfill; ClickHouse data lives in a Docker volume (inside Docker Desktop's disk image); database row-level security works per user (all their hospitals), the action-specific checks are in Java; sign-in events carry no hospital, so only super administrators see them in the audit screen; Aadhaar is stored unencrypted and shown on the patient screen to users who may view patients; the first sign-in does not force a new admin password; the app container runs as root; the Java and browser tests need the host tools (<code>tools\</code>, installed Edge); after the <code>cdc</code> profile was used once, its replication slot stays: if Kafka will not be used again, drop it (<code>SELECT pg_drop_replication_slot('pr_outbox_slot')</code>) so it does not keep up to 2 GB of change log.</div>
+</section>
+
+<!-- ============================== 21 ============================== -->
+<section id="troubleshooting">
+  <h2><span class="num">21.</span>Troubleshooting</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Symptom</th><th>Cause / fix</th></tr></thead>
+    <tbody>
+      <tr><td>Analytics "Data as of" is old</td><td>Kafka/Debezium not running: <code>start.bat cdc</code>; the one-minute sync still copies changes of the last 15 minutes. After a longer outage run the backfill.</td></tr>
+      <tr><td>quay.io pull fails ("HTTP response to HTTPS client")</td><td>Retry the pull.</td></tr>
+      <tr><td>A JSP shows "Error 500" on a record property</td><td>Tomcat 11 EL reads records by component; use explicit method calls (<code>${x.getText()}</code>) for derived getters.</td></tr>
+      <tr><td>First tests after a ClickHouse restart time out</td><td>Re-run; ClickHouse needs a few seconds.</td></tr>
+      <tr><td>Changed a ClickHouse config file but nothing happened</td><td>Single-file bind mounts need <code>docker compose restart clickhouse</code>.</td></tr>
+      <tr><td>Login at the database fails with time zone "Asia/Calcutta"</td><td>Handled in code (switched to Asia/Kolkata); custom tools must do the same.</td></tr>
+      <tr><td>A download answers 503</td><td>Three downloads already running; retry after a moment.</td></tr>
+      <tr><td><code>docker compose up</code> says "dependency failed to start: container pr-app is unhealthy"</td><td>The application did not deploy (wrong password in <code>.env</code>, schema error): <code>docker compose logs app</code>. The healthcheck asks for the sign-in page.</td></tr>
+      <tr><td>"ports are not available" on start</td><td>Another program uses 8080/5432/8123, or Docker had not released the port yet: stop it, or run the command again.</td></tr>
+      <tr><td>A user sees no data</td><td>Check the user's hospitals and role in Administration; access changes apply on the next request.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<footer>Patient Registration &middot; project guide v3.1 &middot; 16 Oct 2026 &middot; local document (previous version in Docs\archive)</footer>
+</main>
+</div>
+<script>
+(function () {
+  var btn = document.getElementById('themeBtn');
+  try { var t = localStorage.getItem('pr-doc-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  btn.addEventListener('click', function () {
+    var cur = document.documentElement.getAttribute('data-theme');
+    var dark = cur ? cur === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var next = dark ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('pr-doc-theme', next); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>

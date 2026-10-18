@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Tomcat settings of this web application: session and CSRF cookies are SameSite=Lax (not sent with
+     cross-site sub-requests). HttpOnly is set in web.xml. Add secure="true" in web.xml when served over HTTPS. -->
+<Context>
+    <CookieProcessor className="org.apache.tomcat.util.http.Rfc6265CookieProcessor" sameSiteCookies="lax"/>
+</Context>

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SQL Server Impact</title>
+<style>
+:root {
+  --bg: #f5f7f9; --surface: #ffffff; --surface-2: #eef3f6; --text: #1d2730; --muted: #5d6b78;
+  --border: #d3dce3; --accent: #00707e; --accent-soft: #e0f1f3; --code-bg: #f0f3f6;
+  --ok: #2e7d32; --ok-bg: #e9f6ec; --warn: #9a6400; --warn-bg: #fff6e5; --bad: #b3261e; --bad-bg: #fdecea;
+  --pg: #336791; --pg-soft: #e3edf6; --ms: #a4373a; --ms-soft: #f8e7e7;
+  --svg-box: #ffffff; --svg-line: #4d5b67; --svg-text: #1d2730; --svg-muted: #6a7885;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12171c; --surface: #1a2128; --surface-2: #212a33; --text: #e3e9ee; --muted: #9aa8b4;
+    --border: #33404c; --accent: #3fb6c4; --accent-soft: #163339; --code-bg: #212a33;
+    --ok: #7cc68a; --ok-bg: #18291d; --warn: #f0b45a; --warn-bg: #2e2717; --bad: #f08a80; --bad-bg: #3a1f1d;
+    --pg: #8ab4dc; --pg-soft: #1b2a38; --ms: #ef9a9c; --ms-soft: #3a2020;
+    --svg-box: #1f2830; --svg-line: #9aa8b4; --svg-text: #e3e9ee; --svg-muted: #9aa8b4;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12171c; --surface: #1a2128; --surface-2: #212a33; --text: #e3e9ee; --muted: #9aa8b4;
+  --border: #33404c; --accent: #3fb6c4; --accent-soft: #163339; --code-bg: #212a33;
+  --ok: #7cc68a; --ok-bg: #18291d; --warn: #f0b45a; --warn-bg: #2e2717; --bad: #f08a80; --bad-bg: #3a1f1d;
+  --pg: #8ab4dc; --pg-soft: #1b2a38; --ms: #ef9a9c; --ms-soft: #3a2020;
+  --svg-box: #1f2830; --svg-line: #9aa8b4; --svg-text: #e3e9ee; --svg-muted: #9aa8b4;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 "Segoe UI", system-ui, -apple-system, Arial, sans-serif; }
+a { color: var(--accent); }
+code { font-family: Consolas, "Courier New", monospace; font-size: 13px; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+.layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: 100vh; }
+nav.toc { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--surface); border-right: 1px solid var(--border); padding: 20px 16px; }
+nav.toc .brand { font-weight: 700; color: var(--accent); }
+nav.toc .sub { color: var(--muted); font-size: 12px; margin-bottom: 14px; }
+nav.toc ol { margin: 0; padding-left: 20px; }
+nav.toc li { margin: 3px 0; font-size: 13.5px; }
+nav.toc a { text-decoration: none; color: var(--text); }
+nav.toc a:hover { color: var(--accent); }
+main { padding: 28px 40px 60px; max-width: 1180px; width: 100%; min-width: 0; }
+header.hero { background: var(--surface); border: 1px solid var(--border); border-left: 5px solid var(--accent); border-radius: 8px; padding: 22px 26px; margin-bottom: 24px; }
+header.hero h1 { margin: 0 0 6px; font-size: 26px; }
+header.hero p { margin: 4px 0; color: var(--muted); }
+section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 22px 26px; margin-bottom: 22px; min-width: 0; }
+section h2 { margin: 0 0 14px; font-size: 21px; padding-bottom: 8px; border-bottom: 2px solid var(--accent-soft); }
+section h3 { font-size: 16.5px; margin: 20px 0 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 10px 0; }
+th, td { border: 1px solid var(--border); padding: 7px 10px; text-align: left; vertical-align: top; }
+th { background: var(--surface-2); }
+.wrap { overflow-x: auto; }
+.pg { color: var(--pg); font-weight: 600; }
+.ms { color: var(--ms); font-weight: 600; }
+.yes { color: var(--ok); font-weight: 600; }
+.no { color: var(--bad); font-weight: 600; }
+.part { color: var(--warn); font-weight: 600; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.card { border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; background: var(--surface-2); }
+.card h3 { margin-top: 0; }
+.card.a { border-top: 4px solid var(--ok); }
+.card.b { border-top: 4px solid var(--warn); }
+.card.c { border-top: 4px solid var(--ms); }
+.card.d { border-top: 4px solid var(--pg); }
+.note { background: var(--surface-2); border-left: 4px solid var(--accent); padding: 10px 14px; border-radius: 4px; margin: 12px 0; }
+.warnbox { background: var(--warn-bg); border-left: 4px solid var(--warn); padding: 10px 14px; border-radius: 4px; margin: 12px 0; }
+.hint { color: var(--muted); font-size: 13px; }
+svg { width: 100%; height: auto; display: block; margin: 8px 0; }
+.diagram { overflow-x: auto; }
+.diagram svg { min-width: 860px; }
+svg .box { fill: var(--svg-box); stroke: var(--svg-line); stroke-width: 1.3; }
+svg .boxpg { fill: var(--pg-soft); stroke: var(--pg); stroke-width: 1.5; }
+svg .boxms { fill: var(--ms-soft); stroke: var(--ms); stroke-width: 1.5; }
+svg .boxnew { fill: var(--warn-bg); stroke: var(--warn); stroke-width: 1.5; stroke-dasharray: 5 3; }
+svg text { fill: var(--svg-text); font: 13px "Segoe UI", Arial, sans-serif; }
+svg text.s { fill: var(--svg-muted); font-size: 11.5px; }
+svg text.b { font-weight: 700; }
+svg .ln { stroke: var(--svg-line); stroke-width: 1.4; fill: none; }
+svg .lnd { stroke: var(--svg-line); stroke-width: 1.4; fill: none; stroke-dasharray: 5 4; }
+.theme-btn { margin-top: 18px; font: inherit; font-size: 12px; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 5px 10px; cursor: pointer; }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  nav.toc { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--border); }
+  main { padding: 16px; }
+  section { padding: 16px; }
+  td, th, p, li { overflow-wrap: anywhere; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc" aria-label="Contents">
+  <div class="brand">SQL Server impact</div>
+  <div class="sub">If the live database were Microsoft SQL Server &middot; 18 Oct 2026 &middot; analysis only, no code changed</div>
+  <ol>
+    <li><a href="#summary">In one minute</a></li>
+    <li><a href="#today">Today's flow (PostgreSQL)</a></li>
+    <li><a href="#components">Impact per component</a></li>
+    <li><a href="#options">Four possible set-ups</a></li>
+    <li><a href="#flows">Flow charts</a></li>
+    <li><a href="#licence">Licences and editions</a></li>
+    <li><a href="#time">Time comparison</a></li>
+    <li><a href="#app">Impact on the application</a></li>
+    <li><a href="#reports">Old JSP reports vs Analytics</a></li>
+    <li><a href="#risks">Risks and how to test</a></li>
+    <li><a href="#licensed">If SQL Server is already licensed</a></li>
+    <li><a href="#recommend">Recommendation</a></li>
+  </ol>
+  <button class="theme-btn" type="button" id="themeBtn">Switch light / dark</button>
+  <div class="sub" style="margin-top:14px">Related: <a href="Patient-Registration-Project-Guide.html">Project guide</a> &middot; <a href="Reports-Comparison-JSP-vs-Analytics.html">Reports comparison</a> &middot; <a href="Solution-Architecture.html">Architecture</a></div>
+</nav>
+<main>
+<header class="hero">
+  <h1>What changes if the database is Microsoft SQL Server?</h1>
+  <p>Impact on Debezium, Kafka and ClickHouse (and on the application around them) if PostgreSQL were replaced by Microsoft SQL Server, with the possible set-ups, flow charts and a time comparison.</p>
+  <p>This is an analysis document: nothing in the project was changed. Effort and latency figures are estimates for this project and should be confirmed by a short trial (section 10). Licence statements reflect Microsoft's published edition rules as known at the time of writing; confirm them with Microsoft or your licensing partner before deciding.</p>
+</header>
+
+<section id="summary">
+  <h2>1. In one minute</h2>
+  <div class="wrap"><table>
+    <tr><th>Component</th><th>Impact</th><th>In short</th></tr>
+    <tr><td>Kafka</td><td class="yes">Almost none</td><td>Same broker, same topic <code>pr.patient.report</code>, same message format. One extra internal topic for the SQL Server connector's schema history.</td></tr>
+    <tr><td>Debezium</td><td class="part">Medium</td><td>A different connector (SQL Server instead of PostgreSQL). It needs SQL Server's built-in <b>Change Data Capture (CDC)</b>, which needs <b>SQL Server Agent</b>, which the free <b>Express</b> edition does not have.</td></tr>
+    <tr><td>ClickHouse</td><td class="part">Medium</td><td>The real-time part (Kafka engine) stays the same. The <b>one-minute sync and the backfill</b> read PostgreSQL directly with <code>postgresql()</code>; ClickHouse has no SQL Server equivalent, so these need an ODBC bridge or a small copy job instead.</td></tr>
+    <tr><td>The application</td><td class="no">Large</td><td>All SQL written for PostgreSQL (schema, row-level security, JSON, upserts, search) must be rewritten in T-SQL. This is the biggest part of the work, not Debezium or ClickHouse.</td></tr>
+    <tr><td>Licence</td><td class="no">Important</td><td>The rule "open source or freeware only" is met only by SQL Server <b>Express</b> (no CDC, 10 GB per database) or <b>Developer</b> (not allowed for production). Production with CDC means a paid Standard or Enterprise licence.</td></tr>
+  </table></div>
+  <div class="note"><b>Bottom line:</b> Kafka and ClickHouse hardly care which database feeds them, because the application publishes one fixed "patient snapshot" message. Debezium cares a little (another connector, CDC must be switched on). The real cost is porting the application's database code and, depending on the edition, the licence.</div>
+</section>
+
+<section id="today">
+  <h2>2. Today's flow (PostgreSQL)</h2>
+  <div class="diagram"><svg viewBox="0 0 1000 250" role="img" aria-label="Current flow with PostgreSQL">
+    <defs><marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--svg-line)"/></marker></defs>
+    <rect class="box" x="10" y="90" width="140" height="70" rx="8"/><text x="80" y="118" text-anchor="middle" class="b">Registration</text><text x="80" y="138" text-anchor="middle" class="s">save in one transaction</text>
+    <rect class="boxpg" x="190" y="70" width="170" height="110" rx="8"/><text x="275" y="98" text-anchor="middle" class="b">PostgreSQL</text><text x="275" y="118" text-anchor="middle" class="s">6 patient tables</text><text x="275" y="134" text-anchor="middle" class="s">+ outbox row (insert, delete)</text><text x="275" y="150" text-anchor="middle" class="s">WAL, logical decoding</text>
+    <rect class="box" x="400" y="20" width="150" height="60" rx="8"/><text x="475" y="46" text-anchor="middle" class="b">Debezium</text><text x="475" y="64" text-anchor="middle" class="s">PostgreSQL connector</text>
+    <rect class="box" x="590" y="20" width="140" height="60" rx="8"/><text x="660" y="46" text-anchor="middle" class="b">Kafka</text><text x="660" y="64" text-anchor="middle" class="s">pr.patient.report</text>
+    <rect class="box" x="430" y="170" width="250" height="60" rx="8"/><text x="555" y="196" text-anchor="middle" class="b">ClickHouse one-minute sync</text><text x="555" y="214" text-anchor="middle" class="s">postgresql() table function, same for backfill</text>
+    <rect class="box" x="790" y="80" width="190" height="90" rx="8"/><text x="885" y="108" text-anchor="middle" class="b">ClickHouse</text><text x="885" y="128" text-anchor="middle" class="s">Kafka engine + views</text><text x="885" y="144" text-anchor="middle" class="s">patient_report</text>
+    <path class="ln" d="M150,125 H188" marker-end="url(#a1)"/>
+    <path class="ln" d="M360,100 C385,100 380,50 398,50" marker-end="url(#a1)"/>
+    <path class="ln" d="M550,50 H588" marker-end="url(#a1)"/>
+    <path class="ln" d="M730,50 C770,50 790,70 840,78" marker-end="url(#a1)"/>
+    <path class="lnd" d="M360,150 C390,150 400,200 428,200" marker-end="url(#a1)"/>
+    <path class="lnd" d="M680,200 C740,200 800,190 840,172" marker-end="url(#a1)"/>
+    <text x="660" y="105" text-anchor="middle" class="s">real time: about 2-3 s (measured)</text>
+  </svg></div>
+  <p>Two things make this portable: the application writes <b>one fixed message</b> (PatientSnapshot) instead of exposing its tables, and ClickHouse consumes that message from Kafka. Only the two database-specific pieces, the <b>Debezium connector</b> and ClickHouse's <b>direct copy</b> (<code>postgresql()</code>), are tied to PostgreSQL.</p>
+</section>
+
+<section id="components">
+  <h2>3. Impact per component</h2>
+  <h3>3.1 Debezium</h3>
+  <div class="wrap"><table>
+    <tr><th>Topic</th><th class="pg">PostgreSQL (today)</th><th class="ms">SQL Server</th></tr>
+    <tr><td>Connector</td><td><code>PostgresConnector</code>, plug-in <code>pgoutput</code></td><td><code>SqlServerConnector</code> (also open source, Apache 2.0, same Debezium image)</td></tr>
+    <tr><td>How changes are read</td><td>Logical decoding of the write-ahead log through a replication slot; database setting <code>wal_level=logical</code></td><td>SQL Server <b>CDC</b>: a capture job (SQL Server Agent) copies changes from the transaction log into change tables (<code>cdc.dbo_report_outbox_CT</code>); Debezium polls those tables</td></tr>
+    <tr><td>Switch-on steps</td><td>wal setting, publication, replication role</td><td><code>EXEC sys.sp_cdc_enable_db</code>, <code>EXEC sys.sp_cdc_enable_table</code> for the outbox, SQL Server Agent running (in Docker: <code>MSSQL_AGENT_ENABLED=true</code>), a login with read rights on the <code>cdc</code> schema</td></tr>
+    <tr><td>Extra Kafka topic</td><td>none</td><td>a <b>schema history</b> topic (the connector records table structures)</td></tr>
+    <tr><td>Outbox pattern (insert + delete)</td><td>works: the insert is in the WAL</td><td>works: CDC records both the insert and the delete; the connector skips deletes as today. The change table keeps the payload for its retention time (default 3 days), so it uses disk space</td></tr>
+    <tr><td>Table structure changes</td><td>picked up automatically</td><td>a CDC "capture instance" is fixed to the table's columns: a changed outbox table needs a new capture instance. The outbox has a stable structure, so this is rare</td></tr>
+    <tr><td>Message routing</td><td colspan="2">Same outbox EventRouter, same topic and key. One detail: PostgreSQL stores the payload as <code>jsonb</code>, SQL Server as <code>NVARCHAR(MAX)</code> text, so the router must expand the JSON text (<code>table.expand.json.payload=true</code>) to keep today's message shape</td></tr>
+    <tr><td>Typical delay</td><td>about 1-3 s</td><td>capture job interval (default 5 s, can be lowered) + connector poll (0.5 s): about 2-10 s by default, about 1-3 s when tuned</td></tr>
+  </table></div>
+  <h3>3.2 Kafka</h3>
+  <ul>
+    <li>No change to the broker, topics, partitions or retention. Same topic <code>pr.patient.report</code>, same key (patient id), same JSON message, so every consumer works unchanged.</li>
+    <li>One more internal topic (schema history) when the Debezium SQL Server connector is used.</li>
+    <li>With the free-edition set-up (option B below), Kafka can be fed by the application itself instead of Debezium; the topic and message stay the same.</li>
+  </ul>
+  <h3>3.3 ClickHouse</h3>
+  <div class="wrap"><table>
+    <tr><th>Part</th><th>Impact</th><th>What to do</th></tr>
+    <tr><td>Kafka engine table + views (real time)</td><td class="yes">none</td><td>keeps reading the same messages</td></tr>
+    <tr><td><code>patient_report</code> table, row filter, profiles, all reports</td><td class="yes">none</td><td>the analytics store does not know which database fed it</td></tr>
+    <tr><td>One-minute sync (<code>mv_patient_report_sync</code>) and backfill</td><td class="no">must change</td><td>ClickHouse reads PostgreSQL natively but has <b>no native SQL Server function</b>. Choices: (1) ODBC: <code>odbc()</code> table function with the Microsoft ODBC driver installed in a custom ClickHouse image; (2) a small copy job outside ClickHouse (e.g. <code>bcp</code> export of the view to CSV, then <code>clickhouse-client INSERT ... FORMAT CSV</code>); (3) drop the sync and rely on Kafka only, with a periodic full re-copy as the safety net</td></tr>
+    <tr><td>Change detection for the sync</td><td class="part">different column</td><td>SQL Server's <code>ROWVERSION</code> column type is a good fit: it changes on every update automatically and can replace today's <code>row_version</code> + <code>updated_at</code></td></tr>
+    <tr><td>Data types in the message</td><td class="part">check</td><td><code>BIT</code> &rarr; 0/1, <code>DATETIME2</code> &rarr; the same text format as today, <code>DECIMAL</code> unchanged, text as <code>NVARCHAR</code> (Unicode). The snapshot is built with <code>FOR JSON PATH</code> instead of <code>to_jsonb()</code>; field names and formats must stay identical</td></tr>
+  </table></div>
+</section>
+
+<section id="options">
+  <h2>4. Four possible set-ups</h2>
+  <div class="cards">
+    <div class="card a">
+      <h3>A. SQL Server with CDC + Debezium</h3>
+      <p>Closest to today: the outbox is read by the Debezium SQL Server connector; Kafka and ClickHouse unchanged; sync/backfill through ODBC or a copy job.</p>
+      <p><b>Needs:</b> Standard or Enterprise (paid) in production; Developer for the POC.</p>
+      <p><b>Freshness:</b> seconds.</p>
+    </div>
+    <div class="card b">
+      <h3>B. SQL Server Express, no CDC</h3>
+      <p>Free edition. Without SQL Server Agent there is no CDC, so Debezium cannot be used. The application (or a small worker) reads new outbox rows every second or two and sends them to Kafka itself, then deletes them.</p>
+      <p><b>Needs:</b> nothing paid; but 10 GB per database and limited memory.</p>
+      <p><b>Freshness:</b> 1-5 s.</p>
+    </div>
+    <div class="card c">
+      <h3>C. SQL Server, no Kafka</h3>
+      <p>Simplest pipeline: ClickHouse pulls changed rows every minute through ODBC (by <code>ROWVERSION</code>); no Kafka, no Debezium.</p>
+      <p><b>Needs:</b> any edition; custom ClickHouse image with the ODBC driver.</p>
+      <p><b>Freshness:</b> about 1 minute (like today without the <code>cdc</code> profile).</p>
+    </div>
+    <div class="card d">
+      <h3>D. SQL Server only (columnstore)</h3>
+      <p>Drop ClickHouse and Kafka: SQL Server's own column-store indexes speed up reports on the live tables.</p>
+      <p><b>Needs:</b> reporting queries rewritten for T-SQL; reports run on the live database again.</p>
+      <p><b>Freshness:</b> live. <b>But</b> heavy reports compete with registrations again &mdash; the very problem this project solved.</p>
+    </div>
+  </div>
+</section>
+
+<section id="flows">
+  <h2>5. Flow charts</h2>
+  <h3>Option A: SQL Server CDC + Debezium + Kafka + ClickHouse</h3>
+  <div class="diagram"><svg viewBox="0 0 1000 270" role="img" aria-label="Option A flow">
+    <defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--svg-line)"/></marker></defs>
+    <rect class="box" x="10" y="100" width="130" height="60" rx="8"/><text x="75" y="125" text-anchor="middle" class="b">Registration</text><text x="75" y="143" text-anchor="middle" class="s">same as today</text>
+    <rect class="boxms" x="170" y="80" width="160" height="100" rx="8"/><text x="250" y="106" text-anchor="middle" class="b">SQL Server</text><text x="250" y="126" text-anchor="middle" class="s">patient tables</text><text x="250" y="142" text-anchor="middle" class="s">+ outbox row</text><text x="250" y="158" text-anchor="middle" class="s">transaction log</text>
+    <rect class="boxnew" x="360" y="20" width="160" height="70" rx="8"/><text x="440" y="44" text-anchor="middle" class="b">CDC capture job</text><text x="440" y="62" text-anchor="middle" class="s">SQL Server Agent,</text><text x="440" y="76" text-anchor="middle" class="s">every 5 s (tunable)</text>
+    <rect class="boxnew" x="550" y="20" width="160" height="70" rx="8"/><text x="630" y="44" text-anchor="middle" class="b">Debezium</text><text x="630" y="62" text-anchor="middle" class="s">SQL Server connector</text><text x="630" y="76" text-anchor="middle" class="s">reads cdc.*_CT</text>
+    <rect class="box" x="740" y="20" width="110" height="70" rx="8"/><text x="795" y="50" text-anchor="middle" class="b">Kafka</text><text x="795" y="68" text-anchor="middle" class="s">unchanged</text>
+    <rect class="boxnew" x="400" y="190" width="290" height="60" rx="8"/><text x="545" y="215" text-anchor="middle" class="b">Sync / backfill: ODBC or copy job</text><text x="545" y="233" text-anchor="middle" class="s">replaces postgresql(); ROWVERSION for changes</text>
+    <rect class="box" x="860" y="110" width="130" height="80" rx="8"/><text x="925" y="140" text-anchor="middle" class="b">ClickHouse</text><text x="925" y="160" text-anchor="middle" class="s">unchanged</text>
+    <path class="ln" d="M140,130 H168" marker-end="url(#a2)"/>
+    <path class="ln" d="M330,100 C350,100 345,55 358,55" marker-end="url(#a2)"/>
+    <path class="ln" d="M520,55 H548" marker-end="url(#a2)"/>
+    <path class="ln" d="M710,55 H738" marker-end="url(#a2)"/>
+    <path class="ln" d="M850,55 C890,55 910,80 920,108" marker-end="url(#a2)"/>
+    <path class="lnd" d="M330,160 C370,160 370,220 398,220" marker-end="url(#a2)"/>
+    <path class="lnd" d="M690,220 C800,220 880,210 910,192" marker-end="url(#a2)"/>
+    <text x="640" y="115" text-anchor="middle" class="s">dashed orange = new or changed parts</text>
+  </svg></div>
+  <h3>Option B: SQL Server Express, outbox poller instead of Debezium</h3>
+  <div class="diagram"><svg viewBox="0 0 1000 220" role="img" aria-label="Option B flow">
+    <defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--svg-line)"/></marker></defs>
+    <rect class="box" x="10" y="80" width="130" height="60" rx="8"/><text x="75" y="105" text-anchor="middle" class="b">Registration</text><text x="75" y="123" text-anchor="middle" class="s">writes outbox row</text>
+    <rect class="boxms" x="170" y="60" width="170" height="100" rx="8"/><text x="255" y="88" text-anchor="middle" class="b">SQL Server Express</text><text x="255" y="108" text-anchor="middle" class="s">outbox rows stay</text><text x="255" y="124" text-anchor="middle" class="s">until sent</text><text x="255" y="140" text-anchor="middle" class="s">(no CDC, no Agent)</text>
+    <rect class="boxnew" x="380" y="60" width="200" height="100" rx="8"/><text x="480" y="88" text-anchor="middle" class="b">Outbox publisher</text><text x="480" y="108" text-anchor="middle" class="s">in the app or a small worker:</text><text x="480" y="124" text-anchor="middle" class="s">every 1-2 s read new rows,</text><text x="480" y="140" text-anchor="middle" class="s">send to Kafka, then delete</text>
+    <rect class="box" x="620" y="80" width="130" height="60" rx="8"/><text x="685" y="108" text-anchor="middle" class="b">Kafka</text><text x="685" y="126" text-anchor="middle" class="s">unchanged</text>
+    <rect class="box" x="790" y="70" width="190" height="80" rx="8"/><text x="885" y="100" text-anchor="middle" class="b">ClickHouse</text><text x="885" y="120" text-anchor="middle" class="s">unchanged (+ copy job</text><text x="885" y="134" text-anchor="middle" class="s">for backfill)</text>
+    <path class="ln" d="M140,110 H168" marker-end="url(#a3)"/>
+    <path class="ln" d="M340,110 H378" marker-end="url(#a3)"/>
+    <path class="ln" d="M580,110 H618" marker-end="url(#a3)"/>
+    <path class="ln" d="M750,110 H788" marker-end="url(#a3)"/>
+    <text x="480" y="195" text-anchor="middle" class="s">"at least once": a message may be sent twice after a crash; ClickHouse collapses duplicates by version, as today</text>
+  </svg></div>
+  <h3>Option C: no Kafka, ClickHouse pulls every minute</h3>
+  <div class="diagram"><svg viewBox="0 0 1000 170" role="img" aria-label="Option C flow">
+    <defs><marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--svg-line)"/></marker></defs>
+    <rect class="box" x="10" y="50" width="130" height="60" rx="8"/><text x="75" y="76" text-anchor="middle" class="b">Registration</text><text x="75" y="94" text-anchor="middle" class="s">no outbox needed</text>
+    <rect class="boxms" x="180" y="40" width="190" height="80" rx="8"/><text x="275" y="66" text-anchor="middle" class="b">SQL Server</text><text x="275" y="86" text-anchor="middle" class="s">report view +</text><text x="275" y="102" text-anchor="middle" class="s">ROWVERSION column</text>
+    <rect class="boxnew" x="420" y="40" width="250" height="80" rx="8"/><text x="545" y="66" text-anchor="middle" class="b">ClickHouse ODBC pull</text><text x="545" y="86" text-anchor="middle" class="s">every minute: rows with a newer</text><text x="545" y="102" text-anchor="middle" class="s">ROWVERSION than last time</text>
+    <rect class="box" x="720" y="40" width="190" height="80" rx="8"/><text x="815" y="72" text-anchor="middle" class="b">ClickHouse</text><text x="815" y="92" text-anchor="middle" class="s">unchanged</text>
+    <path class="ln" d="M140,80 H178" marker-end="url(#a4)"/>
+    <path class="ln" d="M370,80 H418" marker-end="url(#a4)"/>
+    <path class="ln" d="M670,80 H718" marker-end="url(#a4)"/>
+    <text x="545" y="150" text-anchor="middle" class="s">fewest moving parts; data about a minute old (shown as "Data as of")</text>
+  </svg></div>
+  <h3>Option D: SQL Server only</h3>
+  <div class="diagram"><svg viewBox="0 0 1000 160" role="img" aria-label="Option D flow">
+    <defs><marker id="a5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--svg-line)"/></marker></defs>
+    <rect class="box" x="10" y="45" width="140" height="60" rx="8"/><text x="80" y="70" text-anchor="middle" class="b">Registration</text><text x="80" y="88" text-anchor="middle" class="s">writes</text>
+    <rect class="boxms" x="330" y="30" width="340" height="90" rx="8"/><text x="500" y="58" text-anchor="middle" class="b">SQL Server</text><text x="500" y="78" text-anchor="middle" class="s">patient tables + non-clustered column-store index</text><text x="500" y="94" text-anchor="middle" class="s">reports and registrations on the same server</text>
+    <rect class="box" x="850" y="45" width="140" height="60" rx="8"/><text x="920" y="70" text-anchor="middle" class="b">Analytics</text><text x="920" y="88" text-anchor="middle" class="s">queries in T-SQL</text>
+    <path class="ln" d="M150,75 H328" marker-end="url(#a5)"/>
+    <path class="ln" d="M848,75 H672" marker-end="url(#a5)"/>
+  </svg></div>
+</section>
+
+<section id="licence">
+  <h2>6. Licences and editions</h2>
+  <div class="wrap"><table>
+    <tr><th>Edition</th><th>Cost</th><th>CDC (for Debezium)</th><th>Limits that matter here</th><th>Fits the "open source / freeware" rule?</th></tr>
+    <tr><td>Express</td><td>free</td><td class="no">no (no SQL Server Agent)</td><td>10 GB per database, small memory and CPU use</td><td class="part">yes, but 1 crore patients will not fit in 10 GB; only options B/C</td></tr>
+    <tr><td>Developer</td><td>free</td><td class="yes">yes</td><td>full features, <b>not allowed for production</b></td><td class="part">for the POC only</td></tr>
+    <tr><td>Standard</td><td>paid (per core or server + client licences)</td><td class="yes">yes</td><td>memory and core caps per instance</td><td class="no">no</td></tr>
+    <tr><td>Enterprise</td><td>paid (per core)</td><td class="yes">yes</td><td>none relevant</td><td class="no">no</td></tr>
+    <tr><td>Azure SQL / Managed Instance</td><td>paid cloud service</td><td class="yes">yes (tiers vary)</td><td>not local</td><td class="no">no (and not local)</td></tr>
+  </table></div>
+  <p>Debezium, Kafka, ClickHouse and the Microsoft ODBC driver / <code>bcp</code> tools are free to use. The Linux container image of SQL Server is free to download; the edition is chosen by its licence setting (<code>MSSQL_PID</code>).</p>
+  <div class="warnbox"><b>Machine note:</b> SQL Server needs at least 2 GB of memory; today's PostgreSQL container runs in 700 MB. On this 7.7 GB laptop (about 3.9 GB for Docker) the full stack with SQL Server, ClickHouse, Kafka and Debezium would be tight: plan to raise Docker's memory or run the <code>cdc</code> parts only when needed.</div>
+</section>
+
+<section id="time">
+  <h2>7. Time comparison</h2>
+  <h3>7.1 How fresh the reports are (registration &rarr; visible in Analytics)</h3>
+  <div class="wrap"><table>
+    <tr><th>Set-up</th><th>Typical delay</th><th>Why</th></tr>
+    <tr><td class="pg">Today: PostgreSQL + Debezium + Kafka</td><td>about 2-3 s (measured on this machine)</td><td>change log streamed continuously</td></tr>
+    <tr><td class="pg">Today without the <code>cdc</code> profile</td><td>up to about 1 minute (measured about 45 s)</td><td>one-minute sync</td></tr>
+    <tr><td class="ms">A: SQL Server CDC + Debezium</td><td>about 2-10 s by default; about 1-3 s tuned</td><td>capture job every 5 s by default + connector poll 0.5 s</td></tr>
+    <tr><td class="ms">B: Express + outbox publisher</td><td>about 1-5 s</td><td>publisher interval (e.g. 1-2 s) + Kafka</td></tr>
+    <tr><td class="ms">C: ClickHouse ODBC pull</td><td>about 1 minute</td><td>pull interval</td></tr>
+    <tr><td class="ms">D: SQL Server only</td><td>0 (live)</td><td>reports read the live tables</td></tr>
+  </table></div>
+  <h3>7.2 How fast the reports are</h3>
+  <div class="wrap"><table>
+    <tr><th>Report path</th><th>With PostgreSQL</th><th>With SQL Server</th></tr>
+    <tr><td>Analytics (ClickHouse) &mdash; options A, B, C</td><td colspan="2">Identical: the reports run on ClickHouse in both cases (measured today: about 0.2 s for summaries, pivots and list pages on 1 lakh patients).</td></tr>
+    <tr><td>Old JSP reports (live database)</td><td>0.2-0.5 s on 1 lakh rows (measured), slowing with volume</td><td>similar at 1 lakh rows (row store); a column-store index can speed up large scans</td></tr>
+    <tr><td>Analytics on SQL Server only (option D)</td><td>&mdash;</td><td>fast with column-store indexes, but every heavy report uses the registration server's CPU, memory and I/O</td></tr>
+    <tr><td>First full copy (backfill) of 1 lakh patients</td><td>seconds (<code>postgresql()</code> reads the view)</td><td>similar through ODBC or <code>bcp</code> + CSV; Debezium cannot copy a view, so the backfill stays a separate job</td></tr>
+  </table></div>
+  <h3>7.3 Every report: existing logic vs report builder, PostgreSQL vs SQL Server</h3>
+  <p><b>Existing logic</b> = the classic JSP reports, which query the live database (PostgreSQL today, SQL Server in the scenario). <b>Report builder</b> = Analytics, which queries ClickHouse whichever database feeds it, so its times are the same in both cases. <b>M</b> = measured on this machine (16 Oct 2026, hospital H001 with 1,00,002 patients, warm, one user); <b>A</b> = assumption, based on how each database works and on the measured values. The 1-crore columns are assumptions only: the load test (stage 6) has not been run.</p>
+  <div class="wrap"><table>
+    <tr><th rowspan="2">Report / action</th><th colspan="3">Existing logic (JSP on the live database)</th><th colspan="2">Report builder (Analytics on ClickHouse)</th></tr>
+    <tr><th>PostgreSQL, 1 lakh</th><th>SQL Server, 1 lakh</th><th>PostgreSQL or SQL Server, 1 crore</th><th>1 lakh (PG or SQL Server feed)</th><th>1 crore</th></tr>
+    <tr><td>Report 1: Patient Register, page 1, no filter</td><td>0.23 s (M)</td><td>0.2-0.4 s (A)</td><td>10-40 s (A): counting all rows of 5 joined tables</td><td>0.17 s (M)</td><td>0.3-0.8 s (A)</td></tr>
+    <tr><td>Register with filters (date, department, gender)</td><td>0.17-0.29 s (M)</td><td>0.2-0.4 s (A)</td><td>2-20 s (A), depends on how selective</td><td>0.1-0.2 s (A)</td><td>0.2-0.6 s (A)</td></tr>
+    <tr><td>Register name / number search ("contains")</td><td>0.2-0.5 s (A), trigram index</td><td>0.5-2 s (A): full-text index or plain LIKE scan</td><td>1-10 s (A)</td><td>0.2-0.4 s (A), n-gram skip index</td><td>0.5-2 s (A)</td></tr>
+    <tr><td>Register, last page (deep paging)</td><td>0.5-1 s (A)</td><td>0.5-1 s (A)</td><td>20-60 s (A): OFFSET skips crores of rows</td><td>0.2-0.4 s (A)</td><td>0.5-2 s (A)</td></tr>
+    <tr><td>Report 2: Department Summary</td><td>0.44 s (M)</td><td>0.3-0.6 s (A); 0.1-0.3 s with a column-store index</td><td>15-60 s (A); 1-5 s with a column-store index (SQL Server)</td><td>0.21 s (M)</td><td>0.3-1 s (A)</td></tr>
+    <tr><td>Register Excel, all 1 lakh rows</td><td>7.0 s (M), 14 columns, 8.4 MB</td><td>6-9 s (A)</td><td>limit 10 lakh rows: about 70-120 s for 10 lakh (A)</td><td>2.4-5.6 s (M), 5 columns, 3.1 MB</td><td>about 30-60 s for 10 lakh (A)</td></tr>
+    <tr><td>Register PDF (up to 50,000 rows)</td><td>5-10 s for 50,000 (A)</td><td>5-10 s (A)</td><td>same cap: 5-10 s plus the query time (A)</td><td>4-8 s for 50,000 (A)</td><td>4-8 s (A)</td></tr>
+    <tr><td>Summary Excel / PDF</td><td>under 1 s (A)</td><td>under 1 s (A)</td><td>as the summary query: 15-60 s (A)</td><td>under 1 s (A)</td><td>about 1 s (A)</td></tr>
+    <tr><td>Patients by Department and Gender (template)</td><td colspan="3" rowspan="9" style="vertical-align:middle;text-align:center">not available in the existing logic<br><span class="hint">(would need new JSP code; it would then behave like Report 2)</span></td><td>0.2-0.3 s (A)</td><td>0.4-1 s (A)</td></tr>
+    <tr><td>Monthly Registrations (template)</td><td>0.2-0.3 s (A)</td><td>0.4-1 s (A)</td></tr>
+    <tr><td>Pivot: department &times; gender</td><td>0.21 s (M)</td><td>0.4-1 s (A)</td></tr>
+    <tr><td>Subtotals / top N + Others / conditions on totals</td><td>0.2-0.5 s (A)</td><td>0.5-1.5 s (A)</td></tr>
+    <tr><td>Calculated field (e.g. age groups) as a group</td><td>0.2-0.4 s (A)</td><td>0.5-1.5 s (A)</td></tr>
+    <tr><td>% of total, rank, running total, change</td><td>0.2-0.4 s (A)</td><td>0.5-1.5 s (A)</td></tr>
+    <tr><td>Drill-down to the patients of one group</td><td>0.1-0.3 s (A)</td><td>0.2-0.6 s (A)</td></tr>
+    <tr><td>Dashboard with 4 tiles (one tile at a time)</td><td>about 1 s in total (A)</td><td>2-5 s in total (A)</td></tr>
+    <tr><td>CSV download (up to 20 lakh rows)</td><td>1-3 s for 1 lakh (A)</td><td>about 20-40 s for 20 lakh (A)</td></tr>
+  </table></div>
+  <div class="note"><b>How to read this table:</b>
+    <ul>
+      <li>At 1 lakh patients all paths are fast. PostgreSQL and SQL Server behave alike for the existing logic: both are row stores, and SQL Server's only clear advantage is the optional column-store index for summaries.</li>
+      <li>At 1 crore the existing logic slows down by roughly the growth of the data, because counts, totals and deep pages read every matching row of the live tables. Those reads also slow down registrations at the same moment.</li>
+      <li>The report builder grows much more slowly: it reads only the columns a report uses, skips months by partition, and runs on ClickHouse, not on the live database. Choosing SQL Server instead of PostgreSQL does not change its times at all, only how fresh the data is (section 7.1).</li>
+      <li>Assumed times are for one user. With several users running reports at once, the existing logic degrades sooner, because the live database is also busy with registrations.</li>
+    </ul>
+  </div>
+
+  <h3>7.4 How long the change would take (one developer, estimate)</h3>
+  <div class="wrap"><table>
+    <tr><th>Work</th><th>A: CDC + Debezium</th><th>B: Express + publisher</th><th>C: no Kafka</th><th>D: SQL Server only</th></tr>
+    <tr><td>Database scripts in T-SQL (tables, keys, row-level security, JSON field, counters, functions, grants)</td><td>5-7 days</td><td>5-7 days</td><td>5-7 days</td><td>5-7 days</td></tr>
+    <tr><td>Application SQL (DAOs, upserts, RETURNING &rarr; OUTPUT, JSON, search, session settings)</td><td>4-6 days</td><td>4-6 days</td><td>4-6 days</td><td>4-6 days</td></tr>
+    <tr><td>Change capture</td><td>2-3 days (CDC, Agent, connector, payload JSON)</td><td>3-4 days (publisher, retries, ordering)</td><td>&mdash;</td><td>&mdash;</td></tr>
+    <tr><td>ClickHouse sync and backfill</td><td>2-3 days (ODBC image or copy job)</td><td>2-3 days</td><td>2-3 days</td><td>&mdash;</td></tr>
+    <tr><td>Reporting queries (QueryBuilder, formulas) for T-SQL</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>10-15 days</td></tr>
+    <tr><td>Docker set-up, tests, documents</td><td>4-6 days</td><td>4-6 days</td><td>3-5 days</td><td>5-7 days</td></tr>
+    <tr><td><b>Total</b></td><td><b>17-25 days</b></td><td><b>18-26 days</b></td><td><b>14-21 days</b></td><td><b>24-35 days</b></td></tr>
+    <tr><td>Freshness afterwards</td><td>seconds</td><td>seconds</td><td>about 1 minute</td><td>live, but load on the live database</td></tr>
+  </table></div>
+  <p class="hint">For comparison: keeping PostgreSQL costs 0 days. The ranges assume the same feature set as today and include testing all 201 automated tests again; a production licence purchase or DBA work is not included.</p>
+</section>
+
+<section id="app">
+  <h2>8. Impact on the application (outside Debezium, Kafka and ClickHouse)</h2>
+  <div class="wrap"><table>
+    <tr><th>Today in PostgreSQL</th><th>In SQL Server</th><th>Effort</th></tr>
+    <tr><td>Row-level security policies reading <code>app.hospital_ids</code> (set with <code>set_config</code>)</td><td>Security policies with predicate functions reading <code>SESSION_CONTEXT</code> (set with <code>sp_set_session_context</code>); available in all editions</td><td class="part">medium</td></tr>
+    <tr><td>Security-definer functions (<code>publish_snapshot</code>, field-usage count)</td><td>Stored procedures with <code>EXECUTE AS OWNER</code></td><td class="part">medium</td></tr>
+    <tr><td><code>JSONB</code> custom fields, <code>-&gt;&gt;</code></td><td><code>NVARCHAR(MAX)</code> + <code>ISJSON</code> check, <code>JSON_VALUE</code> / <code>OPENJSON</code></td><td class="part">medium</td></tr>
+    <tr><td><code>INSERT ... ON CONFLICT</code>, <code>RETURNING</code></td><td><code>MERGE</code> (with care for concurrency) or <code>UPDATE</code>/<code>INSERT</code>, <code>OUTPUT</code></td><td class="part">medium</td></tr>
+    <tr><td><code>pg_trgm</code> "contains" search indexes</td><td>full-text index, or plain <code>LIKE</code> (slower on large tables)</td><td class="part">medium</td></tr>
+    <tr><td>Arrays (<code>VARCHAR[]</code> for permissions, options)</td><td>child tables or JSON text</td><td class="part">small-medium</td></tr>
+    <tr><td>Schema scripts run at start-up (idempotent, <code>DO $$</code> blocks)</td><td>T-SQL batches with <code>IF NOT EXISTS</code> and <code>GO</code> separators</td><td class="part">medium</td></tr>
+    <tr><td>Docker image <code>postgres:18.6</code></td><td><code>mcr.microsoft.com/mssql/server</code> (Linux), Agent enabled for CDC, <code>MSSQL_PID</code> for the edition</td><td class="yes">small</td></tr>
+    <tr><td>JDBC driver PgJDBC</td><td>Microsoft JDBC driver (MIT licence)</td><td class="yes">small</td></tr>
+  </table></div>
+  <p>Unchanged: Spring MVC, JSP screens, React Analytics, ClickHouse queries, formulas, downloads, security rules and the module structure. The application talks to the database only through its DAOs and SQL scripts, which is what keeps the change contained.</p>
+</section>
+
+<section id="reports">
+  <h2>9. Old JSP reports vs Analytics, with SQL Server</h2>
+  <div class="wrap"><table>
+    <tr><th></th><th>Old JSP reports</th><th>Analytics</th></tr>
+    <tr><td>Where they run</td><td>on the live database (then SQL Server)</td><td>on ClickHouse (options A, B, C) &mdash; unchanged</td></tr>
+    <tr><td>What changes</td><td>their SQL (paging, search, totals) is rewritten in T-SQL</td><td>nothing for users; only how data arrives in ClickHouse</td></tr>
+    <tr><td>Speed at large volume</td><td>still scans the live tables; a column-store index can help, at extra cost to every write</td><td>same as today: independent of the live database's size and load</td></tr>
+    <tr><td>Effect on registration</td><td>heavy reports compete with registrations, as with PostgreSQL</td><td>negligible (separate store)</td></tr>
+    <tr><td>Freshness</td><td>live</td><td>seconds (A, B) or about a minute (C)</td></tr>
+  </table></div>
+  <p>The conclusion of the <a href="Reports-Comparison-JSP-vs-Analytics.html">reports comparison</a> holds for SQL Server as well: Analytics protects the registration database from heavy reporting, whichever database that is.</p>
+</section>
+
+<section id="risks">
+  <h2>10. Risks and how to test before deciding</h2>
+  <div class="wrap"><table>
+    <tr><th>Risk</th><th>How to check (about 2-3 days of trial)</th></tr>
+    <tr><td>CDC delay under load is higher than expected</td><td>Run SQL Server Developer in Docker with Agent, enable CDC on an outbox table, register 1,000 patients in a burst, measure registration &rarr; ClickHouse time with capture intervals 5 s and 1 s</td></tr>
+    <tr><td>Payload format differs (dates, booleans, numbers)</td><td>Build the snapshot with <code>FOR JSON PATH</code>, send it through the EventRouter with <code>table.expand.json.payload</code>, compare messages field by field with today's</td></tr>
+    <tr><td>ODBC bridge complexity in ClickHouse</td><td>Build a ClickHouse image with the Microsoft ODBC driver; run the backfill of 1 lakh rows; compare with a <code>bcp</code> + CSV copy job and keep the simpler one</td></tr>
+    <tr><td>Change tables and log grow (CDC retention, Agent stopped)</td><td>Stop the Agent for an hour during the trial, then watch log size and catch-up time; set retention to hours, not days, for the outbox</td></tr>
+    <tr><td>Memory on this laptop</td><td>Measure the stack with SQL Server (2 GB minimum) before planning stage 6</td></tr>
+    <tr><td>Licence fit</td><td>Confirm the edition needed for production with Microsoft or your licensing partner</td></tr>
+  </table></div>
+</section>
+
+<section id="licensed">
+  <h2>11. If you already have a licensed SQL Server</h2>
+  <p>Then the licence question of section 6 disappears for production and the choice becomes technical. The recommended set-up is <b>option A</b> (CDC + Debezium + Kafka + ClickHouse): it keeps everything already built on the reporting side and gives seconds-fresh reports.</p>
+  <h3>11.1 Check the licence covers what option A needs</h3>
+  <div class="wrap"><table>
+    <tr><th>Check</th><th>Why</th></tr>
+    <tr><td>Edition is <b>Standard or Enterprise</b> (not Express / Web)</td><td>CDC needs SQL Server Agent; Express has no Agent</td></tr>
+    <tr><td>Version 2016 SP1 or later (2019 / 2022 recommended)</td><td>CDC in Standard since 2016 SP1; <code>FOR JSON</code>, <code>SESSION_CONTEXT</code> and row-level security since 2016</td></tr>
+    <tr><td>The licence covers the machine or VM or container where it runs (core-based licences count the cores given to it)</td><td>moving from Windows to a Linux container or VM is a licensing event</td></tr>
+    <tr><td>Development and test copies use the free <b>Developer</b> edition</td><td>keeps the Docker-only demo licence-free; same features as Enterprise</td></tr>
+    <tr><td>A DBA may enable CDC and SQL Server Agent on the database</td><td><code>sys.sp_cdc_enable_db</code> needs sysadmin; the capture and cleanup jobs run under the Agent</td></tr>
+  </table></div>
+  <h3>11.2 What it changes in the plan</h3>
+  <div class="wrap"><table>
+    <tr><th></th><th>Without licence</th><th>With licence (option A)</th></tr>
+    <tr><td>Change capture</td><td>Express: no CDC, own outbox publisher (option B)</td><td>CDC + Debezium SQL Server connector, like today's PostgreSQL connector</td></tr>
+    <tr><td>Database size</td><td>Express: 10 GB per database</td><td>no practical limit (crores of rows fit)</td></tr>
+    <tr><td>Report freshness</td><td>1-5 s (B) or 1 min (C)</td><td>2-10 s by default, 1-3 s with the capture job at 1 s</td></tr>
+    <tr><td>Effort</td><td>18-26 days (B) / 14-21 days (C)</td><td><b>17-25 days</b> &mdash; most of it is porting the application's SQL, not the pipeline</td></tr>
+    <tr><td>Extra cost</td><td>none</td><td>none beyond the existing licence (Debezium, Kafka, ClickHouse are free)</td></tr>
+    <tr><td>Kafka / ClickHouse / Analytics UI</td><td colspan="2">unchanged in both; ClickHouse's one-minute sync and backfill move to ODBC or a copy job</td></tr>
+  </table></div>
+  <h3>11.3 Steps (in order)</h3>
+  <ol>
+    <li><b>Trial, 2-3 days</b> (section 10) on SQL Server Developer in Docker: CDC on the outbox, Debezium connector, message compared with today's, delay measured.</li>
+    <li><b>Port the database scripts</b> (tables, keys, row-level security with <code>SESSION_CONTEXT</code>, procedures with <code>EXECUTE AS OWNER</code>, JSON custom fields, counters), 5-7 days.</li>
+    <li><b>Port the application SQL</b> in the DAOs and the start-up migrator, 4-6 days.</li>
+    <li><b>Pipeline</b>: enable CDC on <code>report_outbox</code> only, Debezium SQL Server connector with the same EventRouter and topic; ClickHouse sync and backfill through ODBC or <code>bcp</code>, 4-6 days.</li>
+    <li><b>Run all 201 tests</b> again, adjust Docker Compose (SQL Server Developer image with the Agent), update the documents, 4-6 days.</li>
+  </ol>
+  <div class="note">With a licence there is one more possibility: if other hospital systems already live on that SQL Server, the registration data can stay where the rest of the hospital's data is, and Analytics still runs on ClickHouse so that reporting load never reaches the licensed server. A licensed Always On readable secondary could also serve the legacy JSP reports, keeping them off the primary; check with your DBA.</div>
+</section>
+
+<section id="recommend">
+  <h2>12. Recommendation</h2>
+  <ul>
+    <li><b>If the choice is free:</b> keep PostgreSQL. It meets the open-source rule, it is already built and tested, and it gives the lowest delay.</li>
+    <li><b>If SQL Server is required and a Standard or Enterprise licence exists</b> (section 11): option <b>A</b> (CDC + Debezium). Kafka and ClickHouse stay as they are; most work is porting the application's SQL (about 3.5-5 weeks in total).</li>
+    <li><b>If SQL Server is required but must be free:</b> option <b>B</b> for real time or <b>C</b> for simplicity, accepting the Express limits (10 GB per database means it cannot hold crore-scale data); in practice a free set-up at that size means PostgreSQL.</li>
+    <li><b>Avoid option D</b> for large data: it brings back the load of heavy reports on the live database.</li>
+  </ul>
+  <div class="note">Whatever the database, the design choices that make this possible stay the same: one published patient snapshot message, reports on a separate store, and isolation rules in both databases.</div>
+</section>
+</main>
+</div>
+<script>
+(function () {
+  var btn = document.getElementById('themeBtn');
+  try { var t = localStorage.getItem('pr-doc-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  btn.addEventListener('click', function () {
+    var cur = document.documentElement.getAttribute('data-theme');
+    var dark = cur ? cur === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var next = dark ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('pr-doc-theme', next); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>

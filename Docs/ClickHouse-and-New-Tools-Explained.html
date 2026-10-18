@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClickHouse Explained</title>
+<style>
+:root {
+  --bg: #f5f7f9; --surface: #ffffff; --surface-2: #eef3f6; --text: #1d2730; --muted: #5d6b78;
+  --border: #d3dce3; --accent: #00707e; --accent-soft: #e0f1f3; --code-bg: #f0f3f6;
+  --ok: #2e7d32; --warn: #9a6400; --warn-bg: #fff6e5; --bad: #b3261e;
+  --pg: #336791; --pg-soft: #e3edf6; --ch: #b07d00; --ch-soft: #fff4d6;
+  --c1: #dbeafe; --c2: #dcfce7; --c3: #fde68a; --c4: #fbcfe8; --c5: #e9d5ff; --c6: #fed7aa;
+  --svg-box: #ffffff; --svg-line: #4d5b67; --svg-text: #1d2730; --svg-muted: #6a7885;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12171c; --surface: #1a2128; --surface-2: #212a33; --text: #e3e9ee; --muted: #9aa8b4;
+    --border: #33404c; --accent: #3fb6c4; --accent-soft: #163339; --code-bg: #212a33;
+    --ok: #7cc68a; --warn: #f0b45a; --warn-bg: #2e2717; --bad: #f08a80;
+    --pg: #8ab4dc; --pg-soft: #1b2a38; --ch: #f2c75c; --ch-soft: #33290f;
+    --c1: #1e3a5f; --c2: #1d4030; --c3: #4a3d10; --c4: #4a1d36; --c5: #36245a; --c6: #4d2e12;
+    --svg-box: #1f2830; --svg-line: #9aa8b4; --svg-text: #e3e9ee; --svg-muted: #9aa8b4;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12171c; --surface: #1a2128; --surface-2: #212a33; --text: #e3e9ee; --muted: #9aa8b4;
+  --border: #33404c; --accent: #3fb6c4; --accent-soft: #163339; --code-bg: #212a33;
+  --ok: #7cc68a; --warn: #f0b45a; --warn-bg: #2e2717; --bad: #f08a80;
+  --pg: #8ab4dc; --pg-soft: #1b2a38; --ch: #f2c75c; --ch-soft: #33290f;
+  --c1: #1e3a5f; --c2: #1d4030; --c3: #4a3d10; --c4: #4a1d36; --c5: #36245a; --c6: #4d2e12;
+  --svg-box: #1f2830; --svg-line: #9aa8b4; --svg-text: #e3e9ee; --svg-muted: #9aa8b4;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 "Segoe UI", system-ui, -apple-system, Arial, sans-serif; }
+a { color: var(--accent); }
+code, pre { font-family: Consolas, "Cascadia Mono", "Courier New", monospace; font-size: 13px; }
+code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+pre { background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; border: 1px solid var(--border); line-height: 1.45; }
+pre code { background: none; padding: 0; overflow-wrap: normal; }
+.layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 100vh; }
+nav.toc { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--surface); border-right: 1px solid var(--border); padding: 20px 16px; }
+nav.toc .brand { font-weight: 700; color: var(--accent); }
+nav.toc .sub { color: var(--muted); font-size: 12px; margin-bottom: 14px; }
+nav.toc ol { margin: 0; padding-left: 20px; }
+nav.toc li { margin: 3px 0; font-size: 13.5px; }
+nav.toc a { text-decoration: none; color: var(--text); }
+nav.toc a:hover { color: var(--accent); }
+main { padding: 28px 40px 60px; max-width: 1180px; width: 100%; min-width: 0; }
+header.hero { background: var(--surface); border: 1px solid var(--border); border-left: 5px solid var(--accent); border-radius: 8px; padding: 22px 26px; margin-bottom: 24px; }
+header.hero h1 { margin: 0 0 6px; font-size: 26px; }
+header.hero p { margin: 4px 0; color: var(--muted); }
+section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 22px 26px; margin-bottom: 22px; min-width: 0; }
+section h2 { margin: 0 0 14px; font-size: 21px; padding-bottom: 8px; border-bottom: 2px solid var(--accent-soft); }
+section h3 { font-size: 16.5px; margin: 22px 0 8px; }
+section h4 { font-size: 15px; margin: 16px 0 6px; color: var(--muted); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 10px 0; }
+th, td { border: 1px solid var(--border); padding: 6px 9px; text-align: left; vertical-align: top; }
+th { background: var(--surface-2); }
+.wrap { overflow-x: auto; }
+.mono td { font-family: Consolas, "Courier New", monospace; font-size: 12.5px; }
+.k1 { background: var(--c1); } .k2 { background: var(--c2); } .k3 { background: var(--c3); }
+.k4 { background: var(--c4); } .k5 { background: var(--c5); } .k6 { background: var(--c6); }
+.pg { color: var(--pg); font-weight: 600; }
+.ch { color: var(--ch); font-weight: 600; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; }
+.card { border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; background: var(--surface-2); }
+.card h3, .card h4 { margin-top: 0; }
+.card.pgc { border-top: 4px solid var(--pg); }
+.card.chc { border-top: 4px solid var(--ch); }
+.hint { color: var(--muted); font-size: 13px; }
+.note { background: var(--surface-2); border-left: 4px solid var(--accent); padding: 10px 14px; border-radius: 4px; margin: 12px 0; }
+.warnbox { background: var(--warn-bg); border-left: 4px solid var(--warn); padding: 10px 14px; border-radius: 4px; margin: 12px 0; }
+.tool { border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; margin: 14px 0; }
+.tool h3 { margin-top: 0; }
+.tag { display: inline-block; font-size: 12px; background: var(--accent-soft); border-radius: 10px; padding: 0 8px; margin-left: 6px; vertical-align: middle; }
+svg { width: 100%; height: auto; display: block; margin: 8px 0; }
+.diagram { overflow-x: auto; }
+.diagram svg { min-width: 820px; }
+svg .box { fill: var(--svg-box); stroke: var(--svg-line); stroke-width: 1.3; }
+svg .bpg { fill: var(--pg-soft); stroke: var(--pg); stroke-width: 1.5; }
+svg .bch { fill: var(--ch-soft); stroke: var(--ch); stroke-width: 1.5; }
+svg .f1 { fill: var(--c1); } svg .f2 { fill: var(--c2); } svg .f3 { fill: var(--c3); } svg .f4 { fill: var(--c4); } svg .f5 { fill: var(--c5); } svg .f6 { fill: var(--c6); }
+svg .cell { stroke: var(--svg-line); stroke-width: 0.8; }
+svg text { fill: var(--svg-text); font: 13px "Segoe UI", Arial, sans-serif; }
+svg text.s { fill: var(--svg-muted); font-size: 11.5px; }
+svg text.m { font: 11.5px Consolas, "Courier New", monospace; }
+svg text.b { font-weight: 700; }
+svg .ln { stroke: var(--svg-line); stroke-width: 1.4; fill: none; }
+.theme-btn { margin-top: 18px; font: inherit; font-size: 12px; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 5px 10px; cursor: pointer; }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  nav.toc { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--border); }
+  main { padding: 16px; }
+  section { padding: 16px; }
+  td, th, p, li { overflow-wrap: anywhere; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc" aria-label="Contents">
+  <div class="brand">ClickHouse explained</div>
+  <div class="sub">for people who know relational databases &middot; plus every new tool of this project, with examples &middot; 18 Oct 2026</div>
+  <ol>
+    <li><a href="#why">Why a second database?</a></li>
+    <li><a href="#rowcol">Rows vs columns</a></li>
+    <li><a href="#example">Example: 2 PostgreSQL tables &rarr; ClickHouse</a></li>
+    <li><a href="#disk">How a table is stored on disk</a></li>
+    <li><a href="#index">Sort key and sparse index</a></li>
+    <li><a href="#types">Data types and compression</a></li>
+    <li><a href="#updates">Updates and deletes</a></li>
+    <li><a href="#inserts">How data arrives</a></li>
+    <li><a href="#queries">Queries, real numbers, time comparison</a></li>
+    <li><a href="#security">Security in ClickHouse</a></li>
+    <li><a href="#differences">RDBMS habits that change</a></li>
+    <li><a href="#ourtable">Our table, line by line</a></li>
+    <li><a href="#tools">Every new tool, with an example</a></li>
+    <li><a href="#try">Try it yourself</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+  </ol>
+  <button class="theme-btn" type="button" id="themeBtn">Switch light / dark</button>
+  <div class="sub" style="margin-top:14px">Related: <a href="Patient-Registration-Project-Guide.html">Project guide</a> &middot; <a href="Reports-Comparison-JSP-vs-Analytics.html">Reports comparison</a> &middot; <a href="SQL-Server-Impact-Analysis.html">SQL Server impact</a></div>
+</nav>
+<main>
+<header class="hero">
+  <h1>How ClickHouse works &mdash; explained for relational-database users</h1>
+  <p>What happens to the patient data when it leaves PostgreSQL: how ClickHouse stores it, why it is fast for reports, how updates work, and how it is kept secure. Then each new tool of the project (Docker, Kafka, Debezium, React and others) with an example from this project.</p>
+  <p>Numbers marked "measured" come from the running system on 18 Oct 2026 (H001 1,00,002 patients, H002 20,000, H003 10,000).</p>
+</header>
+
+<section id="why">
+  <h2>1. Why a second database?</h2>
+  <div class="cards">
+    <div class="card pgc">
+      <h3>PostgreSQL (OLTP)</h3>
+      <p><b>O</b>n<b>L</b>ine <b>T</b>ransaction <b>P</b>rocessing: many small reads and writes of <i>one</i> patient at a time ("save this registration", "open patient 4711"). Strong at transactions, constraints, joins, updates in place.</p>
+    </div>
+    <div class="card chc">
+      <h3>ClickHouse (OLAP)</h3>
+      <p><b>O</b>n<b>L</b>ine <b>A</b>nalytical <b>P</b>rocessing: few, large queries over <i>many</i> patients ("patients per department and month for 3 years"). Strong at scanning, counting and summing millions of rows quickly; weak at single-row updates.</p>
+    </div>
+  </div>
+  <p>The project keeps <b>both</b>: registration writes to PostgreSQL (the source of truth); a copy of the patient data, reshaped for reporting, is kept in ClickHouse; the Analytics screens read only ClickHouse. Heavy reports therefore never slow down the registration desk.</p>
+</section>
+
+<section id="rowcol">
+  <h2>2. Rows vs columns: the one idea to remember</h2>
+  <p>Take 4 patients with 4 columns. A row store (PostgreSQL, SQL Server, Oracle, MySQL) writes all values of one row next to each other. A column store (ClickHouse) writes all values of one column next to each other.</p>
+  <div class="diagram"><svg viewBox="0 0 1000 260" role="img" aria-label="Row storage compared with column storage">
+    <text x="20" y="22" class="b">Row store (PostgreSQL): one page holds whole rows</text>
+    <g transform="translate(20,35)">
+      <rect class="cell f1" x="0" y="0" width="70" height="26"/><text x="35" y="18" text-anchor="middle" class="m">1</text>
+      <rect class="cell f2" x="70" y="0" width="90" height="26"/><text x="115" y="18" text-anchor="middle" class="m">Male</text>
+      <rect class="cell f3" x="160" y="0" width="90" height="26"/><text x="205" y="18" text-anchor="middle" class="m">Pune</text>
+      <rect class="cell f4" x="250" y="0" width="70" height="26"/><text x="285" y="18" text-anchor="middle" class="m">400</text>
+      <rect class="cell f1" x="0" y="26" width="70" height="26"/><text x="35" y="44" text-anchor="middle" class="m">2</text>
+      <rect class="cell f2" x="70" y="26" width="90" height="26"/><text x="115" y="44" text-anchor="middle" class="m">Female</text>
+      <rect class="cell f3" x="160" y="26" width="90" height="26"/><text x="205" y="44" text-anchor="middle" class="m">Pune</text>
+      <rect class="cell f4" x="250" y="26" width="70" height="26"/><text x="285" y="44" text-anchor="middle" class="m">300</text>
+      <rect class="cell f1" x="0" y="52" width="70" height="26"/><text x="35" y="70" text-anchor="middle" class="m">3</text>
+      <rect class="cell f2" x="70" y="52" width="90" height="26"/><text x="115" y="70" text-anchor="middle" class="m">Female</text>
+      <rect class="cell f3" x="160" y="52" width="90" height="26"/><text x="205" y="70" text-anchor="middle" class="m">Mumbai</text>
+      <rect class="cell f4" x="250" y="52" width="70" height="26"/><text x="285" y="70" text-anchor="middle" class="m">200</text>
+      <rect class="cell f1" x="0" y="78" width="70" height="26"/><text x="35" y="96" text-anchor="middle" class="m">4</text>
+      <rect class="cell f2" x="70" y="78" width="90" height="26"/><text x="115" y="96" text-anchor="middle" class="m">Male</text>
+      <rect class="cell f3" x="160" y="78" width="90" height="26"/><text x="205" y="96" text-anchor="middle" class="m">Pune</text>
+      <rect class="cell f4" x="250" y="78" width="70" height="26"/><text x="285" y="96" text-anchor="middle" class="m">100</text>
+      <text x="0" y="126" class="s">"count by gender" must read every page, i.e. all 4 columns,</text>
+      <text x="0" y="141" class="s">even though it needs only one of them</text>
+    </g>
+    <text x="520" y="22" class="b">Column store (ClickHouse): one file per column</text>
+    <g transform="translate(520,35)">
+      <text x="0" y="14" class="s">patient_id</text>
+      <rect class="cell f1" x="90" y="0" width="60" height="22"/><text x="120" y="15" text-anchor="middle" class="m">1</text>
+      <rect class="cell f1" x="150" y="0" width="60" height="22"/><text x="180" y="15" text-anchor="middle" class="m">2</text>
+      <rect class="cell f1" x="210" y="0" width="60" height="22"/><text x="240" y="15" text-anchor="middle" class="m">3</text>
+      <rect class="cell f1" x="270" y="0" width="60" height="22"/><text x="300" y="15" text-anchor="middle" class="m">4</text>
+      <text x="0" y="46" class="s">gender</text>
+      <rect class="cell f2" x="90" y="32" width="60" height="22"/><text x="120" y="47" text-anchor="middle" class="m">Male</text>
+      <rect class="cell f2" x="150" y="32" width="60" height="22"/><text x="180" y="47" text-anchor="middle" class="m">Female</text>
+      <rect class="cell f2" x="210" y="32" width="60" height="22"/><text x="240" y="47" text-anchor="middle" class="m">Female</text>
+      <rect class="cell f2" x="270" y="32" width="60" height="22"/><text x="300" y="47" text-anchor="middle" class="m">Male</text>
+      <text x="0" y="78" class="s">city</text>
+      <rect class="cell f3" x="90" y="64" width="60" height="22"/><text x="120" y="79" text-anchor="middle" class="m">Pune</text>
+      <rect class="cell f3" x="150" y="64" width="60" height="22"/><text x="180" y="79" text-anchor="middle" class="m">Pune</text>
+      <rect class="cell f3" x="210" y="64" width="60" height="22"/><text x="240" y="79" text-anchor="middle" class="m">Mumbai</text>
+      <rect class="cell f3" x="270" y="64" width="60" height="22"/><text x="300" y="79" text-anchor="middle" class="m">Pune</text>
+      <text x="0" y="110" class="s">fee</text>
+      <rect class="cell f4" x="90" y="96" width="60" height="22"/><text x="120" y="111" text-anchor="middle" class="m">400</text>
+      <rect class="cell f4" x="150" y="96" width="60" height="22"/><text x="180" y="111" text-anchor="middle" class="m">300</text>
+      <rect class="cell f4" x="210" y="96" width="60" height="22"/><text x="240" y="111" text-anchor="middle" class="m">200</text>
+      <rect class="cell f4" x="270" y="96" width="60" height="22"/><text x="300" y="111" text-anchor="middle" class="m">100</text>
+      <text x="0" y="141" class="s">"count by gender" reads only the gender file; similar values sit together and</text>
+      <text x="0" y="156" class="s">compress very well ("Pune, Pune, Mumbai, Pune" -> a dictionary + small numbers)</text>
+    </g>
+    <text x="20" y="225" class="s">With 100 columns and a report that uses 3 of them, the column store reads about 3% of the data a row store reads. That is most of the speed difference.</text>
+  </svg></div>
+</section>
+
+<section id="example">
+  <h2>3. Example: two PostgreSQL tables become one ClickHouse table</h2>
+  <h3>3.1 In PostgreSQL (normalised, as you know it)</h3>
+  <div class="cards">
+    <div>
+      <h4><code>patient</code> (6 columns)</h4>
+      <div class="wrap"><table class="mono">
+        <tr><th>patient_id</th><th>registration_no</th><th>first_name</th><th>gender</th><th>city</th><th>hospital_id</th></tr>
+        <tr><td>1</td><td>H001-REG20260000001</td><td>Ravi</td><td>Male</td><td>Pune</td><td>1</td></tr>
+        <tr><td>2</td><td>H001-REG20260000002</td><td>Neha</td><td>Female</td><td>Pune</td><td>1</td></tr>
+        <tr><td>3</td><td>H002-REG20260000001</td><td>Kavya</td><td>Female</td><td>Nashik</td><td>2</td></tr>
+      </table></div>
+    </div>
+    <div>
+      <h4><code>patient_visit</code> (6 columns)</h4>
+      <div class="wrap"><table class="mono">
+        <tr><th>visit_id</th><th>patient_id</th><th>dept_name</th><th>visit_type</th><th>fee</th><th>visit_date</th></tr>
+        <tr><td>10</td><td>1</td><td>Cardiology</td><td>NEW</td><td>400.00</td><td>2026-10-01</td></tr>
+        <tr><td>11</td><td>2</td><td>Cardiology</td><td>NEW</td><td>300.00</td><td>2026-10-02</td></tr>
+        <tr><td>12</td><td>3</td><td>General Medicine</td><td>NEW</td><td>700.00</td><td>2026-10-02</td></tr>
+      </table></div>
+    </div>
+  </div>
+  <p>A report "fee per department" joins the two tables at query time: <code>SELECT v.dept_name, sum(v.fee) FROM patient p JOIN patient_visit v ON v.patient_id = p.patient_id GROUP BY v.dept_name</code>. Fine for thousands of rows; with crores of rows the join and the scan of both tables become the slow part.</p>
+
+  <h3>3.2 The bridge: a view that flattens</h3>
+  <p>PostgreSQL publishes one flat row per patient, already joined, through the view <code>patientreg.v_patient_report</code> (the "patient snapshot"). It also adds what reporting needs and removes what it must not see (no Aadhaar, mobile masked):</p>
+<pre><code>CREATE VIEW v_patient_report AS
+SELECT p.patient_id, p.registration_no, concat_ws(' ', p.first_name, p.last_name) AS patient_name,
+       p.gender, c.city, d.dept_name, v.visit_type, v.registration_fee, p.hospital_id,
+       p.row_version AS version, ...
+FROM patient p JOIN patient_contact c ... JOIN patient_visit v ON ... AND v.registration_visit JOIN department d ...;</code></pre>
+
+  <h3>3.3 In ClickHouse (denormalised: one wide table)</h3>
+  <div class="wrap"><table class="mono">
+    <tr><th class="k1">hospital_id</th><th class="k2">registration_date</th><th class="k3">patient_id</th><th>registration_no</th><th>patient_name</th><th>gender</th><th>city</th><th>dept_name</th><th>visit_type</th><th>registration_fee</th><th>version</th><th>is_deleted</th></tr>
+    <tr><td class="k1">1</td><td class="k2">2026-10-01</td><td class="k3">1</td><td>H001-REG20260000001</td><td>Ravi Rao</td><td>Male</td><td>Pune</td><td>Cardiology</td><td>NEW</td><td>400.00</td><td>1</td><td>0</td></tr>
+    <tr><td class="k1">1</td><td class="k2">2026-10-02</td><td class="k3">2</td><td>H001-REG20260000002</td><td>Neha Joshi</td><td>Female</td><td>Pune</td><td>Cardiology</td><td>NEW</td><td>300.00</td><td>1</td><td>0</td></tr>
+    <tr><td class="k1">2</td><td class="k2">2026-10-02</td><td class="k3">3</td><td>H002-REG20260000001</td><td>Kavya Kulkarni</td><td>Female</td><td>Nashik</td><td>General Medicine</td><td>NEW</td><td>700.00</td><td>1</td><td>0</td></tr>
+  </table></div>
+  <ul>
+    <li>No join at report time: the department, the city and the patient are on the same row. "Fee per department" becomes <code>SELECT dept_name, sum(registration_fee) FROM patient_report GROUP BY dept_name</code> and reads only two columns.</li>
+    <li>Repeating "Cardiology" on many rows does not waste space: ClickHouse stores it once in a dictionary and keeps small numbers per row (section 6).</li>
+    <li>The coloured columns are the <b>sort key</b> (section 5): rows are kept physically ordered by hospital, then date, then patient.</li>
+    <li><code>version</code> and <code>is_deleted</code> are how changes are handled (section 7).</li>
+    <li>The real table has 33 columns, including <code>custom_fields</code> (the hospitals' own form fields as a key&rarr;value map) &mdash; see section 12.</li>
+  </ul>
+</section>
+
+<section id="disk">
+  <h2>4. How a table is stored on disk</h2>
+  <p>The table engine used here is <b>MergeTree</b> (the main ClickHouse engine family). Data is not stored in pages that are updated in place; it is stored in immutable <b>parts</b>.</p>
+  <div class="diagram"><svg viewBox="0 0 1000 300" role="img" aria-label="Partitions, parts and column files">
+    <rect class="bch" x="10" y="10" width="980" height="280" rx="10"/>
+    <text x="30" y="34" class="b">table analytics.patient_report</text>
+    <rect class="box" x="30" y="50" width="300" height="225" rx="8"/><text x="45" y="72" class="b">partition 202610 (October 2026)</text>
+    <rect class="box" x="45" y="85" width="270" height="80" rx="6"/><text x="55" y="104" class="b">part 202610_1_5_1</text><text x="55" y="122" class="s">rows written in 5 inserts, merged once</text><text x="55" y="140" class="m">patient_id.bin  gender.bin  city.bin ...</text><text x="55" y="156" class="m">primary.idx  (+ marks per column)</text>
+    <rect class="box" x="45" y="175" width="270" height="80" rx="6"/><text x="55" y="194" class="b">part 202610_6_6_0</text><text x="55" y="212" class="s">a newer, small part (one insert)</text><text x="55" y="230" class="s">will be merged in the background</text>
+    <rect class="box" x="350" y="50" width="300" height="225" rx="8"/><text x="365" y="72" class="b">partition 202609 (September 2026)</text>
+    <rect class="box" x="365" y="85" width="270" height="80" rx="6"/><text x="375" y="104" class="b">part 202609_1_40_3</text><text x="375" y="122" class="s">one big, fully merged part</text>
+    <rect class="box" x="670" y="50" width="300" height="225" rx="8"/><text x="685" y="72" class="b">... one partition per month</text>
+    <text x="685" y="100" class="s">measured: 25 partitions, 49 active parts,</text>
+    <text x="685" y="118" class="s">2,53,653 stored rows for 1,30,002 patients</text>
+    <text x="685" y="136" class="s">(older versions not merged away yet)</text>
+    <text x="685" y="166" class="s">11.4 MB on disk, 30.1 MB uncompressed</text>
+    <text x="685" y="184" class="s">PostgreSQL patient tables: 205 MB</text>
+    <text x="685" y="202" class="s">(all 70 fields + indexes; not like for like)</text>
+  </svg></div>
+  <div class="wrap"><table>
+    <tr><th>ClickHouse term</th><th>Closest RDBMS idea</th><th>What it is here</th></tr>
+    <tr><td><b>Partition</b></td><td>table partitioning</td><td><code>PARTITION BY toYYYYMM(registration_date)</code>: one per month. A query for "last month" skips the other partitions completely.</td></tr>
+    <tr><td><b>Part</b></td><td>(no direct equivalent) a sealed chunk of rows</td><td>Every insert creates a new part, sorted by the sort key. Parts are never changed; they are only merged into bigger parts or dropped.</td></tr>
+    <tr><td><b>Merge</b></td><td>a bit like VACUUM + reindex, automatic</td><td>A background thread combines small parts of a partition into bigger ones. During the merge, older versions of a row are discarded (section 7).</td></tr>
+    <tr><td><b>Column file</b></td><td>(none: rows live in pages)</td><td>In a "wide" part each column is its own compressed file. Small parts (like most of ours) use the "compact" format: one file, still organised column by column.</td></tr>
+    <tr><td><b>Granule</b></td><td>a block of rows</td><td>8,192 rows; the smallest unit ClickHouse reads (section 5).</td></tr>
+  </table></div>
+</section>
+
+<section id="index">
+  <h2>5. Sort key and the sparse index (instead of a B-tree)</h2>
+  <p>Our table is created with <code>ORDER BY (hospital_id, registration_date, patient_id)</code>. Inside every part the rows are physically sorted that way. ClickHouse then keeps a <b>sparse index</b>: not one entry per row (like a PostgreSQL B-tree), but one entry per granule of 8,192 rows.</p>
+  <div class="diagram"><svg viewBox="0 0 1000 220" role="img" aria-label="Sparse primary index">
+    <text x="20" y="22" class="b">primary.idx (one line per 8,192 rows; values illustrative)</text>
+    <g transform="translate(20,35)">
+      <rect class="cell f1" x="0" y="0" width="260" height="24"/><text x="10" y="16" class="m">mark 0: (1, 2024-10-01, 15)</text>
+      <rect class="cell f1" x="0" y="24" width="260" height="24"/><text x="10" y="40" class="m">mark 1: (1, 2024-10-19, 8231)</text>
+      <rect class="cell f1" x="0" y="48" width="260" height="24"/><text x="10" y="64" class="m">mark 2: (1, 2024-11-07, 16570)</text>
+      <rect class="cell f1" x="0" y="72" width="260" height="24"/><text x="10" y="88" class="m">...</text>
+      <rect class="cell f2" x="0" y="96" width="260" height="24"/><text x="10" y="112" class="m">mark 13: (2, 2024-10-01, 100013)</text>
+    </g>
+    <g transform="translate(330,35)">
+      <rect class="box" x="0" y="0" width="300" height="120" rx="6"/>
+      <text x="10" y="22" class="b">Query: WHERE hospital_id = 2</text>
+      <text x="10" y="44" class="s">1. binary search in primary.idx: only marks</text>
+      <text x="10" y="60" class="s">   from 13 onwards can contain hospital 2</text>
+      <text x="10" y="80" class="s">2. read just those granules of the needed columns</text>
+      <text x="10" y="100" class="s">3. filter the rows inside them</text>
+    </g>
+    <g transform="translate(670,35)">
+      <rect class="box" x="0" y="0" width="300" height="120" rx="6"/>
+      <text x="10" y="22" class="b">Differences to a B-tree</text>
+      <text x="10" y="44" class="s">tiny (fits in memory for billions of rows)</text>
+      <text x="10" y="60" class="s">no uniqueness: duplicates are allowed</text>
+      <text x="10" y="76" class="s">great for ranges; poor for "find 1 row"</text>
+      <text x="10" y="92" class="s">one per table; extra "skip indexes" possible</text>
+    </g>
+    <text x="20" y="190" class="s">Choose the sort key from the most common filters: every report here filters by hospital (security) and often by date, so (hospital, date, patient) lets ClickHouse skip most of the data.</text>
+  </svg></div>
+  <p>Two <b>data skipping indexes</b> add help for other filters: <code>idx_dept</code> (the set of departments in each block of granules, so "department = 5" skips blocks without it) and <code>idx_name</code> (an n-gram filter for "name contains ...").</p>
+</section>
+
+<section id="types">
+  <h2>6. Data types and compression</h2>
+  <div class="wrap"><table>
+    <tr><th class="pg">PostgreSQL</th><th class="ch">ClickHouse (our choice)</th><th>Note</th></tr>
+    <tr><td><code>BIGINT</code> / <code>INTEGER</code></td><td><code>UInt64</code> / <code>UInt32</code> / <code>UInt16</code> / <code>UInt8</code></td><td>unsigned, sized to the values (age fits in 1 byte)</td></tr>
+    <tr><td><code>VARCHAR(n)</code></td><td><code>String</code></td><td>no length limit in the type; limits are checked by the application</td></tr>
+    <tr><td><code>VARCHAR</code> with few distinct values (gender, city, department)</td><td><code>LowCardinality(String)</code></td><td>dictionary encoding (below)</td></tr>
+    <tr><td><code>NUMERIC(10,2)</code></td><td><code>Decimal(10, 2)</code></td><td>exact money arithmetic</td></tr>
+    <tr><td><code>BOOLEAN</code></td><td><code>UInt8</code> (0/1)</td><td>sums give counts ("insured patients" = <code>sum(is_insured)</code>)</td></tr>
+    <tr><td><code>DATE</code> / <code>TIMESTAMP</code></td><td><code>Date</code> / <code>DateTime64(3, 'Asia/Kolkata')</code></td><td>time zone stored in the type</td></tr>
+    <tr><td><code>JSONB</code> (custom fields)</td><td><code>Map(String, String)</code></td><td><code>custom_fields['ward']</code> reads one key</td></tr>
+    <tr><td><code>NULL</code></td><td>usually a default (<code>''</code>, <code>0</code>)</td><td><code>Nullable(...)</code> exists but costs an extra column; we use defaults</td></tr>
+  </table></div>
+  <h3>LowCardinality, by example</h3>
+  <p>A city column with 1 lakh rows but only 26 different cities:</p>
+  <div class="wrap"><table class="mono">
+    <tr><th>stored dictionary (once)</th><th>stored per row</th></tr>
+    <tr><td>0 = Pune, 1 = Mumbai, 2 = Nashik, ... 25 = Nagpur</td><td>0, 0, 1, 0, 2, 25, 0, ... (one byte each)</td></tr>
+  </table></div>
+  <p>Instead of "Pune" (4 bytes plus length) 1 lakh times, ClickHouse stores the word once and a 1-byte number per row; the numbers then compress again (LZ4 by default). Grouping by city works on the small numbers. Measured for the whole table: <b>30.1 MB of data takes 11.4 MB on disk</b> (about 2.6 : 1), and repetitive columns such as gender, city or department compress far better than names.</p>
+</section>
+
+<section id="updates">
+  <h2>7. Updates and deletes: versions instead of UPDATE</h2>
+  <p>Parts are never edited, so ClickHouse does not do <code>UPDATE ... WHERE patient_id = 2</code> the way PostgreSQL does (it can, as a heavy background "mutation", but we do not use it). Instead the table engine is <b>ReplacingMergeTree(version, is_deleted)</b>: a change is written as a <b>new row with a higher version</b>.</p>
+  <h3>Example: Neha moves from Pune to Nagpur</h3>
+  <div class="cards">
+    <div class="card pgc">
+      <h4>In PostgreSQL</h4>
+<pre><code>UPDATE patient_contact SET city = 'Nagpur'
+ WHERE patient_id = 2;
+-- row_version of patient 2 goes 1 -> 2</code></pre>
+      <p>One row, changed in place.</p>
+    </div>
+    <div class="card chc">
+      <h4>In ClickHouse (just after the change)</h4>
+      <div class="wrap"><table class="mono">
+        <tr><th>patient_id</th><th>city</th><th>version</th><th>is_deleted</th></tr>
+        <tr><td>2</td><td>Pune</td><td>1</td><td>0</td></tr>
+        <tr><td>2</td><td>Nagpur</td><td>2</td><td>0</td></tr>
+      </table></div>
+      <p>Both rows exist, in different parts.</p>
+    </div>
+  </div>
+  <ul>
+    <li>A query with <code>FINAL</code> (<code>SELECT ... FROM patient_report FINAL</code>) shows only the highest version per sort key, i.e. "Nagpur". All our reports use <code>FINAL</code> and <code>is_deleted = 0</code>.</li>
+    <li>Later, a background merge keeps only version 2 and frees the space. Measured today: 2,53,653 stored rows, 1,30,002 visible with <code>FINAL</code> &mdash; the rest are old versions waiting for merges (they come from re-copies during development).</li>
+    <li>A delete is a new row with <code>is_deleted = 1</code> and a higher version.</li>
+    <li>The same change may arrive twice (Kafka and the one-minute sync): both carry version 2, so they collapse into one. This is why duplicates are harmless here.</li>
+  </ul>
+  <div class="note">RDBMS thinking: "the row is updated". ClickHouse thinking: "a newer version of the row is appended; reading with FINAL picks the newest". The version comes from PostgreSQL (<code>patient.row_version</code>), so the newest change always wins, whatever order messages arrive in.</div>
+</section>
+
+<section id="inserts">
+  <h2>8. How data arrives: tables that are not tables</h2>
+  <p>ClickHouse likes <b>batches</b>: one insert of 10,000 rows is far better than 10,000 inserts of one row (each insert creates a part). Three ClickHouse objects bring the data in:</p>
+  <div class="diagram"><svg viewBox="0 0 1000 230" role="img" aria-label="How data reaches the ClickHouse table">
+    <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--svg-line)"/></marker></defs>
+    <rect class="box" x="10" y="20" width="150" height="60" rx="8"/><text x="85" y="46" text-anchor="middle" class="b">Kafka topic</text><text x="85" y="64" text-anchor="middle" class="s">pr.patient.report</text>
+    <rect class="bch" x="200" y="20" width="230" height="60" rx="8"/><text x="315" y="44" text-anchor="middle" class="b">kafka_patient_report</text><text x="315" y="62" text-anchor="middle" class="s">ENGINE = Kafka (a consumer, no data)</text>
+    <rect class="bch" x="470" y="20" width="230" height="60" rx="8"/><text x="585" y="44" text-anchor="middle" class="b">mv_kafka_patient_report</text><text x="585" y="62" text-anchor="middle" class="s">materialized view = insert trigger</text>
+    <rect class="bch" x="760" y="80" width="220" height="70" rx="8"/><text x="870" y="108" text-anchor="middle" class="b">patient_report</text><text x="870" y="126" text-anchor="middle" class="s">ReplacingMergeTree (the data)</text>
+    <rect class="box" x="10" y="150" width="150" height="60" rx="8"/><text x="85" y="176" text-anchor="middle" class="b">PostgreSQL view</text><text x="85" y="194" text-anchor="middle" class="s">v_patient_report</text>
+    <rect class="bch" x="200" y="150" width="500" height="60" rx="8"/><text x="450" y="174" text-anchor="middle" class="b">mv_patient_report_sync: refreshable materialized view</text><text x="450" y="192" text-anchor="middle" class="s">every minute: SELECT ... FROM postgresql(...) WHERE changed in last 15 min</text>
+    <path class="ln" d="M160,50 H198" marker-end="url(#ar)"/>
+    <path class="ln" d="M430,50 H468" marker-end="url(#ar)"/>
+    <path class="ln" d="M700,50 C740,50 760,70 800,78" marker-end="url(#ar)"/>
+    <path class="ln" d="M160,180 H198" marker-end="url(#ar)"/>
+    <path class="ln" d="M700,180 C740,180 760,165 800,152" marker-end="url(#ar)"/>
+  </svg></div>
+  <div class="wrap"><table>
+    <tr><th>Object</th><th>RDBMS comparison</th><th>What it does here</th></tr>
+    <tr><td><b>Kafka engine table</b></td><td>a foreign table that reads a queue</td><td>Holds no data. Reading from it takes the next messages from Kafka (JSON rows) and remembers the position.</td></tr>
+    <tr><td><b>Materialized view</b> (normal)</td><td>an <code>AFTER INSERT</code> trigger, not a stored query result</td><td>Whenever a block of messages arrives in the Kafka table, its <code>SELECT</code> runs on that block and inserts the result into <code>patient_report</code>. Bad messages go to <code>pipeline_errors</code>.</td></tr>
+    <tr><td><b>Refreshable materialized view</b></td><td>a scheduled job (like a cron + <code>INSERT ... SELECT</code>)</td><td>Every minute it reads recently changed patients straight from PostgreSQL with the <code>postgresql()</code> table function and appends them. The safety net when Kafka is not running.</td></tr>
+    <tr><td><b>Backfill</b></td><td><code>INSERT INTO ... SELECT</code> from a linked server</td><td><code>infra/clickhouse/pipeline/backfill.sql</code> copies all patients at once (first start, after a restore, after bulk SQL loads).</td></tr>
+  </table></div>
+</section>
+
+<section id="queries">
+  <h2>9. Queries look like SQL &mdash; with real numbers</h2>
+  <p>ClickHouse speaks SQL. The differences you will notice are extra functions (<code>toStartOfMonth()</code>, <code>uniqExact()</code>, <code>countIf()</code>) and keywords such as <code>FINAL</code> and <code>SETTINGS</code>.</p>
+  <h3>Example 1: patients by gender in H001</h3>
+<pre><code>SELECT gender, count() FROM analytics.patient_report FINAL
+WHERE is_deleted = 0 AND hospital_id = 1
+GROUP BY gender ORDER BY gender;
+
+Female  48811
+Male    49201
+Other    1990</code></pre>
+  <div class="wrap"><table>
+    <tr><th></th><th>Measured</th></tr>
+    <tr><td class="ch">ClickHouse</td><td>read 2,53,200 rows but only the needed columns: <b>5.6 MB</b> (gender plus the sort-key and version columns that FINAL needs), 125 ms</td></tr>
+    <tr><td class="pg">PostgreSQL (same count on <code>patient</code>)</td><td>read <b>3,177 pages of 8 KB = about 25 MB</b>: whole rows, all 24 columns of the patient table</td></tr>
+  </table></div>
+  <h3>Example 2: department totals since 1 Jan 2026 (partition pruning)</h3>
+<pre><code>SELECT dept_name, count(), sum(registration_fee) FROM analytics.patient_report FINAL
+WHERE is_deleted = 0 AND hospital_id = 1 AND registration_date &gt;= '2026-01-01'
+GROUP BY dept_name ORDER BY 2 DESC LIMIT 3;
+
+General Medicine  12449  2492900
+Orthopaedics       5238  1557700
+Ophthalmology      5191  1557800</code></pre>
+  <p>Measured: 1,20,236 rows read instead of 2,53,653 (<b>3.6 MB</b>, 75 ms): the monthly partitions before 2026 were skipped without being opened.</p>
+  <div class="note">At 1 lakh rows PostgreSQL is fast too (under half a second). The gap grows with size: reading 4% of the bytes matters little for 25 MB, a lot for 25 GB. That is the reason for ClickHouse at crore scale (see the <a href="Reports-Comparison-JSP-vs-Analytics.html">reports comparison</a>).</div>
+  <h3>9.1 Time comparison for every report: existing logic vs report builder</h3>
+  <p class="hint">The same table as in the <a href="SQL-Server-Impact-Analysis.html#time">SQL Server impact</a> document (section 7.3), including the SQL Server column.</p>
+  <p><b>Existing logic</b> = the classic JSP reports, which query the live database (PostgreSQL today, SQL Server in the scenario). <b>Report builder</b> = Analytics, which queries ClickHouse whichever database feeds it, so its times are the same in both cases. <b>M</b> = measured on this machine (16 Oct 2026, hospital H001 with 1,00,002 patients, warm, one user); <b>A</b> = assumption, based on how each database works and on the measured values. The 1-crore columns are assumptions only: the load test (stage 6) has not been run.</p>
+  <div class="wrap"><table>
+    <tr><th rowspan="2">Report / action</th><th colspan="3">Existing logic (JSP on the live database)</th><th colspan="2">Report builder (Analytics on ClickHouse)</th></tr>
+    <tr><th>PostgreSQL, 1 lakh</th><th>SQL Server, 1 lakh</th><th>PostgreSQL or SQL Server, 1 crore</th><th>1 lakh (PG or SQL Server feed)</th><th>1 crore</th></tr>
+    <tr><td>Report 1: Patient Register, page 1, no filter</td><td>0.23 s (M)</td><td>0.2-0.4 s (A)</td><td>10-40 s (A): counting all rows of 5 joined tables</td><td>0.17 s (M)</td><td>0.3-0.8 s (A)</td></tr>
+    <tr><td>Register with filters (date, department, gender)</td><td>0.17-0.29 s (M)</td><td>0.2-0.4 s (A)</td><td>2-20 s (A), depends on how selective</td><td>0.1-0.2 s (A)</td><td>0.2-0.6 s (A)</td></tr>
+    <tr><td>Register name / number search ("contains")</td><td>0.2-0.5 s (A), trigram index</td><td>0.5-2 s (A): full-text index or plain LIKE scan</td><td>1-10 s (A)</td><td>0.2-0.4 s (A), n-gram skip index</td><td>0.5-2 s (A)</td></tr>
+    <tr><td>Register, last page (deep paging)</td><td>0.5-1 s (A)</td><td>0.5-1 s (A)</td><td>20-60 s (A): OFFSET skips crores of rows</td><td>0.2-0.4 s (A)</td><td>0.5-2 s (A)</td></tr>
+    <tr><td>Report 2: Department Summary</td><td>0.44 s (M)</td><td>0.3-0.6 s (A); 0.1-0.3 s with a column-store index</td><td>15-60 s (A); 1-5 s with a column-store index (SQL Server)</td><td>0.21 s (M)</td><td>0.3-1 s (A)</td></tr>
+    <tr><td>Register Excel, all 1 lakh rows</td><td>7.0 s (M), 14 columns, 8.4 MB</td><td>6-9 s (A)</td><td>limit 10 lakh rows: about 70-120 s for 10 lakh (A)</td><td>2.4-5.6 s (M), 5 columns, 3.1 MB</td><td>about 30-60 s for 10 lakh (A)</td></tr>
+    <tr><td>Register PDF (up to 50,000 rows)</td><td>5-10 s for 50,000 (A)</td><td>5-10 s (A)</td><td>same cap: 5-10 s plus the query time (A)</td><td>4-8 s for 50,000 (A)</td><td>4-8 s (A)</td></tr>
+    <tr><td>Summary Excel / PDF</td><td>under 1 s (A)</td><td>under 1 s (A)</td><td>as the summary query: 15-60 s (A)</td><td>under 1 s (A)</td><td>about 1 s (A)</td></tr>
+    <tr><td>Patients by Department and Gender (template)</td><td colspan="3" rowspan="9" style="vertical-align:middle;text-align:center">not available in the existing logic<br><span class="hint">(would need new JSP code; it would then behave like Report 2)</span></td><td>0.2-0.3 s (A)</td><td>0.4-1 s (A)</td></tr>
+    <tr><td>Monthly Registrations (template)</td><td>0.2-0.3 s (A)</td><td>0.4-1 s (A)</td></tr>
+    <tr><td>Pivot: department &times; gender</td><td>0.21 s (M)</td><td>0.4-1 s (A)</td></tr>
+    <tr><td>Subtotals / top N + Others / conditions on totals</td><td>0.2-0.5 s (A)</td><td>0.5-1.5 s (A)</td></tr>
+    <tr><td>Calculated field (e.g. age groups) as a group</td><td>0.2-0.4 s (A)</td><td>0.5-1.5 s (A)</td></tr>
+    <tr><td>% of total, rank, running total, change</td><td>0.2-0.4 s (A)</td><td>0.5-1.5 s (A)</td></tr>
+    <tr><td>Drill-down to the patients of one group</td><td>0.1-0.3 s (A)</td><td>0.2-0.6 s (A)</td></tr>
+    <tr><td>Dashboard with 4 tiles (one tile at a time)</td><td>about 1 s in total (A)</td><td>2-5 s in total (A)</td></tr>
+    <tr><td>CSV download (up to 20 lakh rows)</td><td>1-3 s for 1 lakh (A)</td><td>about 20-40 s for 20 lakh (A)</td></tr>
+  </table></div>
+  <div class="note"><b>How to read this table:</b>
+    <ul>
+      <li>At 1 lakh patients all paths are fast. PostgreSQL and SQL Server behave alike for the existing logic: both are row stores, and SQL Server's only clear advantage is the optional column-store index for summaries.</li>
+      <li>At 1 crore the existing logic slows down by roughly the growth of the data, because counts, totals and deep pages read every matching row of the live tables. Those reads also slow down registrations at the same moment.</li>
+      <li>The report builder grows much more slowly: it reads only the columns a report uses, skips months by partition, and runs on ClickHouse, not on the live database. Choosing SQL Server instead of PostgreSQL does not change its times at all, only how fresh the data is (section 7.1 of the SQL Server document).</li>
+      <li>Assumed times are for one user. With several users running reports at once, the existing logic degrades sooner, because the live database is also busy with registrations.</li>
+    </ul>
+  </div>
+
+</section>
+
+<section id="security">
+  <h2>10. Security in ClickHouse (how hospitals stay separated)</h2>
+  <div class="wrap"><table>
+    <tr><th>ClickHouse feature</th><th>RDBMS comparison</th><th>Our use</th></tr>
+    <tr><td>Users with <b>grants</b></td><td>GRANT SELECT</td><td><code>reporting_app</code> may only SELECT <code>patient_report</code> and <code>pipeline_heartbeat</code></td></tr>
+    <tr><td><b>Row policy</b></td><td>row-level security</td><td><code>has(splitByChar(',', getSetting('SQL_hospitals')), toString(hospital_id))</code>: a query without the hospitals setting fails</td></tr>
+    <tr><td><b>Settings profile</b> + <b>constraints</b></td><td>resource governor</td><td>read-only, 30 s, 400 MB, 1 lakh result rows, 4 threads; per-query changes only within 1&ndash;300 s etc.</td></tr>
+    <tr><td><b>Quota</b></td><td>per-user limits</td><td>per minute: 1,200 queries, 300 errors, 30 min of execution</td></tr>
+    <tr><td><b>Networks</b></td><td><code>pg_hba.conf</code></td><td>only localhost and private (Docker) networks</td></tr>
+  </table></div>
+  <p>Plus the application's own rule: <code>QueryBuilder</code> always adds <code>hospital_id IN (the user's hospitals)</code> and never puts user text into SQL.</p>
+</section>
+
+<section id="differences">
+  <h2>11. RDBMS habits that change</h2>
+  <div class="wrap"><table>
+    <tr><th>In PostgreSQL you would...</th><th>In ClickHouse you...</th></tr>
+    <tr><td>normalise into many tables and join</td><td>denormalise into one wide table (joins exist but are the expensive part)</td></tr>
+    <tr><td>rely on PRIMARY KEY / UNIQUE / FOREIGN KEY</td><td>have none of them enforced: the source system guarantees correctness, ClickHouse collapses versions</td></tr>
+    <tr><td>UPDATE / DELETE rows</td><td>append a new version (or a delete marker) and read with FINAL</td></tr>
+    <tr><td>insert row by row inside transactions</td><td>insert in batches; each insert is atomic on its own, there are no multi-table transactions</td></tr>
+    <tr><td>add an index per filter column</td><td>choose the sort key well, add a few skip indexes, rely on reading only the needed columns</td></tr>
+    <tr><td>use NULL freely</td><td>prefer defaults ('' or 0); Nullable costs space and speed</td></tr>
+    <tr><td>back it up as the only copy</td><td>treat it as a rebuildable copy: PostgreSQL is the source; <code>backfill.sql</code> rebuilds it</td></tr>
+  </table></div>
+</section>
+
+<section id="ourtable">
+  <h2>12. Our table, line by line</h2>
+<pre><code>CREATE TABLE analytics.patient_report
+(
+    patient_id          UInt64,                        -- from patient.patient_id
+    registration_no     String,
+    registration_date   Date,
+    patient_name        String,                        -- first + middle + last name
+    gender              LowCardinality(String),        -- few values: dictionary encoded
+    age_years           UInt8,
+    city                LowCardinality(String),
+    dept_name           LowCardinality(String),        -- joined in from department
+    registration_fee    Decimal(10, 2),                -- from the registration visit
+    is_insured          UInt8,                         -- boolean as 0/1
+    mobile_masked       String,                        -- 98XXXXXX10, never the full number
+    ...                                                -- 33 columns in total
+    version             UInt64,                        -- = patient.row_version, highest wins
+    is_deleted          UInt8,                         -- 1 = deleted
+    source_ts           DateTime64(3, 'Asia/Kolkata'), -- when the change happened in PostgreSQL
+    hospital_id         UInt32,                        -- every row belongs to one hospital
+    custom_fields       Map(String, String),           -- hospitals' own form fields (reportable ones only)
+    ingested_at         DateTime64(3, 'Asia/Kolkata') DEFAULT now64(3),
+    INDEX idx_dept dept_id TYPE set(0) GRANULARITY 4,                         -- skip index
+    INDEX idx_name lower(patient_name) TYPE ngrambf_v1(3, 65536, 3, 0) GRANULARITY 4   -- "contains" search
+)
+ENGINE = ReplacingMergeTree(version, is_deleted)       -- newest version wins; deletes are markers
+PARTITION BY toYYYYMM(registration_date)               -- one partition per month
+ORDER BY (hospital_id, registration_date, patient_id)  -- sort key = sparse index
+SETTINGS index_granularity = 8192;                     -- one index entry per 8,192 rows</code></pre>
+  <p>File: <code>infra/clickhouse/schema/001_patient_report.sql</code>. A hospital's own field "Ward" appears in reports as <code>custom_fields['ward']</code>, only for that hospital's rows.</p>
+</section>
+
+<section id="tools">
+  <h2>13. Every new tool, with an example</h2>
+  <p>The original project used Java, Spring MVC, JSP, Tomcat, PostgreSQL, Apache POI and OpenPDF. These tools were added later.</p>
+
+  <div class="tool">
+    <h3>Docker <span class="tag">runs everything</span></h3>
+    <p><b>What it is:</b> a way to run a program together with everything it needs (operating system libraries, Java, configuration) in an isolated <b>container</b>, started from an <b>image</b>. Like a light virtual machine that starts in seconds.</p>
+    <p><b>Why here:</b> anyone with Docker can run the whole system; nothing else needs installing.</p>
+    <p><b>Example:</b> the app image is built by <code>Dockerfile</code> in two stages, then run:</p>
+<pre><code>FROM maven:3.9.9-eclipse-temurin-21 AS build      # stage 1: compile with Maven
+RUN mvn -B -q -DskipTests package
+FROM tomcat:11.0.27-jdk21-temurin                 # stage 2: only Tomcat + the WAR
+COPY --from=build /src/pr-app/target/patient-registration.war /usr/local/tomcat/webapps/</code></pre>
+    <p><b>See it:</b> <code>docker ps</code> lists the running containers (<code>pr-app</code>, <code>pr-postgres</code>, ...).</p>
+  </div>
+
+  <div class="tool">
+    <h3>Docker Compose <span class="tag">starts the system</span></h3>
+    <p><b>What it is:</b> one file (<code>docker-compose.yml</code>) that describes several containers, their order, settings, ports and storage (<b>volumes</b>), started with one command.</p>
+    <p><b>Example:</b></p>
+<pre><code>services:
+  postgres:
+    image: postgres:18.6
+    ports: ["127.0.0.1:5432:5432"]      # reachable only from this computer
+    volumes: [pg-data:/var/lib/postgresql]
+  app:
+    build: .
+    depends_on: { postgres: { condition: service_healthy } }   # start after the database is ready</code></pre>
+    <p><b>See it:</b> <code>docker compose up -d</code> starts all; <code>docker compose --profile cdc up -d</code> adds Kafka and Debezium (profiles = optional groups).</p>
+  </div>
+
+  <div class="tool">
+    <h3>ClickHouse <span class="tag">reporting database</span></h3>
+    <p><b>What it is:</b> an open-source column-oriented database for analytics (sections 1&ndash;12).</p>
+    <p><b>Example:</b> <code>docker exec pr-clickhouse clickhouse-client --user admin --password ChAdmin@1234 -q "SELECT count() FROM analytics.patient_report FINAL"</code> &rarr; <code>130002</code>.</p>
+  </div>
+
+  <div class="tool">
+    <h3>Apache Kafka <span class="tag">message queue</span></h3>
+    <p><b>What it is:</b> a durable message log. Producers append messages to a <b>topic</b>; consumers read them at their own pace and remember their position (offset). Messages are kept for a time (here 7 days) even after they are read.</p>
+    <p><b>RDBMS comparison:</b> an append-only table that many readers can read independently, each with its own bookmark.</p>
+    <p><b>Example:</b> topic <code>pr.patient.report</code>, key = patient id (so one patient's changes stay in order), value = the patient snapshot as JSON:</p>
+<pre><code>key:   "130009"
+value: {"patient_id":130009,"registration_no":"H001-REG20260100003","gender":"Male",
+        "city":"Pune","dept_name":"General Medicine","version":1,"is_deleted":0,"hospital_id":1, ...}</code></pre>
+    <p><b>See it:</b> <code>docker exec pr-kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list</code></p>
+  </div>
+
+  <div class="tool">
+    <h3>Debezium (on Kafka Connect) <span class="tag">change data capture</span></h3>
+    <p><b>What it is:</b> a connector that reads a database's own change log (PostgreSQL's write-ahead log) and turns every committed insert, update or delete into a Kafka message. Kafka Connect is the framework that runs such connectors.</p>
+    <p><b>Why here:</b> the application does not need to talk to Kafka. It inserts the snapshot into the <code>report_outbox</code> table in the same transaction as the registration (and deletes it again); Debezium sees the insert in the log and publishes it. So a registration and its message are never out of step ("transactional outbox").</p>
+    <p><b>Example:</b> <code>infra/debezium/patient-outbox.json</code></p>
+<pre><code>"connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+"table.include.list": "patientreg.report_outbox",       -- only the outbox, never patient tables
+"slot.name": "pr_outbox_slot",
+"database.password": "${env:DBZ_PASSWORD}",             -- not shown by the REST API
+"transforms": "outbox"                                  -- EventRouter: payload -> topic pr.patient.report</code></pre>
+    <p><b>See it:</b> <code>curl -s http://localhost:8083/connectors/patient-outbox/status</code> &rarr; <code>"state":"RUNNING"</code>.</p>
+  </div>
+
+  <div class="tool">
+    <h3>PostgreSQL features new to the project</h3>
+    <p><b>Row-level security:</b> every patient table has a policy so the application sees only rows of the signed-in user's hospitals.</p>
+<pre><code>ALTER TABLE patient ENABLE ROW LEVEL SECURITY;  ALTER TABLE patient FORCE ROW LEVEL SECURITY;
+CREATE POLICY hospital_isolation ON patient
+    USING (hospital_id = ANY ((SELECT patientreg.current_hospitals())::INTEGER[]));
+-- the application sets app.hospital_ids = '1,3' on every connection it borrows</code></pre>
+    <p><b>Logical decoding</b> (<code>wal_level=logical</code>) lets Debezium read the change log; a <b>publication</b> limits it to the outbox table.</p>
+  </div>
+
+  <div class="tool">
+    <h3>Spring Security <span class="tag">sign-in and permissions</span></h3>
+    <p><b>What it is:</b> the standard Spring library for authentication (who are you) and authorisation (what may you do), with sessions, password hashing (BCrypt) and CSRF protection.</p>
+    <p><b>Example:</b> form login at <code>/login</code>; every form carries <code>&lt;input type="hidden" name="_csrf" value="..."&gt;</code>; the API answers 401 when not signed in; a <code>TenantFilter</code> loads the user's hospitals and permissions for every request.</p>
+  </div>
+
+  <div class="tool">
+    <h3>React + TypeScript <span class="tag">Analytics screens</span></h3>
+    <p><b>What it is:</b> React builds the page in the browser from small components that redraw when their data changes; TypeScript is JavaScript with types, checked before the code runs.</p>
+    <p><b>Why here:</b> a report builder with drag-like choices, live tables and charts is much easier as a browser application than as JSP pages that reload on every click. The JSP screens stay; both share one login session.</p>
+    <p><b>Example:</b> a filter row component (simplified from <code>pr-ui/src/components/FilterRow.tsx</code>):</p>
+<pre><code>export function FilterRow({ row, fields, onChange }: Props) {
+  return (
+    &lt;select value={row.field} onChange={e =&gt; onChange({ ...row, field: e.target.value })}&gt;
+      {fields.map(f =&gt; &lt;option key={f.name} value={f.name}&gt;{f.label}&lt;/option&gt;)}
+    &lt;/select&gt;
+  );
+}</code></pre>
+  </div>
+
+  <div class="tool">
+    <h3>Vite <span class="tag">front-end build</span></h3>
+    <p><b>What it is:</b> the build tool that turns the TypeScript/React source into a few optimised files (<code>index.html</code>, one JavaScript and one CSS file).</p>
+    <p><b>Example:</b> <code>npm run build</code> (run automatically by Maven) writes <code>pr-ui/target/classes/META-INF/resources/app/</code>, which is copied into the WAR and served at <code>/patient-registration/app/</code>. For development, <code>npm run dev</code> serves the UI with instant reload.</p>
+  </div>
+
+  <div class="tool">
+    <h3>TanStack Table <span class="tag">result grid</span></h3>
+    <p><b>What it is:</b> a "headless" table library: it manages columns, rows and sorting state; we draw the HTML ourselves.</p>
+    <p><b>Example:</b> <code>useReactTable({ data: result.rows, columns, getCoreRowModel: getCoreRowModel() })</code> in <code>ResultsTable.tsx</code>; sorting and paging are done by the server, the grid only shows one page.</p>
+  </div>
+
+  <div class="tool">
+    <h3>Apache ECharts <span class="tag">charts</span></h3>
+    <p><b>What it is:</b> an open-source chart library (bar, line, pie and many more) drawing on a canvas.</p>
+    <p><b>Example:</b> a bar chart of patients per department:</p>
+<pre><code>chart.setOption({
+  xAxis: { type: 'category', data: ['General Medicine', 'Orthopaedics', 'Ophthalmology'] },   // H001, measured
+  yAxis: { type: 'value' },
+  series: [{ type: 'bar', name: 'Patients', data: [25480, 10632, 10620] }],
+});</code></pre>
+  </div>
+
+  <div class="tool">
+    <h3>Maven multi-module + frontend-maven-plugin <span class="tag">one build</span></h3>
+    <p><b>What it is:</b> the project is split into modules (<code>pr-shared</code>, <code>pr-identity</code>, <code>pr-registration</code>, <code>pr-reporting</code>, <code>pr-ui</code>, <code>pr-app</code>) built by one parent <code>pom.xml</code>; the frontend plugin downloads Node and runs the UI build inside Maven.</p>
+    <p><b>Example:</b> <code>mvn install</code> builds the UI, all Java modules and <code>patient-registration.war</code> in one go.</p>
+  </div>
+
+  <div class="tool">
+    <h3>ArchUnit <span class="tag">architecture tests</span></h3>
+    <p><b>What it is:</b> unit tests about the code's structure.</p>
+    <p><b>Example:</b> the build fails if registration code starts using reporting code:</p>
+<pre><code>static final ArchRule registrationAndReportingAreIndependent = noClasses()
+        .that().resideInAPackage(BASE + "registration..")
+        .should().dependOnClassesThat().resideInAPackage(BASE + "reporting..");</code></pre>
+  </div>
+
+  <div class="tool">
+    <h3>Playwright <span class="tag">browser tests</span></h3>
+    <p><b>What it is:</b> it drives a real browser (here the installed Microsoft Edge) like a user: clicks, types, checks what is shown.</p>
+    <p><b>Example:</b> from <code>pr-ui/e2e/hospitals.spec.ts</code>:</p>
+<pre><code>test('sees all three hospitals and can compare them', async ({ page }) =&gt; {
+  await page.goto('app/');
+  await expect(page.locator('.userbar')).toContainText('3 hospitals');
+});</code></pre>
+    <p><b>See it:</b> <code>cd pr-ui</code> then <code>npx playwright test</code> (23 tests).</p>
+  </div>
+</section>
+
+<section id="try">
+  <h2>14. Try it yourself (read-only)</h2>
+<pre><code># open a ClickHouse prompt
+docker exec -it pr-clickhouse clickhouse-client --user admin --password ChAdmin@1234
+
+-- the table's partitions and parts
+SELECT partition, count() AS parts, sum(rows) AS rows FROM system.parts
+WHERE database = 'analytics' AND table = 'patient_report' AND active GROUP BY partition ORDER BY partition;
+
+-- versions waiting for a merge (stored rows vs visible patients)
+SELECT count() FROM analytics.patient_report;          -- all stored versions
+SELECT count() FROM analytics.patient_report FINAL;    -- one row per patient
+
+-- one patient's versions
+SELECT patient_id, city, version, is_deleted, source_ts FROM analytics.patient_report WHERE patient_id = 2;
+
+-- how much a query read
+SELECT read_rows, formatReadableSize(read_bytes), query_duration_ms FROM system.query_log
+WHERE type = 'QueryFinish' ORDER BY event_time DESC LIMIT 5;</code></pre>
+  <div class="warnbox">Do not run <code>OPTIMIZE</code>, <code>ALTER</code>, <code>DELETE</code> or <code>TRUNCATE</code> on the live table while experimenting. If something goes wrong, the table can be rebuilt from PostgreSQL with <code>backfill.sql</code>.</div>
+</section>
+
+<section id="glossary">
+  <h2>15. Glossary</h2>
+  <div class="wrap"><table>
+    <tr><th>Term</th><th>Meaning</th></tr>
+    <tr><td>OLTP / OLAP</td><td>transaction processing (many small reads/writes) / analytical processing (few large queries)</td></tr>
+    <tr><td>Column store</td><td>stores each column's values together; reads only the columns a query needs</td></tr>
+    <tr><td>MergeTree</td><td>ClickHouse's main table engine: sorted, immutable parts merged in the background</td></tr>
+    <tr><td>Part / partition / granule</td><td>sealed chunk of rows / group of parts (one month here) / block of 8,192 rows</td></tr>
+    <tr><td>Sort key (ORDER BY)</td><td>physical order of rows inside parts; basis of the sparse index</td></tr>
+    <tr><td>ReplacingMergeTree, FINAL</td><td>keeps the highest version per key; FINAL applies that at read time</td></tr>
+    <tr><td>LowCardinality</td><td>dictionary encoding for columns with few distinct values</td></tr>
+    <tr><td>Materialized view</td><td>in ClickHouse: an insert trigger that writes into another table</td></tr>
+    <tr><td>Kafka topic / offset</td><td>named message log / a consumer's position in it</td></tr>
+    <tr><td>CDC, Debezium</td><td>change data capture: reading committed changes from the database log; the tool that does it</td></tr>
+    <tr><td>Outbox</td><td>a table the application writes its outgoing messages to, in the same transaction as the business change</td></tr>
+    <tr><td>Container / image / volume</td><td>running isolated program / its template / its persistent storage (Docker)</td></tr>
+  </table></div>
+</section>
+</main>
+</div>
+<script>
+(function () {
+  var btn = document.getElementById('themeBtn');
+  try { var t = localStorage.getItem('pr-doc-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  btn.addEventListener('click', function () {
+    var cur = document.documentElement.getAttribute('data-theme');
+    var dark = cur ? cur === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var next = dark ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('pr-doc-theme', next); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>

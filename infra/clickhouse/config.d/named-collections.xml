@@ -1,0 +1,15 @@
+<!-- Connection to the published reporting view in PostgreSQL. The password comes from the container
+     environment (.env), so it never appears in SQL or in stored table definitions. -->
+<clickhouse>
+    <named_collections>
+        <pg_reporting>
+            <host>postgres</host>
+            <port>5432</port>
+            <user>reporting_ro</user>
+            <password from_env="REPORTING_RO_PASSWORD"/>
+            <database>postgres</database>
+            <schema>patientreg</schema>
+            <table>v_patient_report</table>
+        </pg_reporting>
+    </named_collections>
+</clickhouse>

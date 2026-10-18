@@ -1,0 +1,42 @@
+{
+  "id": "patients",
+  "label": "Patients",
+  "description": "One row per registered patient (registration visit) of your hospitals, refreshed from the live system within seconds (real-time sync) or every minute.",
+  "table": "patient_report",
+  "version": 2,
+  "freshnessColumn": "source_ts",
+  "defaultSort": [
+    { "field": "registration_date", "dir": "desc" },
+    { "field": "patient_id", "dir": "desc" }
+  ],
+  "fields": [
+    { "name": "hospital_name",      "label": "Hospital",          "type": "string", "role": "dimension", "suggest": true, "multiHospital": true },
+    { "name": "hospital_code",      "label": "Hospital Code",     "type": "string", "role": "dimension", "suggest": true, "multiHospital": true },
+    { "name": "registration_no",    "label": "Reg No",            "type": "string", "role": "dimension" },
+    { "name": "registration_date",  "label": "Reg Date",          "type": "date",   "role": "dimension" },
+    { "name": "registration_month", "label": "Reg Month",         "type": "date",   "role": "dimension", "expression": "toStartOfMonth(`registration_date`)" },
+    { "name": "patient_name",       "label": "Patient Name",      "type": "string", "role": "dimension" },
+    { "name": "gender",             "label": "Gender",            "type": "string", "role": "dimension", "suggest": true },
+    { "name": "age_years",          "label": "Age",               "type": "number", "role": "dimension", "aggregations": ["avg", "min", "max"], "scale": 1 },
+    { "name": "age_band",           "label": "Age Band",          "type": "string", "role": "dimension", "suggest": true },
+    { "name": "patient_category",   "label": "Category",          "type": "string", "role": "dimension", "suggest": true },
+    { "name": "blood_group",        "label": "Blood Group",       "type": "string", "role": "dimension", "suggest": true },
+    { "name": "marital_status",     "label": "Marital Status",    "type": "string", "role": "dimension", "suggest": true },
+    { "name": "city",               "label": "City",              "type": "string", "role": "dimension", "suggest": true },
+    { "name": "district",           "label": "District",          "type": "string", "role": "dimension", "suggest": true },
+    { "name": "state",              "label": "State",             "type": "string", "role": "dimension", "suggest": true },
+    { "name": "mobile_masked",      "label": "Mobile",            "type": "string", "role": "dimension", "sensitivity": "masked" },
+    { "name": "dept_name",          "label": "Department",        "type": "string", "role": "dimension", "suggest": true },
+    { "name": "consulting_doctor",  "label": "Doctor",            "type": "string", "role": "dimension", "suggest": true },
+    { "name": "visit_type",         "label": "Visit Type",        "type": "string", "role": "dimension", "suggest": true },
+    { "name": "priority",           "label": "Priority",          "type": "string", "role": "dimension", "suggest": true },
+    { "name": "referral_source",    "label": "Referral Source",   "type": "string", "role": "dimension", "suggest": true },
+    { "name": "payment_mode",       "label": "Payment Mode",      "type": "string", "role": "dimension", "suggest": true },
+    { "name": "is_insured",         "label": "Insured",           "type": "boolean","role": "dimension", "aggregations": ["sum"] },
+    { "name": "coverage_type",      "label": "Coverage Type",     "type": "string", "role": "dimension", "suggest": true },
+    { "name": "insurance_provider", "label": "Insurance Provider","type": "string", "role": "dimension", "suggest": true },
+    { "name": "registration_fee",   "label": "Fee (Rs)",          "type": "money",  "role": "dimension", "aggregations": ["sum", "avg", "min", "max"], "scale": 2 },
+    { "name": "patient_id",         "label": "Patient Id",        "type": "number", "role": "dimension", "aggregations": ["countDistinct"], "hidden": true },
+    { "name": "patients",           "label": "Patients",          "type": "number", "role": "measure",   "expression": "count()" }
+  ]
+}

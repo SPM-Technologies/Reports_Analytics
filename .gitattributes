@@ -1,0 +1,14 @@
+# Shell scripts, SQL and configs run inside Linux containers: always LF, also on Windows checkouts
+*.sh   text eol=lf
+*.sql  text eol=lf
+*.xml  text eol=lf
+*.json text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.properties text eol=lf
+Dockerfile text eol=lf
+.env   text eol=lf
+# Windows batch files need CRLF
+*.bat  text eol=crlf
+*.dump binary
+*.png  binary

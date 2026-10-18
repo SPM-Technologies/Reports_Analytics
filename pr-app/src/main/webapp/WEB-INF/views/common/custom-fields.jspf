@@ -1,0 +1,51 @@
+<%-- The hospital's own fields of one form section (stage 5b). Set cfSection before including. --%>
+<c:if test="${not empty customFields[cfSection]}">
+<div class="grid custom-fields">
+<c:forEach var="cf" items="${customFields[cfSection]}">
+    <c:set var="cfv" value="${patient.customValues[cf.key]}"/>
+    <c:set var="cfName" value="customValues[${cf.key}]"/>
+    <div class="f ${cf.type == 'LONG_TEXT' or cf.type == 'MULTI_SELECT' ? 'span2' : ''}">
+        <label for="cf_${cf.key}"><c:out value="${cf.label}"/><c:if test="${cf.required}"> <span class="req">*</span></c:if></label>
+        <c:choose>
+            <c:when test="${cf.type == 'LONG_TEXT'}">
+                <textarea id="cf_${cf.key}" name="${cfName}" rows="2" maxlength="${cf.getEffectiveMaxLength()}" ${cf.required ? 'required' : ''}><c:out value="${cfv}"/></textarea>
+            </c:when>
+            <c:when test="${cf.type == 'NUMBER' or cf.type == 'DECIMAL'}">
+                <input id="cf_${cf.key}" name="${cfName}" type="number" step="${cf.type == 'NUMBER' ? '1' : 'any'}" value="${fn:escapeXml(cfv)}"
+                       <c:if test="${not empty cf.minValue}">min="${cf.minValue}"</c:if> <c:if test="${not empty cf.maxValue}">max="${cf.maxValue}"</c:if>
+                       ${cf.required ? 'required' : ''}>
+            </c:when>
+            <c:when test="${cf.type == 'DATE'}">
+                <input id="cf_${cf.key}" name="${cfName}" type="date" value="${fn:escapeXml(cfv)}" ${cf.required ? 'required' : ''}>
+            </c:when>
+            <c:when test="${cf.type == 'YES_NO'}">
+                <select id="cf_${cf.key}" name="${cfName}" ${cf.required ? 'required' : ''}>
+                    <option value="">-- Select --</option>
+                    <option value="true" ${cfv == 'true' ? 'selected' : ''}>Yes</option>
+                    <option value="false" ${cfv == 'false' ? 'selected' : ''}>No</option>
+                </select>
+            </c:when>
+            <c:when test="${cf.type == 'DROPDOWN'}">
+                <select id="cf_${cf.key}" name="${cfName}" ${cf.required ? 'required' : ''}>
+                    <option value="">-- Select --</option>
+                    <c:forEach var="o" items="${cf.options}"><option value="${fn:escapeXml(o)}" ${cfv == o ? 'selected' : ''}><c:out value="${o}"/></option></c:forEach>
+                </select>
+            </c:when>
+            <c:when test="${cf.type == 'MULTI_SELECT'}">
+                <div class="choices" id="cf_${cf.key}">
+                    <c:forEach var="o" items="${cf.options}">
+                        <label class="choice"><input type="checkbox" name="${cfName}" value="${fn:escapeXml(o)}"
+                            ${fn:contains(';'.concat(fn:replace(cfv, '; ', ';')).concat(';'), ';'.concat(o).concat(';')) ? 'checked' : ''}> <c:out value="${o}"/></label>
+                    </c:forEach>
+                </div>
+            </c:when>
+            <c:otherwise>
+                <input id="cf_${cf.key}" name="${cfName}" value="${fn:escapeXml(cfv)}" maxlength="${cf.getEffectiveMaxLength()}" ${cf.required ? 'required' : ''}>
+            </c:otherwise>
+        </c:choose>
+        <c:if test="${not empty cf.helpText}"><small class="hint"><c:out value="${cf.helpText}"/></small></c:if>
+        <form:errors path="customValues[${cf.key}]" cssClass="err"/>
+    </div>
+</c:forEach>
+</div>
+</c:if>

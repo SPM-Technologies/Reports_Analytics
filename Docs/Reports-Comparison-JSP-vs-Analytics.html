@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reports Comparison</title>
+<style>
+:root {
+  --bg: #f5f7f9; --surface: #ffffff; --surface-2: #eef3f6; --text: #1d2730; --muted: #5d6b78;
+  --border: #d3dce3; --accent: #00707e; --accent-soft: #e0f1f3; --old: #8a5a00; --old-soft: #fbf0dc;
+  --new: #00707e; --new-soft: #e0f1f3; --ok: #2e7d32; --no: #b3261e; --code-bg: #f0f3f6;
+  --svg-box: #ffffff; --svg-line: #4d5b67; --svg-text: #1d2730; --svg-muted: #6a7885;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12171c; --surface: #1a2128; --surface-2: #212a33; --text: #e3e9ee; --muted: #9aa8b4;
+    --border: #33404c; --accent: #3fb6c4; --accent-soft: #163339; --old: #f0b45a; --old-soft: #2e2717;
+    --new: #3fb6c4; --new-soft: #163339; --ok: #7cc68a; --no: #f08a80; --code-bg: #212a33;
+    --svg-box: #1f2830; --svg-line: #9aa8b4; --svg-text: #e3e9ee; --svg-muted: #9aa8b4;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12171c; --surface: #1a2128; --surface-2: #212a33; --text: #e3e9ee; --muted: #9aa8b4;
+  --border: #33404c; --accent: #3fb6c4; --accent-soft: #163339; --old: #f0b45a; --old-soft: #2e2717;
+  --new: #3fb6c4; --new-soft: #163339; --ok: #7cc68a; --no: #f08a80; --code-bg: #212a33;
+  --svg-box: #1f2830; --svg-line: #9aa8b4; --svg-text: #e3e9ee; --svg-muted: #9aa8b4;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 "Segoe UI", system-ui, -apple-system, Arial, sans-serif; }
+a { color: var(--accent); }
+code { font-family: Consolas, "Courier New", monospace; font-size: 13px; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+.layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: 100vh; }
+nav.toc { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--surface); border-right: 1px solid var(--border); padding: 20px 16px; }
+nav.toc .brand { font-weight: 700; color: var(--accent); }
+nav.toc .sub { color: var(--muted); font-size: 12px; margin-bottom: 14px; }
+nav.toc ol { margin: 0; padding-left: 20px; }
+nav.toc li { margin: 3px 0; font-size: 13.5px; }
+nav.toc a { text-decoration: none; color: var(--text); }
+nav.toc a:hover { color: var(--accent); }
+main { padding: 28px 40px 60px; max-width: 1180px; width: 100%; }
+header.hero { background: var(--surface); border: 1px solid var(--border); border-left: 5px solid var(--accent); border-radius: 8px; padding: 22px 26px; margin-bottom: 24px; }
+header.hero h1 { margin: 0 0 6px; font-size: 26px; }
+header.hero p { margin: 4px 0; color: var(--muted); }
+section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 22px 26px; margin-bottom: 22px; }
+section h2 { margin: 0 0 14px; font-size: 21px; padding-bottom: 8px; border-bottom: 2px solid var(--accent-soft); }
+section h3 { font-size: 16.5px; margin: 20px 0 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 10px 0; }
+th, td { border: 1px solid var(--border); padding: 7px 10px; text-align: left; vertical-align: top; }
+th { background: var(--surface-2); }
+.wrap { overflow-x: auto; }
+.old { color: var(--old); font-weight: 600; }
+.new { color: var(--new); font-weight: 600; }
+.yes { color: var(--ok); font-weight: 600; }
+.no { color: var(--no); font-weight: 600; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.card { border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+.card.o { border-top: 4px solid var(--old); background: var(--old-soft); }
+.card.n { border-top: 4px solid var(--new); background: var(--new-soft); }
+.card h3 { margin-top: 0; }
+.hint { color: var(--muted); font-size: 13px; }
+.note { background: var(--surface-2); border-left: 4px solid var(--accent); padding: 10px 14px; border-radius: 4px; margin: 12px 0; }
+svg { width: 100%; height: auto; display: block; margin: 8px 0; }
+svg .box { fill: var(--svg-box); stroke: var(--svg-line); stroke-width: 1.3; }
+svg .boxo { fill: var(--old-soft); stroke: var(--old); stroke-width: 1.5; }
+svg .boxn { fill: var(--new-soft); stroke: var(--new); stroke-width: 1.5; }
+svg .db { fill: var(--surface-2); stroke: var(--svg-line); stroke-width: 1.3; }
+svg text { fill: var(--svg-text); font: 13px "Segoe UI", Arial, sans-serif; }
+svg text.s { fill: var(--svg-muted); font-size: 11.5px; }
+svg text.b { font-weight: 700; }
+svg .ln { stroke: var(--svg-line); stroke-width: 1.4; fill: none; marker-end: url(#arr); }
+svg .lnd { stroke: var(--svg-line); stroke-width: 1.4; fill: none; stroke-dasharray: 5 4; marker-end: url(#arr); }
+svg marker path { fill: var(--svg-line); }
+ol.steps li, ul li { margin: 4px 0; }
+.theme-btn { margin-top: 18px; font: inherit; font-size: 12px; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 5px 10px; cursor: pointer; }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  main, section { min-width: 0; }
+  td, th { overflow-wrap: anywhere; }
+  nav.toc { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--border); }
+  main { padding: 16px; }
+  section { padding: 16px; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc" aria-label="Contents">
+  <div class="brand">Reports comparison</div>
+  <div class="sub">Old JSP reports vs new Analytics · v1.1 · 16 Oct 2026</div>
+  <ol>
+    <li><a href="#summary">In one minute</a></li>
+    <li><a href="#glance">At a glance</a></li>
+    <li><a href="#old-flow">How the old reports work</a></li>
+    <li><a href="#new-flow">How Analytics works</a></li>
+    <li><a href="#data-flow">How data reaches Analytics</a></li>
+    <li><a href="#features">Feature by feature</a></li>
+    <li><a href="#example">One question, both ways</a></li>
+    <li><a href="#custom">Customisation without code</a></li>
+    <li><a href="#security">Security and hospitals</a></li>
+    <li><a href="#speed">Speed and load</a></li>
+    <li><a href="#fresh">How fresh is the data?</a></li>
+    <li><a href="#which">Which one to use</a></li>
+    <li><a href="#limits">Limits and open points</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+  </ol>
+  <button class="theme-btn" type="button" id="themeBtn">Switch light / dark</button>
+  <div class="sub" style="margin-top:14px">Related: <a href="Patient-Registration-Project-Guide.html">Project guide</a> · <a href="Stage-5-Completion-Report.html">Stage 5 report</a> · <a href="Final-Review-Report.html">Final review</a> · <a href="Solution-Architecture.html">Architecture</a></div>
+</nav>
+<main>
+<header class="hero">
+  <h1>Old JSP reports vs new Analytics</h1>
+  <p>How the two reporting features of the Patient Registration project work, what each can do, and when to use which. Written for business users and for technical staff.</p>
+  <p>Both run inside the same application, same sign-in, same address: <code>http://localhost:8080/patient-registration/</code>. Nothing was removed: the old reports keep working exactly as before.</p>
+</header>
+
+<section id="summary">
+  <h2>1. In one minute</h2>
+  <div class="cards">
+    <div class="card o">
+      <h3>Old reports (JSP)</h3>
+      <p>Two fixed reports: <b>Patient Register</b> (list of patients) and <b>Department Summary</b> (counts and fees per department). You pick a few fixed filters and press Search. They read the live registration database directly, every time.</p>
+      <p><b>Good for:</b> the two standard lists, exactly as the hospital has always printed them.</p>
+    </div>
+    <div class="card n">
+      <h3>New Analytics (report builder)</h3>
+      <p>A self-service report builder, similar in spirit to Power BI: choose any columns, any filters, any totals, your own formulas, pivot tables, charts and dashboards, and save or share them. It reads a separate copy of the data built for reporting (ClickHouse), which is kept up to date within seconds.</p>
+      <p><b>Good for:</b> any question the two fixed reports cannot answer, and large data volumes without slowing down registration.</p>
+    </div>
+  </div>
+  <div class="note"><b>Key idea:</b> the old reports ask the <i>registration</i> database; with crores of rows, every big report competes with the registration desk. Analytics asks its <i>own</i> copy, designed for counting and summing very many rows, so reports and registration no longer get in each other's way.</div>
+</section>
+
+<section id="glance">
+  <h2>2. At a glance</h2>
+  <div class="wrap"><table>
+    <tr><th></th><th class="old">Old JSP reports</th><th class="new">New Analytics</th></tr>
+    <tr><td>Where</td><td>Menu: Patient Register, Department Summary</td><td>Menu: Analytics (<code>/app/</code>)</td></tr>
+    <tr><td>Reports available</td><td>2 fixed</td><td>Unlimited: 4 templates plus any report you build</td></tr>
+    <tr><td>Columns</td><td>Fixed</td><td>Any of 24 standard fields, the hospital's own form fields and calculated fields</td></tr>
+    <tr><td>Filters</td><td>Fixed set (dates, department, gender, category, text search)</td><td>Any field, 14 operators (is, is any of, contains, between, last 30 days, ...), match all or any</td></tr>
+    <tr><td>Totals</td><td>Fixed (count, fee per department)</td><td>Count, sum, average, min, max, distinct, median, percentiles, own formulas; % of total, running total, rank, change</td></tr>
+    <tr><td>Pivot, subtotals, top N</td><td class="no">No</td><td class="yes">Yes</td></tr>
+    <tr><td>Charts, dashboards</td><td class="no">No</td><td class="yes">Bar, line, pie; dashboards of several reports with shared filters</td></tr>
+    <tr><td>Save and share</td><td class="no">No</td><td class="yes">Save privately or share with the hospital</td></tr>
+    <tr><td>Downloads</td><td>Excel, PDF with the hospital's title, header, footer and logo</td><td>Excel, PDF, CSV of exactly what is on screen, with the same branding</td></tr>
+    <tr><td>Reads from</td><td>Registration database (PostgreSQL), live</td><td>Reporting copy (ClickHouse), seconds behind</td></tr>
+    <tr><td>Effect on registration desk</td><td>Big reports slow it down</td><td>Negligible: reports run on a separate database; only a small copy query per minute reads PostgreSQL</td></tr>
+    <tr><td>Who may use it</td><td>Permission "Legacy reports"</td><td>Permission "Analytics" (and "Export" to download)</td></tr>
+  </table></div>
+</section>
+
+<section id="old-flow">
+  <h2>3. How the old reports work</h2>
+  <p>Every click on <b>Search</b>, <b>Next page</b> or <b>Excel</b> sends one request that is answered straight from the registration tables.</p>
+  <svg viewBox="0 0 1000 250" role="img" aria-label="Flow chart of the old JSP reports">
+    <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z"/></marker></defs>
+    <rect class="box" x="10" y="80" width="140" height="70" rx="8"/><text x="80" y="110" text-anchor="middle" class="b">User</text><text x="80" y="130" text-anchor="middle" class="s">chooses filters,</text><text x="80" y="143" text-anchor="middle" class="s">presses Search</text>
+    <rect class="boxo" x="200" y="80" width="170" height="70" rx="8"/><text x="285" y="108" text-anchor="middle" class="b">JSP page</text><text x="285" y="128" text-anchor="middle" class="s">report-register.jsp /</text><text x="285" y="141" text-anchor="middle" class="s">report-summary.jsp</text>
+    <rect class="boxo" x="420" y="80" width="170" height="70" rx="8"/><text x="505" y="108" text-anchor="middle" class="b">ReportController</text><text x="505" y="128" text-anchor="middle" class="s">ReportService</text><text x="505" y="141" text-anchor="middle" class="s">checks permissions</text>
+    <rect class="boxo" x="640" y="80" width="150" height="70" rx="8"/><text x="715" y="108" text-anchor="middle" class="b">ReportDao</text><text x="715" y="128" text-anchor="middle" class="s">fixed SQL: joins</text><text x="715" y="141" text-anchor="middle" class="s">patient + 5 tables</text>
+    <ellipse class="db" cx="905" cy="90" rx="80" ry="16"/><path class="db" d="M825,90 v60 a80,16 0 0 0 160,0 v-60"/><text x="905" y="125" text-anchor="middle" class="b">PostgreSQL</text><text x="905" y="142" text-anchor="middle" class="s">registration DB (live)</text>
+    <path class="ln" d="M150,115 H198"/><path class="ln" d="M370,115 H418"/><path class="ln" d="M590,115 H638"/><path class="ln" d="M790,115 H823"/>
+    <path class="lnd" d="M905,170 V215 H80 V152"/><text x="490" y="235" text-anchor="middle" class="s">rows come back: 50 per page on screen, or streamed into Excel / PDF (all matching rows)</text>
+    <text x="905" y="40" text-anchor="middle" class="s">the same tables the</text><text x="905" y="54" text-anchor="middle" class="s">registration desk writes to</text>
+  </svg>
+  <ol class="steps">
+    <li>The page sends the chosen filters (date range, department, gender, category, search text).</li>
+    <li>The server checks the user may see legacy reports, and only for the hospital currently selected in the header.</li>
+    <li><code>ReportDao</code> runs one prepared SQL statement that joins the patient with its contact, visit, department, insurance and medical tables. To show "page 1 of 2,001" it also counts all matching rows.</li>
+    <li>The database reads (scans) all matching rows to count, sort and total them. With 1 lakh rows this takes well under a second; with crores of rows it takes much longer and uses the same disks, memory and CPU as the registration desk.</li>
+    <li>Downloads stream the rows through a database cursor straight into the Excel or PDF file, so memory stays small.</li>
+  </ol>
+</section>
+
+<section id="new-flow">
+  <h2>4. How Analytics works</h2>
+  <p>The browser holds the report <i>definition</i> (which columns, filters, totals, options). On <b>Run</b> it sends that definition, never SQL, to the reporting API. The server turns it into a safe query on the reporting copy.</p>
+  <svg viewBox="0 0 1000 300" role="img" aria-label="Flow chart of a report run in Analytics">
+    <defs><marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--svg-line)"/></marker></defs>
+    <rect class="box" x="10" y="40" width="150" height="80" rx="8"/><text x="85" y="70" text-anchor="middle" class="b">User</text><text x="85" y="90" text-anchor="middle" class="s">builds the report:</text><text x="85" y="103" text-anchor="middle" class="s">columns, filters, totals</text>
+    <rect class="boxn" x="200" y="40" width="170" height="80" rx="8"/><text x="285" y="68" text-anchor="middle" class="b">React builder</text><text x="285" y="88" text-anchor="middle" class="s">/app/ in the browser</text><text x="285" y="101" text-anchor="middle" class="s">sends a JSON definition</text>
+    <rect class="boxn" x="410" y="40" width="190" height="80" rx="8"/><text x="505" y="66" text-anchor="middle" class="b">Reporting API</text><text x="505" y="86" text-anchor="middle" class="s">/api/v1/query</text><text x="505" y="99" text-anchor="middle" class="s">sign-in, permissions,</text><text x="505" y="112" text-anchor="middle" class="s">user's hospitals</text>
+    <rect class="boxn" x="640" y="40" width="170" height="80" rx="8"/><text x="725" y="66" text-anchor="middle" class="b">QueryBuilder</text><text x="725" y="86" text-anchor="middle" class="s">field catalogue +</text><text x="725" y="99" text-anchor="middle" class="s">hospital rules, formulas,</text><text x="725" y="112" text-anchor="middle" class="s">values always bound</text>
+    <ellipse class="db" cx="910" cy="50" rx="75" ry="15"/><path class="db" d="M835,50 v60 a75,15 0 0 0 150,0 v-60"/><text x="910" y="85" text-anchor="middle" class="b">ClickHouse</text><text x="910" y="102" text-anchor="middle" class="s">reporting copy</text>
+    <path d="M160,80 H198" style="stroke:var(--svg-line);stroke-width:1.4;fill:none" marker-end="url(#arr2)"/>
+    <path d="M370,80 H408" style="stroke:var(--svg-line);stroke-width:1.4;fill:none" marker-end="url(#arr2)"/>
+    <path d="M600,80 H638" style="stroke:var(--svg-line);stroke-width:1.4;fill:none" marker-end="url(#arr2)"/>
+    <path d="M810,80 H833" style="stroke:var(--svg-line);stroke-width:1.4;fill:none" marker-end="url(#arr2)"/>
+    <path d="M910,128 V170 H285 V122" style="stroke:var(--svg-line);stroke-width:1.4;fill:none;stroke-dasharray:5 4" marker-end="url(#arr2)"/>
+    <text x="600" y="190" text-anchor="middle" class="s">one page of results + totals (+ "Others", subtotals) comes back in a fraction of a second</text>
+    <rect class="box" x="120" y="215" width="160" height="60" rx="8"/><text x="200" y="240" text-anchor="middle" class="b">Table / Pivot</text><text x="200" y="258" text-anchor="middle" class="s">highlight, drill-down</text>
+    <rect class="box" x="300" y="215" width="140" height="60" rx="8"/><text x="370" y="240" text-anchor="middle" class="b">Chart</text><text x="370" y="258" text-anchor="middle" class="s">bar, line, pie</text>
+    <rect class="box" x="460" y="215" width="160" height="60" rx="8"/><text x="540" y="240" text-anchor="middle" class="b">Save / share</text><text x="540" y="258" text-anchor="middle" class="s">private or hospital</text>
+    <rect class="box" x="640" y="215" width="160" height="60" rx="8"/><text x="720" y="240" text-anchor="middle" class="b">Dashboard</text><text x="720" y="258" text-anchor="middle" class="s">tiles + shared filters</text>
+    <rect class="box" x="820" y="215" width="160" height="60" rx="8"/><text x="900" y="240" text-anchor="middle" class="b">Download</text><text x="900" y="258" text-anchor="middle" class="s">Excel, PDF, CSV</text>
+  </svg>
+  <ol class="steps">
+    <li>The builder lists only the fields this user may see (the hospital's rules can hide, mask or rename fields; see section 8).</li>
+    <li>The API checks sign-in and the <i>Analytics</i> permission and works out the user's hospitals from the session, never from the request.</li>
+    <li><code>QueryBuilder</code> accepts only known fields, operators and functions from the catalogue, turns formulas into SQL through an allow-list, binds every value as a parameter and always adds "only these hospitals". ClickHouse itself refuses any query that does not name the hospitals (second safety net).</li>
+    <li>ClickHouse is a column store: to total the fee of 1 crore patients it reads only the fee column, compressed, in parallel. That is why big summaries stay fast.</li>
+    <li>Only the page on screen travels to the browser. Pivot, chart, highlight and drill-down are drawn there; drill-down asks the server again for the patients of the clicked group.</li>
+  </ol>
+</section>
+
+<section id="data-flow">
+  <h2>5. How data reaches Analytics</h2>
+  <p>Registration is unchanged: the desk saves into PostgreSQL as before. In the same transaction a small "snapshot" of the patient for reporting (no Aadhaar, masked mobile) is published. Two independent paths copy it into ClickHouse:</p>
+  <svg viewBox="0 0 1000 260" role="img" aria-label="Flow chart of data from registration to ClickHouse">
+    <defs><marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--svg-line)"/></marker></defs>
+    <rect class="box" x="10" y="95" width="140" height="70" rx="8"/><text x="80" y="122" text-anchor="middle" class="b">Registration</text><text x="80" y="142" text-anchor="middle" class="s">JSP form, Save</text>
+    <ellipse class="db" cx="270" cy="100" rx="80" ry="15"/><path class="db" d="M190,100 v60 a80,15 0 0 0 160,0 v-60"/><text x="270" y="133" text-anchor="middle" class="b">PostgreSQL</text><text x="270" y="150" text-anchor="middle" class="s">6 patient tables + outbox</text>
+    <rect class="boxn" x="420" y="25" width="150" height="60" rx="8"/><text x="495" y="50" text-anchor="middle" class="b">Debezium</text><text x="495" y="68" text-anchor="middle" class="s">reads the change log</text>
+    <rect class="boxn" x="610" y="25" width="140" height="60" rx="8"/><text x="680" y="50" text-anchor="middle" class="b">Kafka</text><text x="680" y="68" text-anchor="middle" class="s">topic pr.patient.report</text>
+    <rect class="boxn" x="470" y="175" width="230" height="60" rx="8"/><text x="585" y="200" text-anchor="middle" class="b">1-minute sync (safety net)</text><text x="585" y="218" text-anchor="middle" class="s">copies changes of the last 15 minutes</text>
+    <ellipse class="db" cx="890" cy="100" rx="80" ry="15"/><path class="db" d="M810,100 v60 a80,15 0 0 0 160,0 v-60"/><text x="890" y="133" text-anchor="middle" class="b">ClickHouse</text><text x="890" y="150" text-anchor="middle" class="s">patient_report</text>
+    <path d="M150,130 H188" style="stroke:var(--svg-line);stroke-width:1.4;fill:none" marker-end="url(#arr3)"/>
+    <path d="M350,110 C390,110 390,55 418,55" style="stroke:var(--svg-line);stroke-width:1.4;fill:none" marker-end="url(#arr3)"/>
+    <path d="M570,55 H608" style="stroke:var(--svg-line);stroke-width:1.4;fill:none" marker-end="url(#arr3)"/>
+    <path d="M750,55 C800,55 860,60 880,83" style="stroke:var(--svg-line);stroke-width:1.4;fill:none" marker-end="url(#arr3)"/>
+    <path d="M350,150 C400,150 420,205 468,205" style="stroke:var(--svg-line);stroke-width:1.4;fill:none;stroke-dasharray:5 4" marker-end="url(#arr3)"/>
+    <path d="M700,205 C780,205 840,195 870,177" style="stroke:var(--svg-line);stroke-width:1.4;fill:none;stroke-dasharray:5 4" marker-end="url(#arr3)"/>
+    <text x="680" y="110" text-anchor="middle" class="s">real time: within seconds</text>
+  </svg>
+  <ul>
+    <li><b>Real time (optional profile <code>cdc</code>):</b> Debezium reads the database change log (WAL) and sends each snapshot through Kafka; ClickHouse consumes it within seconds. In the test on 16 Oct 2026 a new registration was visible in Analytics in under 5 seconds.</li>
+    <li><b>One-minute sync (always on):</b> every minute ClickHouse copies patients changed in the last 15 minutes directly from PostgreSQL. If Kafka is not running, data is at most about a minute old.</li>
+    <li>Both write the same version number, so duplicates collapse into one row. The report header shows "Data as of ..." so users always know how fresh the figures are.</li>
+  </ul>
+</section>
+
+<section id="features">
+  <h2>6. Feature by feature</h2>
+  <div class="wrap"><table>
+    <tr><th>Feature</th><th class="old">Old JSP reports</th><th class="new">Analytics</th><th>How it works in Analytics</th></tr>
+    <tr><td>Choose columns</td><td class="no">No</td><td class="yes">Yes</td><td>"+ Add column", reorder with arrows. Standard fields, the hospital's own form fields (marked "own field") and calculated fields.</td></tr>
+    <tr><td>Filters</td><td>Fixed</td><td class="yes">Any field</td><td>Operator depends on the type: text (is, contains, starts with, any of), numbers and dates (between, at least, ...), dates also "in period" (today, last 30 days, this year ...), yes/no. Value suggestions from the data.</td></tr>
+    <tr><td>Group and total</td><td>Department only</td><td class="yes">Up to 6 group columns</td><td>Adding a measure turns the columns into groups. Count, sum, average, lowest, highest, distinct.</td></tr>
+    <tr><td>Show a total as ...</td><td class="no">No</td><td class="yes">Yes</td><td>% of total, % of group, running total, rank, change and % change from the previous row (database window functions).</td></tr>
+    <tr><td>Calculated fields</td><td class="no">No</td><td class="yes">Yes</td><td>A formula language with about 45 functions, e.g. <code>BUCKET([Age], 18, 40, 60)</code> or <code>ROUND(COUNT_IF([Insured]) / COUNT() * 100, 1)</code>. Checked by the server, with the position of any mistake. Can be kept in one report or shared with the hospital.</td></tr>
+    <tr><td>Conditions on totals</td><td class="no">No</td><td class="yes">Yes</td><td>"Only groups where Patients &gt; 500" (SQL HAVING).</td></tr>
+    <tr><td>Subtotals</td><td class="no">No</td><td class="yes">Yes</td><td>One subtotal row per group (SQL ROLLUP), also in downloads.</td></tr>
+    <tr><td>Top N + Others</td><td class="no">No</td><td class="yes">Yes</td><td>"Top 10 departments, the rest as Others"; totals stay correct.</td></tr>
+    <tr><td>Pivot table</td><td class="no">No</td><td class="yes">Yes</td><td>Spread one group column across (e.g. gender), with row and column totals.</td></tr>
+    <tr><td>Highlight cells</td><td class="no">No</td><td class="yes">Yes</td><td>Colour a measure when it is above / below a value.</td></tr>
+    <tr><td>Drill-down</td><td class="no">No</td><td class="yes">Yes</td><td>Click a group row to see its patients; "Back to the summary".</td></tr>
+    <tr><td>Charts</td><td class="no">No</td><td class="yes">Bar, line, pie</td><td>Any summary with a group column and a measure (Apache ECharts).</td></tr>
+    <tr><td>Dashboards</td><td class="no">No</td><td class="yes">Yes</td><td>Up to 12 saved reports as tiles (chart or table, wide or narrow), filters that apply to every tile. Each tile runs with the viewer's own permissions.</td></tr>
+    <tr><td>Save, bookmark, share</td><td class="no">No</td><td class="yes">Yes</td><td>Private (only me) or shared with the hospital (needs the "share" permission, role Analyst or Administrator). Others can open and "Save as"; only the author and the hospital's user administrators can change or delete it.</td></tr>
+    <tr><td>Paging and sorting</td><td>50 per page, fixed order</td><td class="yes">25-500 per page, sort by any column</td><td>Sorting and paging are done by the database.</td></tr>
+    <tr><td>Downloads</td><td>Excel (10 lakh rows), PDF (50,000)</td><td>Excel (10 lakh rows), PDF (50,000), CSV (20 lakh)</td><td>Exactly the on-screen report incl. subtotals and Others; title prefix, header, footer and logo per hospital; the hospital can switch formats off.</td></tr>
+    <tr><td>Hospital's own fields</td><td class="no">Not shown</td><td class="yes">Yes, if marked "Available in Analytics"</td><td>See section 8.</td></tr>
+  </table></div>
+</section>
+
+<section id="example">
+  <h2>7. One question, both ways</h2>
+  <p><b>Question:</b> "How many female patients did each department register in the last 30 days, and what share of all female patients is that?"</p>
+  <div class="cards">
+    <div class="card o">
+      <h3>Old reports</h3>
+      <ol>
+        <li>Open <b>Department Summary</b>.</li>
+        <li>Enter the date range by hand, choose gender Female, Search.</li>
+        <li>The count per department is shown; the share must be calculated in Excel after download.</li>
+        <li>Next month: enter the dates again.</li>
+      </ol>
+    </div>
+    <div class="card n">
+      <h3>Analytics</h3>
+      <ol>
+        <li>Open the template <b>Department Summary (Report 2)</b> or "+ New report".</li>
+        <li>Group by Department; Summarise: Patients, and Patients again shown as "% of total".</li>
+        <li>Filters: Gender is Female; Reg Date in period "Last 30 days".</li>
+        <li>Run, optionally Chart, then <b>Save</b>. Next month just open it: "last 30 days" moves by itself.</li>
+        <li>Add it to a dashboard next to other reports if wanted.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section id="custom">
+  <h2>8. Customisation without code</h2>
+  <p>Hospital administrators (permission "Manage settings") change these under <b>Settings</b>; nothing needs a new release.</p>
+  <svg viewBox="0 0 1000 200" role="img" aria-label="Flow chart of a hospital's own form field reaching reports">
+    <defs><marker id="arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--svg-line)"/></marker></defs>
+    <rect class="box" x="10" y="60" width="170" height="80" rx="8"/><text x="95" y="88" text-anchor="middle" class="b">Settings › Form fields</text><text x="95" y="108" text-anchor="middle" class="s">add "Ward" (dropdown),</text><text x="95" y="121" text-anchor="middle" class="s">tick "Available in Analytics"</text>
+    <rect class="box" x="220" y="60" width="170" height="80" rx="8"/><text x="305" y="88" text-anchor="middle" class="b">Registration form</text><text x="305" y="108" text-anchor="middle" class="s">shows and validates it</text><text x="305" y="121" text-anchor="middle" class="s">(that hospital only)</text>
+    <rect class="box" x="430" y="60" width="170" height="80" rx="8"/><text x="515" y="88" text-anchor="middle" class="b">patient.custom_fields</text><text x="515" y="108" text-anchor="middle" class="s">stored as JSON with</text><text x="515" y="121" text-anchor="middle" class="s">the patient</text>
+    <rect class="box" x="640" y="60" width="150" height="80" rx="8"/><text x="715" y="88" text-anchor="middle" class="b">ClickHouse</text><text x="715" y="108" text-anchor="middle" class="s">custom_fields map,</text><text x="715" y="121" text-anchor="middle" class="s">same pipeline</text>
+    <rect class="boxn" x="830" y="60" width="160" height="80" rx="8"/><text x="910" y="88" text-anchor="middle" class="b">Analytics field</text><text x="910" y="108" text-anchor="middle" class="s">"Ward": column, group,</text><text x="910" y="121" text-anchor="middle" class="s">filter, formulas</text>
+    <path d="M180,100 H218" style="stroke:var(--svg-line);stroke-width:1.4;fill:none" marker-end="url(#arr4)"/>
+    <path d="M390,100 H428" style="stroke:var(--svg-line);stroke-width:1.4;fill:none" marker-end="url(#arr4)"/>
+    <path d="M600,100 H638" style="stroke:var(--svg-line);stroke-width:1.4;fill:none" marker-end="url(#arr4)"/>
+    <path d="M790,100 H828" style="stroke:var(--svg-line);stroke-width:1.4;fill:none" marker-end="url(#arr4)"/>
+  </svg>
+  <div class="wrap"><table>
+    <tr><th>Setting</th><th>What it does</th><th>Effect on old reports</th><th>Effect on Analytics</th></tr>
+    <tr><td>Form fields</td><td>Add own fields (text, number, date, yes/no, dropdown, multi-select ...) to any form section; hide optional standard fields.</td><td>Not shown</td><td>Shown when marked "Available in Analytics"; new fields are <i>not</i> reportable by default.</td></tr>
+    <tr><td>Dropdown lists</td><td>The hospital's own values of lists such as category or payment mode.</td><td>Values appear as stored</td><td>Values appear as stored; filters suggest them</td></tr>
+    <tr><td>Departments &amp; doctors</td><td>Per-hospital departments and doctor lists.</td><td>Yes</td><td>Yes</td></tr>
+    <tr><td>Report fields</td><td>Per field: Normal, Masked (e.g. <code>RaXXXXao</code>, free text only), Hidden, or Administrators only; and a hospital's own label.</td><td>Applied too: hidden columns stay empty, masked names and numbers are masked, on screen and in downloads</td><td>Applied everywhere: lists, filters, formulas, sorting, downloads</td></tr>
+    <tr><td>Downloads</td><td>Title prefix, header, footer, logo; which formats users may download.</td><td>All of it applies</td><td>All of it applies</td></tr>
+    <tr><td>Roles (Administration)</td><td>The hospital's own roles from the list of permissions.</td><td colspan="2">Decide who sees which report menu and who may download or share</td></tr>
+  </table></div>
+</section>
+
+<section id="security">
+  <h2>9. Security and hospitals</h2>
+  <div class="wrap"><table>
+    <tr><th></th><th class="old">Old JSP reports</th><th class="new">Analytics</th></tr>
+    <tr><td>Which hospital's data</td><td>Only the hospital selected in the header</td><td>All hospitals the user has Analytics permission for (a "Hospital" field appears for users of several hospitals)</td></tr>
+    <tr><td>How isolation is enforced</td><td>PostgreSQL row-level security on every patient table, plus composite keys</td><td>Hospital condition added by the server to every query, plus a ClickHouse row filter that rejects any query without it</td></tr>
+    <tr><td>Sensitive data</td><td>Mobile masked unless the user may view patients; the hospital's report-field rules</td><td>No Aadhaar in the reporting copy at all; mobile always masked; hospital field rules (masked, hidden, administrators only)</td></tr>
+    <tr><td>Injection</td><td>Fixed SQL, bound values</td><td>No SQL from the browser; field names from the catalogue only; formulas through an allow-list of functions; all values bound</td></tr>
+    <tr><td>Downloads</td><td>Need the Export permission; audit logged</td><td>Need Analytics and Export; audit logged; row limits per format</td></tr>
+  </table></div>
+</section>
+
+<section id="speed">
+  <h2>10. Speed and load</h2>
+  <p>Measured on this POC machine (7.7 GB RAM, Docker) on 16 Oct 2026, hospital H001 with 1,00,002 patients, second run (warm):</p>
+  <div class="wrap"><table>
+    <tr><th>Action</th><th class="old">Old JSP</th><th class="new">Analytics</th></tr>
+    <tr><td>Patient register, page 1</td><td>0.23 s</td><td>0.17 s</td></tr>
+    <tr><td>Department summary</td><td>0.44 s</td><td>0.21 s</td></tr>
+    <tr><td>Pivot department × gender</td><td>not possible</td><td>0.21 s</td></tr>
+    <tr><td>Excel of all 1 lakh patients</td><td>7.0 s (all 14 register columns, 8.4 MB)</td><td>2.4-5.6 s (5 columns, 3.1 MB)</td></tr>
+    <tr><td colspan="3" class="hint">The Excel files differ in columns, so this row is not a like-for-like comparison. Measured with <code>curl</code> as the hospital administrator on the running containers, second of two runs, no other load.</td></tr>
+  </table></div>
+  <div class="note"><b>Read this carefully:</b> at 1 lakh rows both are fast, because PostgreSQL keeps that data in memory. The difference that matters appears at crores of rows: the old reports' scans and counts then take seconds to minutes and compete with registrations on the same database, while ClickHouse reads only the needed columns, compressed and in parallel, on a separate server. Load tests at crore scale were deliberately not run yet (memory limits of this machine; user decision).</div>
+</section>
+
+<section id="fresh">
+  <h2>11. How fresh is the data?</h2>
+  <ul>
+    <li><span class="old">Old reports:</span> always live; a patient saved one second ago is in the report.</li>
+    <li><span class="new">Analytics:</span> seconds behind with the real-time profile, at most about a minute without it. The "Data as of" time is shown on every report.</li>
+    <li>Changes made directly in the database with SQL scripts (not through the application) reach Analytics through the one-minute sync only if the script also sets <code>updated_at</code> to the current time (and raises <code>row_version</code>) and the sync runs within 15 minutes; otherwise run the backfill. Deleting patients by SQL must also be done in ClickHouse.</li>
+  </ul>
+</section>
+
+<section id="which">
+  <h2>12. Which one to use</h2>
+  <div class="wrap"><table>
+    <tr><th>Situation</th><th>Use</th></tr>
+    <tr><td>The standard daily register or department summary, printed as always</td><td class="old">Old reports (or the matching Analytics template)</td></tr>
+    <tr><td>Must include a patient saved this very second</td><td class="old">Old reports</td></tr>
+    <tr><td>Any other columns, filters, totals, comparisons, trends</td><td class="new">Analytics</td></tr>
+    <tr><td>The hospital's own form fields, formulas, pivots, charts</td><td class="new">Analytics</td></tr>
+    <tr><td>Comparing several hospitals (group users)</td><td class="new">Analytics</td></tr>
+    <tr><td>Large downloads or crores of rows, busy registration hours</td><td class="new">Analytics</td></tr>
+  </table></div>
+</section>
+
+<section id="limits">
+  <h2>13. Limits and open points</h2>
+  <ul>
+    <li>Old reports cannot show a hospital's own form fields or calculated fields (by design: they stay as they were), but they do follow the hospital's report-field rules and download settings.</li>
+    <li>Analytics pivot: up to 10,000 groups and 50 spread-across columns; a pivot downloads as the flat list of groups.</li>
+    <li>Up to 20 calculated fields per report, formulas up to 2,000 characters, 12 tiles per dashboard.</li>
+    <li>PDF downloads print non-Latin text (e.g. Devanagari) as "???" in both features: Unicode fonts were deliberately left out for now.</li>
+    <li>Crore-scale load tests are still to be done (stage 6, postponed).</li>
+  </ul>
+</section>
+
+<section id="glossary">
+  <h2>14. Glossary</h2>
+  <div class="wrap"><table>
+    <tr><th>Term</th><th>Meaning</th></tr>
+    <tr><td>JSP</td><td>Java Server Pages: the server builds the whole HTML page; the classic part of the application.</td></tr>
+    <tr><td>PostgreSQL</td><td>The registration database (row store, built for many small reads and writes).</td></tr>
+    <tr><td>ClickHouse</td><td>The reporting database (column store, built for counting and summing very many rows).</td></tr>
+    <tr><td>CDC, Debezium, Kafka</td><td>Change data capture: Debezium reads changes from PostgreSQL's change log and publishes them on Kafka, a message queue, from which ClickHouse reads.</td></tr>
+    <tr><td>Column scan</td><td>Reading every matching row of a table to count, sort or total it.</td></tr>
+    <tr><td>Dimension / measure</td><td>A dimension describes a patient (city, gender); a measure is a number totalled over patients (count, fee).</td></tr>
+    <tr><td>Pivot</td><td>A cross table: one group down the side, another across the top.</td></tr>
+    <tr><td>Row-level security</td><td>A database rule that shows each user only the rows of their own hospitals.</td></tr>
+  </table></div>
+</section>
+</main>
+</div>
+<script>
+(function () {
+  var btn = document.getElementById('themeBtn');
+  try { var t = localStorage.getItem('pr-doc-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  btn.addEventListener('click', function () {
+    var cur = document.documentElement.getAttribute('data-theme');
+    var dark = cur ? cur === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var next = dark ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('pr-doc-theme', next); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>

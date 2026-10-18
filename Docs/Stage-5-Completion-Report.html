@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stage 5 Report</title>
+<style>
+:root {
+  --bg: #f5f7f9; --surface: #ffffff; --surface-2: #eef3f6; --text: #1d2730; --muted: #5d6b78;
+  --border: #d3dce3; --accent: #00707e; --accent-soft: #e0f1f3; --code-bg: #f0f3f6;
+  --ok: #2e7d32; --ok-bg: #e9f6ec; --warn: #9a6400; --warn-bg: #fff6e5; --bad: #b3261e; --bad-bg: #fdecea;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12171c; --surface: #1a2128; --surface-2: #212a33; --text: #e3e9ee; --muted: #9aa8b4;
+    --border: #33404c; --accent: #3fb6c4; --accent-soft: #163339; --code-bg: #212a33;
+    --ok: #7cc68a; --ok-bg: #18291d; --warn: #f0b45a; --warn-bg: #2e2717; --bad: #f08a80; --bad-bg: #3a1f1d;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12171c; --surface: #1a2128; --surface-2: #212a33; --text: #e3e9ee; --muted: #9aa8b4;
+  --border: #33404c; --accent: #3fb6c4; --accent-soft: #163339; --code-bg: #212a33;
+  --ok: #7cc68a; --ok-bg: #18291d; --warn: #f0b45a; --warn-bg: #2e2717; --bad: #f08a80; --bad-bg: #3a1f1d;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 "Segoe UI", system-ui, Arial, sans-serif; }
+a { color: var(--accent); }
+code { font-family: Consolas, "Courier New", monospace; font-size: 13px; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+main { max-width: 1100px; margin: 0 auto; padding: 28px 24px 60px; }
+header.hero { background: var(--surface); border: 1px solid var(--border); border-left: 5px solid var(--accent); border-radius: 8px; padding: 22px 26px; margin-bottom: 22px; }
+header.hero h1 { margin: 0 0 6px; font-size: 26px; }
+header.hero p { margin: 4px 0; color: var(--muted); }
+section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px; margin-bottom: 20px; }
+section h2 { margin: 0 0 12px; font-size: 20px; padding-bottom: 8px; border-bottom: 2px solid var(--accent-soft); }
+section h3 { font-size: 16px; margin: 18px 0 8px; }
+.wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; margin: 8px 0; }
+th, td { border: 1px solid var(--border); padding: 6px 9px; text-align: left; vertical-align: top; }
+th { background: var(--surface-2); }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
+.stat { font-size: 24px; font-weight: 700; color: var(--accent); }
+.card p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.pass { color: var(--ok); font-weight: 700; }
+.sev { font-weight: 700; font-size: 12px; border-radius: 10px; padding: 1px 8px; white-space: nowrap; }
+.sev.h { background: var(--bad-bg); color: var(--bad); }
+.sev.m { background: var(--warn-bg); color: var(--warn); }
+.sev.l { background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); }
+.note { border-left: 4px solid var(--accent); background: var(--surface-2); padding: 10px 14px; border-radius: 4px; margin: 12px 0; }
+.theme-btn { float: right; font: inherit; font-size: 12px; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 5px 10px; cursor: pointer; }
+@media (max-width: 700px) { main { padding: 16px; } section { padding: 16px; } .theme-btn { float: none; } }
+</style>
+</head>
+<body>
+<main>
+<header class="hero">
+  <button class="theme-btn" type="button" id="themeBtn">Light / dark</button>
+  <h1>Stage 5 completion report</h1>
+  <p>Login and multi-hospital isolation (5a) and full customisation of registration and reporting (5b). Development, two independent reviews, fixes, and testing.</p>
+  <p>16 Oct 2026 &middot; local POC at <code>D:\Pravin\patient-registration</code> &middot; Followed by the <a href="Final-Review-Report.html">final review report</a> (later fixes and counts) &middot; Related: <a href="Patient-Registration-Project-Guide.html">Project guide</a> &middot; <a href="Reports-Comparison-JSP-vs-Analytics.html">Reports comparison</a> &middot; <a href="Solution-Architecture.html">Solution architecture</a></p>
+</header>
+
+<section>
+  <h2>1. Result in short</h2>
+  <div class="cards">
+    <div class="card"><div class="stat">5a + 5b</div><p>All planned functions built (stage 6 load test postponed as agreed)</p></div>
+    <div class="card"><div class="stat">32</div><p>Review findings (13 in 5a, 19 in 5b), 30 fixed, 2 accepted as documented limits</p></div>
+    <div class="card"><div class="stat pass">166 / 166</div><p>Java tests passed at the end of stage 5 (executed tests, incl. parameterised runs); 178 after the final review</p></div>
+    <div class="card"><div class="stat pass">23 / 23</div><p>Browser tests passed (Playwright, Edge)</p></div>
+    <div class="card"><div class="stat">&lt; 5 s</div><p>New registration visible in Analytics (real-time path)</p></div>
+    <div class="card"><div class="stat">1,30,002</div><p>Patients in 3 hospitals; PostgreSQL and ClickHouse match</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>2. What was delivered</h2>
+  <h3>Stage 5a: sign-in and hospitals</h3>
+  <ul>
+    <li>Local users with BCrypt passwords, lock-out and throttling, form login with CSRF protection, change password.</li>
+    <li>Hospitals with codes; users with a role per hospital and several hospitals; switching the working hospital in the header.</li>
+    <li>Data isolation in four layers: PostgreSQL row-level security on every patient table, composite keys, permission checks per hospital, and a forced hospital filter in every ClickHouse query backed by a ClickHouse row filter.</li>
+    <li>Registration numbers per hospital and year (<code>H001-REG2026</code> + 7 digits); departments per hospital; the same person at two hospitals stays two records.</li>
+    <li>Audit log; administration screens for users, hospitals, roles and the audit log; access changes apply at once.</li>
+  </ul>
+  <h3>Stage 5b: customisation without code</h3>
+  <ul>
+    <li><b>Roles:</b> hospitals define their own roles from the list of permissions (new: share, manage settings).</li>
+    <li><b>Registration form:</b> own fields of 8 types per section, hide optional standard fields, own dropdown values, departments and doctors per hospital.</li>
+    <li><b>Report fields:</b> per field Normal / Masked / Hidden / Administrators only and own labels, applied everywhere in Analytics.</li>
+    <li><b>Report builder:</b> own fields in reports (opt-in), calculated fields with a safe formula language, % of total / running total / rank / change, subtotals, top N + Others, conditions on totals, pivot, highlighting, drill-down.</li>
+    <li><b>Sharing:</b> private or hospital-wide reports, dashboards and shared formulas.</li>
+    <li><b>Dashboards:</b> up to 12 report tiles with filters for all tiles.</li>
+    <li><b>Downloads:</b> hospital branding (title prefix, header, footer, logo) and allowed formats, for Analytics and the legacy reports.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>3. Third-eye review of stage 5b and what was done</h2>
+  <p>An independent reviewer read all stage 5b code and ran read-only checks against the live system. It confirmed as sound: no SQL injection through formulas or any new path, hospital isolation on all new tables and queries, CSRF on all new forms, JSP and React escaping, logo type detection, CSV formula-injection protection, idempotent migration. Findings and the action taken:</p>
+  <div class="wrap"><table>
+    <tr><th>#</th><th>Severity</th><th>Finding</th><th>Action</th></tr>
+    <tr><td>1</td><td><span class="sev h">High</span></td><td>A Yes/No own field set to Masked was shown unmasked</td><td>Fixed: masked non-text own fields are left out of reports; the settings screen refuses masking for them</td></tr>
+    <tr><td>2</td><td><span class="sev h">High</span></td><td>Masking a field with few values ("Positive" &rarr; "PoXXXXve", gender, city) still revealed the value</td><td>Fixed: masking only for free text; list fields are hidden instead; screen text explains it</td></tr>
+    <tr><td>3</td><td><span class="sev m">Medium</span></td><td>The allowed-formats rule was checked for one hospital only, while a download can hold several hospitals' rows</td><td>Fixed: every hospital in the download must allow the format</td></tr>
+    <tr><td>4</td><td><span class="sev m">Medium</span></td><td>An administrator could widen a custom role they hold themselves</td><td>Fixed: nobody can change a role they hold, and a role can only grant permissions its editor has</td></tr>
+    <tr><td>5</td><td><span class="sev m">Medium</span></td><td>All own-field values, including hidden and non-reportable ones, were sent to ClickHouse and Kafka</td><td>Fixed: only active, reportable, not hidden fields leave PostgreSQL; changing a field's exposure re-publishes the affected patients</td></tr>
+    <tr><td>6</td><td><span class="sev m">Medium</span></td><td>Own dates before 1970 became 1970-01-01 in reports</td><td>Fixed: 32-bit dates in ClickHouse; dates limited to 1900-2299 (also in formulas)</td></tr>
+    <tr><td>7</td><td><span class="sev m">Medium</span></td><td>No limit on shared formulas (every report compiles them)</td><td>Fixed: at most 100 per hospital (a cache can follow if needed)</td></tr>
+    <tr><td>8</td><td><span class="sev m">Medium</span></td><td>"Used by reports" check missed colleagues' private reports</td><td>Fixed: a database function counts all reports using the field (count only, no names)</td></tr>
+    <tr><td>9</td><td><span class="sev l">Low</span></td><td>Default sort could use a field hidden from the user</td><td>Fixed</td></tr>
+    <tr><td>10</td><td><span class="sev l">Low</span></td><td>Hiding the age still showed the age band</td><td>Fixed: derived fields follow their source</td></tr>
+    <tr><td>11</td><td><span class="sev l">Low</span></td><td><code>DATE()</code> of a computed text answered 500</td><td>Fixed: clear error message</td></tr>
+    <tr><td>12</td><td><span class="sev l">Low</span></td><td>A forged empty value passed a required multi-select</td><td>Fixed</td></tr>
+    <tr><td>13</td><td><span class="sev l">Low</span></td><td>Report-field settings were saved partly when one label was too long</td><td>Fixed: all or nothing, in one transaction</td></tr>
+    <tr><td>14</td><td><span class="sev l">Low</span></td><td>"Administrators only" was tied to user management only</td><td>Fixed: visible to settings or user managers</td></tr>
+    <tr><td>15</td><td><span class="sev l">Low</span></td><td>A small logo file could decode into a huge image</td><td>Fixed: at most 2000 &times; 2000 pixels (header read only)</td></tr>
+    <tr><td>16</td><td><span class="sev l">Low</span></td><td>Two simultaneous role creations could overwrite each other</td><td>Fixed: create never overwrites</td></tr>
+    <tr><td>17</td><td><span class="sev l">Low</span></td><td>Top-N downloads were checked against all groups</td><td>Fixed: N + 1 rows</td></tr>
+    <tr><td>18</td><td><span class="sev l">Low</span></td><td>The internal patient id can be used in formulas</td><td>Accepted: an internal number, needed for distinct counts and drill-down; no personal data</td></tr>
+    <tr><td>19</td><td><span class="sev l">Low</span></td><td>Robustness: NUL characters, min/max beyond the column size, no optimistic locking</td><td>Fixed the first two; concurrent edits of the same setting: last save wins (documented limit)</td></tr>
+  </table></div>
+  <p>The stage 5a review (13 findings) was fixed before stage 5b started (see the architecture document).</p>
+</section>
+
+<section>
+  <h2>4. Problems found by testing and fixed</h2>
+  <div class="wrap"><table>
+    <tr><th>Problem</th><th>Found by</th><th>Fix</th></tr>
+    <tr><td>Excel download of a one-column report crashed (merged title cell of one column); existed since stage 2</td><td>new integration test</td><td>title merge only for two or more columns</td></tr>
+    <tr><td>Settings &rsaquo; Dropdown lists and text own fields gave Error 500 (Tomcat 11 reads Java records only by their components in JSP)</td><td>browser test on the live container</td><td>explicit method calls in the two JSPs; noted in CLAUDE.md</td></tr>
+    <tr><td>ClickHouse copy of own fields failed: PostgreSQL JSON arrived as a nullable text</td><td>running the migration</td><td><code>ifNull(..., '{}')</code> in the sync and backfill</td></tr>
+    <tr><td>Subtotal rows showed no "Subtotal" label (ClickHouse returns empty text, not NULL, for rolled-up columns)</td><td>live API check</td><td>labels from the <code>grouping()</code> bit mask, on screen and in downloads; internal level column no longer printed; Others row added to top-N downloads</td></tr>
+    <tr><td>Dashboards accepted tiles of reports that do not exist or are not visible to the author</td><td>edge-case testing</td><td>refused when saving</td></tr>
+    <tr><td><code>backup.bat</code> did not include the <code>identity</code> schema (users, hospitals, roles since stage 5a)</td><td>documentation check</td><td>added; fresh full backup taken</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>5. Test results</h2>
+  <div class="wrap"><table>
+    <tr><th>Suite</th><th>Tests</th><th>Result</th></tr>
+    <tr><td>Unit: pr-shared, pr-registration, pr-reporting</td><td>3 + 13 + 22</td><td class="pass">passed</td></tr>
+    <tr><td>Integration (pr-app; real security chain, PostgreSQL <code>prtest</code>, ClickHouse <code>analytics_test</code>) incl. new <code>CustomisationTest</code> (14 tests) and updated <code>HospitalIsolationTest</code></td><td>128</td><td class="pass">passed</td></tr>
+    <tr><td>Browser (Playwright, live containers): reporting, hospitals, new customisation spec (calculated field, pivot, subtotals, top N, highlight, drill-down, dashboard, settings screens)</td><td>23</td><td class="pass">passed</td></tr>
+  </table></div>
+  <h3>Live end-to-end check</h3>
+  <p>As <code>h001.admin</code>: added a number field "Bed number" (1-500) and a dropdown "Ward" with "Available in Analytics"; a value of 900 was refused ("Must be between 1 and 500"); a valid registration stored <code>{"ward": "ICU", "bed_no": "42"}</code>; within 5 seconds the row was in ClickHouse and the fields <code>cf_1_bed_no</code> / <code>cf_1_ward</code> could be grouped, averaged and filtered. The test patient and fields were removed again afterwards, so the demo counts are unchanged.</p>
+</section>
+
+<section>
+  <h2>6. Edge cases tried (all handled with a clear message, no error 500)</h2>
+  <div class="wrap"><table>
+    <tr><th>Area</th><th>Cases</th></tr>
+    <tr><td>Formulas</td><td>empty; 1/0 and NUMBER("abc") (empty result); invalid date; text compared with number; unknown field or function (e.g. <code>SLEEP</code>); per-patient value mixed with totals; total inside total; 300 nested calls ("too complex"); 2,000+ characters; decreasing BUCKET limits; percentile outside 0-1; quotes and <code>') OR 1=1 --</code> inside text (shown literally); chained and forward references; duplicate names; more than 20 fields; computed text in DATE()</td></tr>
+    <tr><td>Report options</td><td>top N 0 / 1001 / without measure; pivot without measure, on a non-column, with top N; subtotals with one column or with conditions; condition on a rank; unknown comparison; text instead of number; display mode without group or unknown; page size 0; another hospital's own field</td></tr>
+    <tr><td>Dashboards &amp; reports</td><td>empty / 130-character name; no tiles; 51 tiles; missing or foreign report; unknown visibility; filter on an unknown field (ignored); HTML in names (shown as text)</td></tr>
+    <tr><td>Settings</td><td>invalid and duplicate keys; dropdown without values; min &gt; max; unknown type or section (incl. SQL text); script tags in labels and options (escaped on form and settings pages); masking of non-text fields; too-long label (nothing saved); numbers beyond the column size</td></tr>
+    <tr><td>Access</td><td>reports user sharing (refused); other hospital's dashboard, report, formula (404); changing another user's shared item (403); settings pages without permission (403); administrator editing own role or granting permissions they lack (403); format switched off by one of the user's hospitals (403)</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>7. Measured speed (H001, 1,00,002 patients, warm)</h2>
+  <div class="wrap"><table>
+    <tr><th>Action</th><th>Legacy JSP</th><th>Analytics</th></tr>
+    <tr><td>Register page 1</td><td>0.23 s</td><td>0.17 s</td></tr>
+    <tr><td>Department summary</td><td>0.44 s</td><td>0.21 s</td></tr>
+    <tr><td>Pivot department &times; gender</td><td>&mdash;</td><td>0.21 s</td></tr>
+    <tr><td>Excel, all patients</td><td>7.0 s</td><td>2.4-5.6 s</td></tr>
+  </table></div>
+  <p>Crore-scale load tests are stage 6 (postponed).</p>
+</section>
+
+<section>
+  <h2>8. Open points and suggestions</h2>
+  <ul>
+    <li><b>Stage 6 load test</b> when more memory is available (or on another machine).</li>
+    <li>PDF Unicode fonts (Devanagari etc.) are still skipped, as decided.</li>
+    <li>Optional: "copy settings from another hospital", a screen to manage shared calculated fields outside the report builder, caching of the per-user catalogue, optimistic locking for settings.</li>
+    <li>Production hardening before any real use: secrets out of plain-text files, SSO, TLS, backups of ClickHouse volumes.</li>
+    <li>The project folder is not under version control; a local <code>git init</code> is still recommended.</li>
+  </ul>
+  <div class="note">Backups: <code>backup/patientreg_full_2026-10-16_after-stage5.dump</code> (all three schemas, 24 tables, 22 MB) plus the earlier dumps and source snapshots.</div>
+</section>
+</main>
+<script>
+(function () {
+  var btn = document.getElementById('themeBtn');
+  try { var t = localStorage.getItem('pr-doc-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  btn.addEventListener('click', function () {
+    var cur = document.documentElement.getAttribute('data-theme');
+    var dark = cur ? cur === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var next = dark ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('pr-doc-theme', next); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+<!-- The admin account (created from CLICKHOUSE_USER) may use the pg_reporting named collection,
+     which the backfill and the one-minute sync read PostgreSQL through. -->
+<clickhouse>
+    <users>
+        <admin>
+            <named_collection_control>1</named_collection_control>
+            <show_named_collections>1</show_named_collections>
+        </admin>
+    </users>
+</clickhouse>

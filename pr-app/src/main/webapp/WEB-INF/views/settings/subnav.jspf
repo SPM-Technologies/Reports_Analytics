@@ -1,0 +1,12 @@
+<div class="subnav">
+    <a class="btn ${settingsTab == 'fields' ? 'active' : ''}" href="${ctx}/settings/fields">Form fields</a>
+    <a class="btn ${settingsTab == 'lists' ? 'active' : ''}" href="${ctx}/settings/lists">Dropdown lists</a>
+    <a class="btn ${settingsTab == 'departments' ? 'active' : ''}" href="${ctx}/settings/departments">Departments &amp; doctors</a>
+    <a class="btn ${settingsTab == 'reportFields' ? 'active' : ''}" href="${ctx}/settings/report-fields">Report fields</a>
+    <a class="btn ${settingsTab == 'downloads' ? 'active' : ''}" href="${ctx}/settings/downloads">Downloads</a>
+</div>
+<p class="muted">Settings of <strong><c:out value="${tenant.active.code} - ${tenant.active.name}"/></strong>
+    <c:if test="${tenant.multiHospital}">(switch hospital in the header to change another hospital's settings)</c:if>.
+    Changes apply at once and are recorded in the audit log.</p>
+<c:if test="${not empty message}"><div class="alert alert-success"><c:out value="${message}"/></div></c:if>
+<c:if test="${not empty error}"><div class="alert alert-error"><c:out value="${error}"/></div></c:if>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Final Review Report</title>
+<style>
+:root {
+  --bg: #f5f7f9; --surface: #ffffff; --surface-2: #eef3f6; --text: #1d2730; --muted: #5d6b78;
+  --border: #d3dce3; --accent: #00707e; --accent-soft: #e0f1f3; --code-bg: #f0f3f6;
+  --ok: #2e7d32; --ok-bg: #e9f6ec; --warn: #9a6400; --warn-bg: #fff6e5; --bad: #b3261e; --bad-bg: #fdecea;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12171c; --surface: #1a2128; --surface-2: #212a33; --text: #e3e9ee; --muted: #9aa8b4;
+    --border: #33404c; --accent: #3fb6c4; --accent-soft: #163339; --code-bg: #212a33;
+    --ok: #7cc68a; --ok-bg: #18291d; --warn: #f0b45a; --warn-bg: #2e2717; --bad: #f08a80; --bad-bg: #3a1f1d;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12171c; --surface: #1a2128; --surface-2: #212a33; --text: #e3e9ee; --muted: #9aa8b4;
+  --border: #33404c; --accent: #3fb6c4; --accent-soft: #163339; --code-bg: #212a33;
+  --ok: #7cc68a; --ok-bg: #18291d; --warn: #f0b45a; --warn-bg: #2e2717; --bad: #f08a80; --bad-bg: #3a1f1d;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 "Segoe UI", system-ui, Arial, sans-serif; }
+a { color: var(--accent); }
+code { font-family: Consolas, "Courier New", monospace; font-size: 13px; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+main { max-width: 1100px; margin: 0 auto; padding: 28px 24px 60px; }
+header.hero { background: var(--surface); border: 1px solid var(--border); border-left: 5px solid var(--accent); border-radius: 8px; padding: 22px 26px; margin-bottom: 22px; }
+header.hero h1 { margin: 0 0 6px; font-size: 26px; }
+header.hero p { margin: 4px 0; color: var(--muted); }
+section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px; margin-bottom: 20px; }
+section h2 { margin: 0 0 12px; font-size: 20px; padding-bottom: 8px; border-bottom: 2px solid var(--accent-soft); }
+section h3 { font-size: 16px; margin: 18px 0 8px; }
+.wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; margin: 8px 0; }
+th, td { border: 1px solid var(--border); padding: 6px 9px; text-align: left; vertical-align: top; }
+th { background: var(--surface-2); }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
+.stat { font-size: 24px; font-weight: 700; color: var(--accent); }
+.card p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.pass { color: var(--ok); font-weight: 700; }
+.sev { font-weight: 700; font-size: 12px; border-radius: 10px; padding: 1px 8px; white-space: nowrap; }
+.sev.h { background: var(--bad-bg); color: var(--bad); }
+.sev.m { background: var(--warn-bg); color: var(--warn); }
+.sev.l { background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); }
+.note { border-left: 4px solid var(--accent); background: var(--surface-2); padding: 10px 14px; border-radius: 4px; margin: 12px 0; }
+.theme-btn { float: right; font: inherit; font-size: 12px; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 5px 10px; cursor: pointer; }
+@media (max-width: 700px) { main { padding: 16px; } section { padding: 16px; } .theme-btn { float: none; } td, th { overflow-wrap: anywhere; } }
+</style>
+</head>
+<body>
+<main>
+<header class="hero">
+  <button class="theme-btn" type="button" id="themeBtn">Light / dark</button>
+  <h1>Final review report</h1>
+  <p>Independent third-eye review of all code, the database, the set-up and Docker, and all documents, after stages 0&ndash;5b; the fixes made; and the tests that prove them, including a clean installation.</p>
+  <p>16 Oct 2026 &middot; local POC at <code>D:\Pravin\patient-registration</code> &middot; Related: <a href="Patient-Registration-Project-Guide.html">Project guide</a> &middot; <a href="Reports-Comparison-JSP-vs-Analytics.html">Reports comparison</a> &middot; <a href="Stage-5-Completion-Report.html">Stage 5 report</a> &middot; <a href="Solution-Architecture.html">Solution architecture</a></p>
+</header>
+
+<section>
+  <h2>1. Result in short</h2>
+  <div class="cards">
+    <div class="card"><div class="stat">4</div><p>Independent reviews in parallel: security &amp; database, code correctness &amp; UI, set-up &amp; Docker, documents</p></div>
+    <div class="card"><div class="stat">&asymp; 90</div><p>Findings: 2 high + 7 medium security, 3 high correctness, 1 high set-up, plus documentation errors</p></div>
+    <div class="card"><div class="stat pass">178 / 178</div><p>Java tests pass (12 new regression tests for this review)</p></div>
+    <div class="card"><div class="stat pass">23 / 23</div><p>Browser tests pass against the deployed containers</p></div>
+    <div class="card"><div class="stat pass">Clean install</div><p>From a copy of the project with empty volumes: works with one command, incl. demo data, sync, real time, restore</p></div>
+    <div class="card"><div class="stat">0</div><p>Cross-hospital data leaks found in any live test (before and after the fixes)</p></div>
+  </div>
+  <div class="note">The live demo data is unchanged: H001 1,00,002 &middot; H002 20,000 &middot; H003 10,000 patients, the same in PostgreSQL and ClickHouse; 9 users; real-time connector running.</div>
+</section>
+
+<section>
+  <h2>2. How the review was done</h2>
+  <ul>
+    <li>Four reviewers worked independently and read-only (code, SQL, configuration, the running system: SELECTs, API calls, container state), each listing findings with evidence, severity and a fix.</li>
+    <li>Every finding was fixed in code, configuration or documents, or explicitly accepted as a documented limitation (section 7).</li>
+    <li>Each fix got a regression test where it can be tested automatically (<code>FinalReviewTest</code>, extended <code>CustomisationTest</code>, <code>AdminScreensTest</code>, <code>CsvExporterTest</code>, <code>QueryBuilderTest</code>).</li>
+    <li>Finally the whole project was copied without tools, build output and backups, started from empty volumes as a recipient would, and exercised end to end (section 5).</li>
+  </ul>
+</section>
+
+<section>
+  <h2>3. Security and database findings</h2>
+  <div class="wrap"><table>
+    <tr><th>Severity</th><th>Finding</th><th>Fix</th></tr>
+    <tr><td><span class="sev h">High</span></td><td>A user who may manage users could give anyone (or a new account of their own) the ADMIN role</td><td>Roles can only be given, created or changed within the administrator's own permissions in that hospital; the role list shows only those roles</td></tr>
+    <tr><td><span class="sev h">High</span></td><td>Kafka Connect REST (no login) published on all interfaces and showing the replication password; PostgreSQL and ClickHouse also published on all interfaces</td><td>5432, 8123 and 8083 bound to 127.0.0.1 (only the app's 8080 is published); the connector refers to <code>${env:DBZ_PASSWORD}</code>, the API no longer shows the password</td></tr>
+    <tr><td><span class="sev m">Medium</span></td><td>A hospital administrator could remove the super administrator's hospitals; a user could be left without any hospital</td><td>Only a super administrator changes a super administrator's hospitals; nobody loses their last hospital</td></tr>
+    <tr><td><span class="sev m">Medium</span></td><td>Anyone could lock out any user (behind Docker all browsers share one address); a database lock-out existed only on paper; a flood of names lifted all blocks</td><td>Short pauses that double (1 &rarr; 15 min); active blocks are never dropped; refused attempts audited; the unused database lock-out code removed</td></tr>
+    <tr><td><span class="sev m">Medium</span></td><td>Paging the patient list could copy all patients without the download permission and without audit</td><td>Without EXPORT a patient list can be paged only to row 5,000</td></tr>
+    <tr><td><span class="sev m">Medium</span></td><td>Rules set for "Age Band" did nothing; derived fields copied the source's label</td><td>Derived fields follow their source and are not offered separately; labels not copied</td></tr>
+    <tr><td><span class="sev m">Medium</span></td><td>The classic JSP reports ignored the hospital's report-field rules</td><td>Hidden / masked / administrators-only rules now apply to the Patient Register and Department Summary and their downloads</td></tr>
+    <tr><td><span class="sev m">Medium</span></td><td>The application role could write arbitrary outbox payloads (e.g. another hospital's patient with a huge version)</td><td>No rights on <code>report_outbox</code> any more; <code>publish_snapshot()</code> inserts and deletes as owner</td></tr>
+    <tr><td><span class="sev m">Medium</span></td><td>The ClickHouse app account could lift its time, memory and row limits per query; no quota; open to all networks</td><td>Settings constraints (incl. a minimum of 1, because 0 means unlimited), a quota, private networks only</td></tr>
+    <tr><td><span class="sev l">Low</span></td><td>Template reports deletable at database level; cross-hospital role details on the users list; one user could block all downloads; CSV injection via tab/CR; internal <code>patient_id</code> selectable; unescaped LIKE; duplicate field labels; no CSP / Referrer-Policy / SameSite; legacy "format not allowed" saved as a file; no doctor cap</td><td>All fixed: per-command row policies on saved reports, users list limited to own hospitals, one download per user, CSV escaping, hidden fields only inside totals, escaped LIKE, unique labels, CSP + Referrer-Policy + SameSite=Lax (inline scripts moved to <code>common.js</code>), checks before any download header, 200 doctors per department</td></tr>
+  </table></div>
+  <p>Checked and found sound: row-level security on all patient and reporting tables (fails closed), composite keys, grants, security-definer functions, hospital filter and ClickHouse row filter on every query, formulas (allow-list, bound values), masking in filters/sort/suggestions, sessions, CSRF, escaping, logo upload.</p>
+</section>
+
+<section>
+  <h2>4. Correctness findings</h2>
+  <div class="wrap"><table>
+    <tr><th>Severity</th><th>Finding</th><th>Fix</th></tr>
+    <tr><td><span class="sev h">High</span></td><td>Saved reports and templates reopened with "Match any": new filters were OR-ed without the user noticing</td><td>Default "Match all"</td></tr>
+    <tr><td><span class="sev h">High</span></td><td>Subtotal rows appeared above their group (screen and downloads)</td><td>Order by each column's grouping bit first; test corrected (it had asserted the wrong SQL)</td></tr>
+    <tr><td><span class="sev h">High</span></td><td>Formulas referred to fields by label: broke for other viewers (hospital suffixes, own labels) and after renames</td><td>Formulas are stored with field names; the editor shows labels</td></tr>
+    <tr><td><span class="sev m">Medium</span></td><td>Mixed number types in IF/SWITCH passed the check but failed with a misleading "database did not answer"</td><td>Common number type; ClickHouse query errors now explained (400/422) instead of 503</td></tr>
+    <tr><td><span class="sev m">Medium</span></td><td>YEARS_BETWEEN / MONTHS_BETWEEN counted calendar boundaries; DATE() before 1970 clamped</td><td>Whole years/months (<code>age()</code>); 32-bit dates</td></tr>
+    <tr><td><span class="sev m">Medium</span></td><td>Pivot columns of dates sorted as text; charts of subtotal reports doubled; department/hospital renames never reached Analytics</td><td>Sort by value; subtotal rows not charted; renamed department's / hospital's patients re-published</td></tr>
+    <tr><td><span class="sev m">Medium</span></td><td>Top N showed a pager repeating page 1; float noise (100.49999999999999) in results and PDF</td><td>No pager for top N; results rounded to 4 decimals</td></tr>
+    <tr><td><span class="sev l">Low</span></td><td>Edited calculated fields left stale sorts/conditions; measure sort with subtotals failed; dashboard tiles ignored view switches and chart type; highlight rules outlived their measure; paging without tie-breaker; summary download lost the department filter; descriptions wiped on save; filters on unavailable fields shown as another field; drill-down downloads titled wrongly; permission changes could be pinned stale</td><td>All fixed (incl. <code>afterCommit</code> for access changes and stable sort keys)</td></tr>
+  </table></div>
+  <p>Found while fixing: a dashboard runs its tiles in parallel but a user may run only 3 queries at once, so dashboards with several tiles failed; tiles now queue (one at a time, short retry).</p>
+</section>
+
+<section>
+  <h2>5. Set-up and Docker findings, and the clean-install test</h2>
+  <div class="wrap"><table>
+    <tr><th>Severity</th><th>Finding</th><th>Fix</th></tr>
+    <tr><td><span class="sev h">High</span></td><td>A fresh install had only H001 and <code>admin</code>: the documented demo users and hospitals did not exist; seeding H002/H003 failed</td><td><code>DEMO_DATA=true</code> in <code>.env</code> creates H002, H003 (with departments) and the 8 demo users; <code>load-data.bat rows hospital</code> per hospital; the exact demo data can be restored from the backup</td></tr>
+    <tr><td><span class="sev m">Medium</span></td><td>Kafka kept its data inside the container (/tmp): every recreate lost topics and the connector</td><td>Data on the <code>kafka-data</code> volume, fixed cluster id (verified: topics survive <code>down</code>/<code>up</code>)</td></tr>
+    <tr><td><span class="sev m">Medium</span></td><td>Restore procedure could not work as written; ClickHouse kept stale rows</td><td>New <code>restore.bat</code> (drop schemas, restore, empty ClickHouse, start; publication re-pointed); backups named with time</td></tr>
+    <tr><td><span class="sev m">Medium</span></td><td>Start-up could hang forever; a failed app still showed "Up"</td><td>App healthcheck; setup steps wait for a healthy app and give up with a message; SchemaMigrator retries for a minute</td></tr>
+    <tr><td><span class="sev m">Medium</span></td><td>Line endings would break container scripts on a Git checkout; ClickHouse schema not upgraded on existing volumes</td><td><code>.gitattributes</code> (LF for scripts, CRLF for .bat), all .bat files CRLF, <code>.gitignore</code>; <code>analytics-setup</code> re-applies the DDL and re-creates the sync on every start</td></tr>
+    <tr><td><span class="sev l">Low</span></td><td>Seed hangs / false "Done."; changed passwords in <code>.env</code> not applied; floating image tags; <code>.env</code> in the build context</td><td><code>docker compose run</code> with exit codes; passwords re-applied each start; images pinned to the tested versions (postgres 18.6, ClickHouse 25.3.14.14, Tomcat 11.0.27); <code>.dockerignore</code> extended</td></tr>
+  </table></div>
+  <h3>Clean-install test (copy of the project, empty volumes, 16 Oct 2026)</h3>
+  <div class="wrap"><table>
+    <tr><th>Step</th><th>Result</th></tr>
+    <tr><td><code>docker compose up -d --build</code></td><td class="pass">app healthy, <code>pg-setup</code> and <code>analytics-setup</code> exit 0; <code>admin</code>, H002/H003 with 10 departments each and 8 demo users created; <code>prtest</code>, <code>analytics</code>, <code>analytics_test</code> created</td></tr>
+    <tr><td><code>load-data.bat 500 1</code>, <code>load-data.bat 200 2</code></td><td class="pass">500 / 200 patients, the same in ClickHouse</td></tr>
+    <tr><td>Registration as <code>h002.reg</code></td><td class="pass"><code>H002-REG2026&hellip;</code>, in Analytics after about 45 s (one-minute sync)</td></tr>
+    <tr><td><code>--profile cdc up</code>, registration</td><td class="pass">connector RUNNING, in Analytics after 3 s</td></tr>
+    <tr><td>Second <code>up</code>; <code>down</code> + <code>up</code></td><td class="pass">all setup steps exit 0 again; Kafka topics and the connector survive</td></tr>
+    <tr><td><code>backup.bat</code>, change data, <code>restore.bat</code></td><td class="pass">changes undone, users/grants/publication back, ClickHouse reloaded (702 = 702), real time works after restarting <code>cdc</code> (8 s)</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>6. Documents</h2>
+  <ul>
+    <li><b>Project guide v3.1:</b> start-up order, demo data, deployment and restore steps, ER diagram relations (audit log has no FK; user&ndash;hospital&ndash;role links added), ClickHouse objects (9), limits, all properties incl. test and ClickHouse account settings, security, troubleshooting, test counts.</li>
+    <li><b>Reports comparison v1.1:</b> classic reports now follow field rules and branding; Excel timing marked as not like-for-like with the method; effect on the registration desk "negligible", not "none"; sharing rights; SQL-script freshness rule.</li>
+    <li><b>Solution architecture v2.4:</b> status and versions aligned; section 17 rewritten for Docker; libraries, cache, audit, row security, module tree and roadmap corrected; new section "As built" listing every difference between design and build.</li>
+    <li><b>Stage 5 report, README, CLAUDE.md</b> aligned; stale copies and the superseded proposal moved to <code>Docs/archive/</code>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>7. Accepted limitations (documented, not changed)</h2>
+  <ul>
+    <li>POC secrets in plain text (<code>.env</code>, property files), local users only, no TLS: by design for the local POC.</li>
+    <li>Database row security per user (all their hospitals); per-action checks are in Java (tested).</li>
+    <li>Sign-in audit rows carry no hospital (visible to super administrators); Aadhaar stored unencrypted and shown to users who may view patients; no forced change of the first admin password.</li>
+    <li>Concurrent edits of the same setting: last save wins. The internal patient id can be used inside formulas (no personal data).</li>
+    <li>App container runs as root; host tools needed for the test suites; PDF Unicode fonts skipped; crore-scale load test (stage 6) postponed.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>8. Suggested next steps</h2>
+  <ul>
+    <li>Put the project under version control (<code>git init</code>; <code>.gitignore</code> and <code>.gitattributes</code> are ready).</li>
+    <li>Stage 6 load test when memory allows (move Docker's disk to D:, 50 lakh&ndash;1 crore rows, JMeter).</li>
+    <li>Before any real use: secrets management, SSO/TLS, non-root image, encrypted national ids, forced first password change, CI pipeline.</li>
+  </ul>
+  <div class="note">Backups: <code>backup/patientreg_full_2026-10-16_after-stage5.dump</code> holds the demo data; <code>restore.bat</code> restores it on any machine with the project and Docker.</div>
+</section>
+</main>
+<script>
+(function () {
+  var btn = document.getElementById('themeBtn');
+  try { var t = localStorage.getItem('pr-doc-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  btn.addEventListener('click', function () {
+    var cur = document.documentElement.getAttribute('data-theme');
+    var dark = cur ? cur === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var next = dark ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('pr-doc-theme', next); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>

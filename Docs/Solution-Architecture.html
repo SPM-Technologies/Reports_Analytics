@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reporting Solution Architecture</title>
+<style>
+:root {
+  --bg: #f5f7f9; --surface: #ffffff; --surface-2: #eef3f6; --text: #1d2730; --muted: #5d6b78;
+  --border: #d3dce3; --accent: #00707e; --accent-soft: #e0f1f3;
+  --code-bg: #f0f3f6; --warn-bg: #fff6e5; --warn-border: #e8b04a; --ok-bg: #e9f6ec; --ok-border: #58a86a;
+  --bad: #b3261e; --good: #2e7d32; --mid: #9a6700;
+  --svg-box: #ffffff; --svg-line: #4d5b67; --svg-text: #1d2730; --svg-muted: #6a7885; --svg-alt: #f2f7f9;
+  --svg-new: #e6f4ea; --svg-new-line: #2e7d32; --svg-sync: #00707e; --svg-lane: #e7f1f4; --svg-bad: #b3261e;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12171c; --surface: #1a2128; --surface-2: #212a33; --text: #e3e9ee; --muted: #9aa8b4;
+    --border: #33404c; --accent: #3fb6c4; --accent-soft: #163339;
+    --code-bg: #212a33; --warn-bg: #2e2717; --warn-border: #b9893a; --ok-bg: #18291d; --ok-border: #4c8f5b;
+    --bad: #f08a80; --good: #7cc68a; --mid: #e0b24f;
+    --svg-box: #1f2830; --svg-line: #9aa8b4; --svg-text: #e3e9ee; --svg-muted: #9aa8b4; --svg-alt: #24303a;
+    --svg-new: #1d3324; --svg-new-line: #7cc68a; --svg-sync: #5cc8d4; --svg-lane: #1c2e33; --svg-bad: #f08a80;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12171c; --surface: #1a2128; --surface-2: #212a33; --text: #e3e9ee; --muted: #9aa8b4;
+  --border: #33404c; --accent: #3fb6c4; --accent-soft: #163339;
+  --code-bg: #212a33; --warn-bg: #2e2717; --warn-border: #b9893a; --ok-bg: #18291d; --ok-border: #4c8f5b;
+  --bad: #f08a80; --good: #7cc68a; --mid: #e0b24f;
+  --svg-box: #1f2830; --svg-line: #9aa8b4; --svg-text: #e3e9ee; --svg-muted: #9aa8b4; --svg-alt: #24303a;
+  --svg-new: #1d3324; --svg-new-line: #7cc68a; --svg-sync: #5cc8d4; --svg-lane: #1c2e33; --svg-bad: #f08a80;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 "Segoe UI", system-ui, -apple-system, Arial, sans-serif; }
+a { color: var(--accent); }
+code, pre { font-family: Consolas, "Cascadia Mono", "Courier New", monospace; font-size: 13px; }
+code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; border: 1px solid var(--border); line-height: 1.45; }
+pre code { background: none; padding: 0; }
+.layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); min-height: 100vh; }
+nav.toc { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--surface); border-right: 1px solid var(--border); padding: 20px 16px; }
+nav.toc .brand { font-weight: 700; font-size: 16px; color: var(--accent); }
+nav.toc .sub { color: var(--muted); font-size: 12px; margin-bottom: 16px; }
+nav.toc ol { margin: 0; padding-left: 22px; }
+nav.toc li { margin: 3px 0; font-size: 13.5px; }
+nav.toc a { text-decoration: none; color: var(--text); }
+nav.toc a:hover { color: var(--accent); }
+.theme-btn { margin-top: 18px; font: inherit; font-size: 12px; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 5px 10px; cursor: pointer; }
+main { padding: 28px 40px 60px; max-width: 1180px; width: 100%; }
+header.hero { background: var(--surface); border: 1px solid var(--border); border-left: 5px solid var(--accent); border-radius: 8px; padding: 22px 26px; margin-bottom: 28px; }
+header.hero h1 { margin: 0 0 6px; font-size: 26px; }
+header.hero p { margin: 4px 0; color: var(--muted); }
+section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 22px 26px; margin-bottom: 22px; }
+section h2 { margin: 0 0 14px; font-size: 21px; padding-bottom: 8px; border-bottom: 2px solid var(--accent-soft); }
+section h2 .num { color: var(--accent); margin-right: 6px; }
+section h3 { font-size: 16.5px; margin: 22px 0 8px; }
+section h4 { font-size: 14.5px; margin: 16px 0 6px; }
+.table-wrap { overflow-x: auto; margin: 10px 0 14px; border: 1px solid var(--border); border-radius: 6px; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th { background: var(--surface-2); text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); }
+td { padding: 6px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tr.rec td { background: var(--ok-bg); }
+.good { color: var(--good); font-weight: 600; } .bad { color: var(--bad); font-weight: 600; } .mid { color: var(--mid); font-weight: 600; }
+.tag { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 0 7px; border-radius: 10px; }
+.must { background: var(--ok-bg); color: var(--good); } .should { background: var(--accent-soft); color: var(--accent); } .could { background: var(--warn-bg); color: var(--mid); }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
+.card h4 { margin: 0 0 6px; font-size: 14.5px; }
+.card p { margin: 0; font-size: 13.5px; color: var(--muted); }
+.note { border-left: 4px solid var(--warn-border); background: var(--warn-bg); padding: 10px 14px; border-radius: 4px; margin: 12px 0; font-size: 14px; }
+.ok { border-left: 4px solid var(--ok-border); background: var(--ok-bg); padding: 10px 14px; border-radius: 4px; margin: 12px 0; font-size: 14px; }
+.diagram { overflow-x: auto; background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 10px; margin: 10px 0 6px; }
+.diagram svg { display: block; margin: 0 auto; width: 100%; height: auto; min-width: 820px; }
+.caption { font-size: 12.5px; color: var(--muted); margin: 0 0 12px; }
+.box { fill: var(--svg-box); stroke: var(--svg-line); stroke-width: 1.2; }
+.box-new { fill: var(--svg-new); stroke: var(--svg-new-line); stroke-width: 1.4; }
+.zone { fill: var(--svg-alt); stroke: var(--svg-line); stroke-dasharray: 4 3; stroke-width: 1; }
+.lane { fill: var(--svg-lane); stroke: var(--svg-sync); stroke-dasharray: 5 4; stroke-width: 1; }
+.lbl { fill: var(--svg-text); font: 600 13px "Segoe UI", Arial, sans-serif; }
+.lbl-s { fill: var(--svg-muted); font: 11.5px "Segoe UI", Arial, sans-serif; }
+.zone-t { fill: var(--svg-muted); font: 700 11px "Segoe UI", Arial, sans-serif; letter-spacing: .05em; }
+.ln { stroke: var(--svg-line); stroke-width: 1.6; fill: none; }
+.ln-new { stroke: var(--svg-new-line); stroke-width: 2; fill: none; }
+.ln-sync { stroke: var(--svg-sync); stroke-width: 2; fill: none; stroke-dasharray: 7 4; }
+.ln-bad { stroke: var(--svg-bad); stroke-width: 1.6; fill: none; stroke-dasharray: 5 4; }
+.life { stroke: var(--svg-line); stroke-width: 1; stroke-dasharray: 3 4; }
+.ah { fill: var(--svg-line); } .ah-new { fill: var(--svg-new-line); } .ah-sync { fill: var(--svg-sync); } .ah-bad { fill: var(--svg-bad); }
+ol.steps li { margin: 6px 0; }
+footer { color: var(--muted); font-size: 12.5px; text-align: center; margin-top: 30px; }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  main, section { min-width: 0; }
+  td, th, p, li, code { overflow-wrap: anywhere; }
+  nav.toc { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+  main { padding: 16px; } section, header.hero { padding: 16px; }
+  .grid2, .grid3 { grid-template-columns: 1fr; }
+}
+@media print { nav.toc { display: none; } .layout { display: block; } body { background: #fff; } section { border: none; } }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc">
+  <div class="brand">Reporting Solution Architecture</div>
+  <div class="sub">Version 2.4 &middot; 16 Oct 2026 &middot; stages 0-5b built</div>
+  <ol>
+    <li><a href="#summary">Summary</a></li>
+    <li><a href="#context">Problem, scope &amp; constraints</a></li>
+    <li><a href="#principles">Architecture principles</a></li>
+    <li><a href="#bigpicture">Big picture</a></li>
+    <li><a href="#adr">Key decisions</a></li>
+    <li><a href="#modules">Codebase: modules in one WAR</a></li>
+    <li><a href="#frontend">Front end: JSP + React together</a></li>
+    <li><a href="#session">Sessions &amp; security</a></li>
+    <li><a href="#features">Report module: complete feature set</a></li>
+    <li><a href="#semantic">Semantic layer, security &amp; caching</a></li>
+    <li><a href="#multihospital">&nbsp;&nbsp;Multi-hospital isolation</a></li>
+    <li><a href="#customise">&nbsp;&nbsp;Everything customisable</a></li>
+    <li><a href="#sync">On-screen results (synchronous)</a></li>
+    <li><a href="#api">Reporting API</a></li>
+    <li><a href="#data">Reporting data platform</a></li>
+    <li><a href="#guard">Guard rails &amp; protecting the live DB</a></li>
+    <li><a href="#compliance">Patient-data compliance</a></li>
+    <li><a href="#dr">Backup &amp; disaster recovery</a></li>
+    <li><a href="#ops">Build, deploy, operate, test</a></li>
+    <li><a href="#boot">Spring upgrade readiness (later)</a></li>
+    <li><a href="#stack">Technology &amp; licences</a></li>
+    <li><a href="#roadmap">POC roadmap</a></li>
+    <li><a href="#success">Success criteria</a></li>
+    <li><a href="#risks">Risks</a></li>
+    <li><a href="#decisions">Decisions needed</a></li>
+    <li><a href="#changes">Changes in v2.1</a></li>
+    <li><a href="#asbuilt">As built (v2.4)</a></li>
+  </ol>
+  <button class="theme-btn" type="button" id="themeBtn">Toggle light / dark</button>
+</nav>
+
+<main>
+<header class="hero">
+  <h1>Reporting solution architecture</h1>
+  <p>Self-service, Power BI-style reporting on crores of records, without slowing the live system. Built as a module of the existing Spring MVC + JSP application, deployed as one WAR, and using only open-source software.</p>
+  <p>Version 2.3 (adds multi-hospital isolation, section 10.1 / D13, and full customisation, section 10.2 / D14). Version 2.1 applied an independent architecture review (summary in section 24). It supersedes <code>archive/Reporting-Architecture-Proposal.html</code>. Status: <strong>approved; stages 0&ndash;5b built</strong>, stage 6 (load test) postponed (see section 20). <strong>Version 2.4</strong> (16 October 2026) records what was actually built where it differs from the design: see <a href="#asbuilt">As built</a>.</p>
+</header>
+
+<!-- 1 -->
+<section id="summary">
+  <h2><span class="num">1.</span>Summary</h2>
+  <div class="grid2">
+    <div class="card"><h4>What users get</h4><p>A report builder in the browser: choose columns, filter on any column, group, pivot, total, chart, drill down, save and share their own reports, and download exactly what they see as Excel, PDF or CSV. Results appear on the same screen when they press <strong>Run</strong>.</p></div>
+    <div class="card"><h4>Why the live system stays fast</h4><p>Reports read from <strong>ClickHouse</strong>, a column-store analytics database. It is kept up to date in the background, seconds behind live, by <strong>Debezium</strong> and <strong>Kafka</strong> reading PostgreSQL's change log. Report queries never run on the live database.</p></div>
+    <div class="card"><h4>How it is built</h4><p>A <strong>modular monolith</strong>: a Maven multi-module project assembled into <strong>one WAR</strong> on the same Tomcat. Existing JSP screens keep working; the new <strong>React</strong> UI and JSON API live in the same WAR, so one login session serves both.</p></div>
+    <div class="card"><h4>What it avoids</h4><p>No extra application servers, no cross-site (CORS) setup for the app, no token juggling, no paid licences, and <strong>no Spring Boot migration now</strong>. The design is upgrade-ready, so that step can come later.</p></div>
+  </div>
+</section>
+
+<!-- 2 -->
+<section id="context">
+  <h2><span class="num">2.</span>Problem, scope &amp; constraints</h2>
+  <h3>Problem</h3>
+  <p>In the live product (crores of rows, one PostgreSQL database), reports filter on arbitrary columns. Each such report makes PostgreSQL scan and join large parts of the tables, competing with registrations and other live work for CPU, disk, cache and connections. This POC already showed it at 1 lakh rows: 12 simultaneous PDF downloads took every connection and the dashboard failed after 31 s, until a download limit was added.</p>
+  <h3>Requirements</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Requirement</th></tr></thead>
+    <tbody>
+      <tr><td>R1</td><td>Report load must not affect live activity, whatever the number of report users.</td></tr>
+      <tr><td>R2</td><td>Fast filters on any column, plus grouping and totals, over crores of rows.</td></tr>
+      <tr><td>R3</td><td>Self-service like Power BI: users shape, save and download their own reports.</td></tr>
+      <tr><td>R4</td><td>Results on the front end, on the same screen, when the user presses Run. Downloads start from that screen.</td></tr>
+      <tr><td>R5</td><td>A modern UI for the new reports, living with JSP in one project; existing screens keep working.</td></tr>
+      <tr><td>R6</td><td>Simple deployment and session handling: one deployable, one Tomcat.</td></tr>
+      <tr><td>R7</td><td>Open-source or free software only.</td></tr>
+      <tr><td>R8</td><td>Ready for later upgrades (Spring Framework 7 / Spring Boot, scaling out) without redesign.</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Constraints</h3>
+  <ul>
+    <li><strong>No Spring Boot migration in this phase.</strong> Everything is built on the current Spring MVC 6.2 / Tomcat 11 / Java 21 setup.</li>
+    <li><strong>Report module completeness comes first</strong> (section 9).</li>
+    <li>The POC machine has 7.7 GB RAM, Docker capped at about 3.9 GB and 4 CPUs, and 35 GB free on C: (section 20).</li>
+  </ul>
+</section>
+
+<!-- 3 -->
+<section id="principles">
+  <h2><span class="num">3.</span>Architecture principles</h2>
+  <div class="grid3">
+    <div class="card"><h4>Modular monolith</h4><p>One deployable with strict internal modules. It is simpler to run than microservices, and any module can still be split out later if it ever needs separate scaling.</p></div>
+    <div class="card"><h4>Separate reads from writes (CQRS)</h4><p>PostgreSQL handles transactions; a read-optimised copy in ClickHouse serves reports.</p></div>
+    <div class="card"><h4>Same origin</h4><p>JSP pages, the React app and the API share one host and context path, so one session cookie, no CORS and no extra token handling. The optional Superset embedding is the one exception (section 8).</p></div>
+    <div class="card"><h4>Incremental replacement</h4><p>New features arrive as new screens beside the old ones (often called the "strangler" pattern). Old JSP screens move only if and when it is worth it; nothing has to be rewritten up front.</p></div>
+    <div class="card"><h4>Metadata-driven, secure by construction</h4><p>Reports are built from a catalogue of allowed fields, not hand-coded pages. Every query is generated and secured on the server; the browser never sends SQL.</p></div>
+    <div class="card"><h4>Upgrade-ready</h4><p>Constructor injection, one configuration class per module, Boot-style property names, and JSON over HTTP. A later Spring upgrade is then mostly mechanical.</p></div>
+  </div>
+</section>
+
+<!-- 4 -->
+<section id="bigpicture">
+  <h2><span class="num">4.</span>Big picture</h2>
+  <div class="diagram">
+  <svg width="1100" height="560" viewBox="0 0 1100 560" role="img" aria-label="Container view of the solution">
+    <defs>
+      <marker id="m1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+      <marker id="m1n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah-new"/></marker>
+      <marker id="m1s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah-sync"/></marker>
+    </defs>
+    <rect class="zone" x="20" y="20" width="230" height="300" rx="10"/><text class="zone-t" x="32" y="40">BROWSER (same origin)</text>
+    <rect class="box" x="40" y="60" width="190" height="56" rx="8"/><text class="lbl" x="135" y="84" text-anchor="middle">JSP pages (existing)</text><text class="lbl-s" x="135" y="102" text-anchor="middle">registration, legacy reports</text>
+    <rect class="box-new" x="40" y="190" width="190" height="56" rx="8"/><text class="lbl" x="135" y="214" text-anchor="middle">React app /app (new)</text><text class="lbl-s" x="135" y="232" text-anchor="middle">report builder, dashboards</text>
+
+    <rect class="zone" x="290" y="20" width="400" height="300" rx="10"/><text class="zone-t" x="302" y="40">TOMCAT 11 &middot; patient-registration.war (one deployable)</text>
+    <rect class="box" x="310" y="50" width="360" height="60" rx="6"/><text class="lbl" x="490" y="75" text-anchor="middle">pr-app &middot; one DispatcherServlet, one session</text><text class="lbl-s" x="490" y="93" text-anchor="middle">bootstrap &middot; JSP views &middot; /app static files &middot; /api routing</text>
+    <rect class="box" x="310" y="140" width="170" height="80" rx="6"/><text class="lbl" x="395" y="163" text-anchor="middle">pr-registration</text><text class="lbl-s" x="395" y="181" text-anchor="middle">write side + outbox writer</text><text class="lbl-s" x="395" y="198" text-anchor="middle">OLTP pool (primary)</text>
+    <rect class="box-new" x="500" y="140" width="170" height="80" rx="6"/><text class="lbl" x="585" y="163" text-anchor="middle">pr-reporting</text><text class="lbl-s" x="585" y="181" text-anchor="middle">semantic layer, query, export</text><text class="lbl-s" x="585" y="198" text-anchor="middle">analytics + small meta pool</text>
+    <rect class="box-new" x="310" y="245" width="170" height="55" rx="6"/><text class="lbl" x="395" y="268" text-anchor="middle">pr-ui</text><text class="lbl-s" x="395" y="285" text-anchor="middle">built React files (jar)</text>
+    <rect class="box" x="500" y="245" width="170" height="55" rx="6"/><text class="lbl" x="585" y="268" text-anchor="middle">pr-shared</text><text class="lbl-s" x="585" y="285" text-anchor="middle">common types, errors</text>
+
+    <rect class="zone" x="730" y="20" width="350" height="485" rx="10"/><text class="zone-t" x="742" y="40">DATA</text>
+    <rect class="box" x="750" y="55" width="310" height="85" rx="8"/><text class="lbl" x="905" y="82" text-anchor="middle">PostgreSQL (system of record)</text><text class="lbl-s" x="905" y="101" text-anchor="middle">live tables + outbox &middot; reporting schema</text><text class="lbl-s" x="905" y="118" text-anchor="middle">(saved reports) &middot; wal_level = logical</text>
+    <rect class="box-new" x="750" y="175" width="145" height="52" rx="8"/><text class="lbl" x="822" y="198" text-anchor="middle">Debezium</text><text class="lbl-s" x="822" y="215" text-anchor="middle">reads change log</text>
+    <rect class="box-new" x="915" y="175" width="145" height="52" rx="8"/><text class="lbl" x="987" y="198" text-anchor="middle">Kafka</text><text class="lbl-s" x="987" y="215" text-anchor="middle">change stream</text>
+    <rect class="box-new" x="750" y="290" width="310" height="95" rx="8"/><text class="lbl" x="905" y="318" text-anchor="middle">ClickHouse (analytics)</text><text class="lbl-s" x="905" y="337" text-anchor="middle">flat columnar patient_report<\/text><text class="lbl-s" x="905" y="354" text-anchor="middle">profiles &middot; quotas &middot; backstop row policy</text>
+    <rect class="box" x="750" y="430" width="310" height="60" rx="8"/><text class="lbl" x="905" y="456" text-anchor="middle">Apache Superset (optional)</text><text class="lbl-s" x="905" y="474" text-anchor="middle">analyst dashboards, embeddable</text>
+
+    <path class="ln" d="M230,80 L308,72" marker-end="url(#m1)"/>
+    <path class="ln-new" d="M230,218 L270,218 L270,96 L308,96" marker-end="url(#m1n)"/>
+    <path class="ln" d="M395,110 L395,138" marker-end="url(#m1)"/>
+    <path class="ln-new" d="M585,110 L585,138" marker-end="url(#m1n)"/>
+    <path class="ln" d="M440,140 L440,126 L716,126 L716,85 L748,85" marker-end="url(#m1)"/>
+    <path class="ln" d="M670,155 L700,155 L700,112 L748,112" stroke-dasharray="3 3" marker-end="url(#m1)"/>
+    <path class="ln-new" d="M670,195 L712,195 L712,335 L748,335" marker-end="url(#m1n)"/>
+    <path class="ln-sync" d="M822,140 L822,173" marker-end="url(#m1s)"/>
+    <path class="ln-sync" d="M895,201 L913,201" marker-end="url(#m1s)"/>
+    <path class="ln-sync" d="M987,227 L987,288" marker-end="url(#m1s)"/>
+    <path class="ln" d="M905,430 L905,387" marker-end="url(#m1)"/>
+    <path class="ln" d="M135,246 L135,460 L748,460" stroke-dasharray="5 4" marker-end="url(#m1)"/>
+    <text class="lbl-s" x="300" y="452">optional: embed Superset dashboards (separate origin)</text>
+
+    <line class="ln" x1="40" y1="538" x2="80" y2="538"/><text class="lbl-s" x="88" y="542">existing request path</text>
+    <line class="ln-new" x1="240" y1="538" x2="280" y2="538"/><text class="lbl-s" x="288" y="542">new request path (synchronous, on screen)</text>
+    <line class="ln-sync" x1="560" y1="538" x2="600" y2="538"/><text class="lbl-s" x="608" y="542">background data sync (seconds), never in a user request</text>
+  </svg>
+  </div>
+  <p class="caption">One WAR, one Tomcat, one session. Registration writes its data and an outbox record in one transaction. Reports (green) read ClickHouse synchronously; Kafka and Debezium (dashed) only keep ClickHouse current. The dotted line is reporting's small metadata pool for saved reports.</p>
+</section>
+
+<!-- 5 -->
+<section id="adr">
+  <h2><span class="num">5.</span>Key architecture decisions</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Decision</th><th>Chosen</th><th>Alternatives considered</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>D1</td><td>Deployment unit</td><td><strong>One WAR</strong> on the existing Tomcat 11</td><td>Separate UI server; reporting microservice</td><td>Simplest operation; one session; no CORS; modules keep the option to split later</td></tr>
+      <tr><td>D2</td><td>Code structure</td><td><strong>Maven multi-module</strong> (modular monolith), with boundaries checked by ArchUnit tests</td><td>Single module with packages only; separate repositories</td><td>The compiler enforces boundaries</td></tr>
+      <tr><td>D3</td><td>Framework now</td><td><strong>Stay on Spring MVC 6.2</strong> (no Boot this phase)</td><td>Spring Boot 4 migration first</td><td>Your constraint: the report module comes first. The design stays upgrade-ready (section 18)</td></tr>
+      <tr><td>D4</td><td>New UI</td><td><strong>React + TypeScript + Vite</strong>, served from the WAR at <code>/app</code></td><td>Vue 3, Angular (both MIT, both viable); more JSP</td><td>Largest ecosystem for grids and charts; team skills may switch this to Vue or Angular without affecting anything else</td></tr>
+      <tr><td>D5</td><td>Report store</td><td><strong>ClickHouse</strong></td><td>Read replica; OpenSearch; StarRocks / Doris; lakehouse</td><td>Built for any-column filters and aggregations over billions of rows with many users; Apache 2.0 (section 13)</td></tr>
+      <tr><td>D6</td><td>Keeping it current</td><td><strong>Debezium + Kafka</strong> change data capture (CDC)</td><td>Scheduled batch copies; app writing directly to Kafka</td><td>Seconds behind live and independent of the app. Kafka gives a short replay window; full recovery is by backfill (section 16)</td></tr>
+      <tr><td>D7</td><td>Publishing changes</td><td><strong>Registration owns a transactional outbox</strong>: in its own transaction it writes a versioned <code>PatientSnapshot</code> record (its published contract)</td><td>Reporting writes the outbox via an in-process event; reporting calls registration</td><td>The outbox must use the same database transaction (the OLTP pool), so the data's owner writes it. Reporting never touches registration code or tables; it only reads ClickHouse</td></tr>
+      <tr><td>D8</td><td>Self-service</td><td><strong>In-app report builder</strong> on a semantic layer; optional embedded <strong>Superset</strong> for analysts</td><td>Superset only; buying a BI tool</td><td>Product-native look and security, with no licence cost</td></tr>
+      <tr><td>D9</td><td>Result delivery</td><td><strong>Synchronous</strong>: query &rarr; JSON &rarr; screen; downloads streamed directly</td><td>Background jobs plus a downloads page</td><td>Your requirement (R4); ClickHouse is fast enough for interactive use</td></tr>
+      <tr><td>D10</td><td>Sessions &amp; auth</td><td><strong>Container HttpSession</strong> shared by JSP and React; Spring Security session login with CSRF protection when login is added</td><td>JWT tokens; a separate auth server</td><td>Same origin makes tokens unnecessary; this is the least complex secure option</td></tr>
+      <tr><td>D11</td><td>Schema changes</td><td>ClickHouse DDL as versioned scripts in <code>infra/clickhouse</code>; PostgreSQL stays on the idempotent <code>schema.sql</code> for now</td><td>Migration tool immediately</td><td>Keeps this phase small; a migration tool (for example Flyway Community, Apache 2.0) fits the later Spring upgrade</td></tr>
+      <tr><td>D12</td><td>Row-level security</td><td><strong>Enforced in the semantic layer</strong> on every query, export and value suggestion. ClickHouse row policies act only as a backstop</td><td>Rely on ClickHouse row policies alone</td><td>The app uses one pooled ClickHouse login, so ClickHouse can't tell app users apart on its own (section 10)</td></tr>
+      <tr><td>D13</td><td>Multiple hospitals</td><td><strong>One database, <code>hospital_id</code> on every row</strong>, enforced in the session, by PostgreSQL row-level security and in the semantic layer; per-hospital registration numbers and department lists</td><td>Schema per hospital; database or server per hospital</td><td>Strong isolation with one pipeline and easy group-level reporting; separate databases only if a hospital demands it contractually (section 10.1)</td></tr>
+      <tr><td>D14</td><td>Customisation</td><td><strong>Metadata-driven</strong>: admin-defined custom fields (JSONB in PostgreSQL, Map in ClickHouse), per-field reportable/sensitivity settings, calculated fields in a safe formula language, configurable roles and permissions, all per hospital</td><td>Developer changes for every new field; free SQL for power users; physical columns per custom field</td><td>Everything customisable from screens without a release, while security rules can't be bypassed by any customisation (section 10.2)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 6 -->
+<section id="modules">
+  <h2><span class="num">6.</span>Codebase: modules in one WAR</h2>
+<pre><code>patient-registration/                      parent pom (packaging = pom); build.bat / deploy.bat unchanged
+├── pr-shared/          jar   shared kernel: signed-in user and hospitals (shared.tenant), audit contract,
+│                             export writers, custom-field and field-rule contracts
+├── pr-identity/        jar   users, hospitals, roles, Spring Security login, audit log, admin screens
+├── pr-registration/    jar   EXISTING feature code: form, validation, OLTP DAOs, JSP controllers,
+│                             legacy Report 1 &amp; 2 (Excel/PDF), PatientSnapshot outbox writer,
+│                             published contract: SQL view v_patient_report + publish_snapshot()
+├── pr-reporting/       jar   NEW: semantic layer, query builder, ClickHouse access, REST API (/api/v1),
+│                             streamed exports, saved reports, dashboards, formulas, report settings
+├── pr-ui/              jar   NEW: React + TypeScript source (src/); its Vite build is copied into the
+│                             WAR as plain files under /app (not served from a jar: Windows file locks)
+├── pr-app/             war   assembles everything: WebAppInitializer, per-module config wiring,
+│                             JSP views and their CSS/JS, web.xml  -&gt;  patient-registration.war
+├── docker-compose.yml, Dockerfile, .env    the whole system (project root)
+├── infra/                    PostgreSQL setup, ClickHouse DDL/pipeline/users, Debezium connector JSON
+├── db/  Docs/  tools/  backup/   as today</code></pre>
+  <div class="diagram">
+  <svg width="900" height="370" viewBox="0 0 900 370" role="img" aria-label="Module dependency diagram">
+    <defs>
+      <marker id="m2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+      <marker id="m2b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah-bad"/></marker>
+    </defs>
+    <rect class="box" x="350" y="20" width="200" height="50" rx="6"/><text class="lbl" x="450" y="42" text-anchor="middle">pr-app (war)</text><text class="lbl-s" x="450" y="59" text-anchor="middle">wires modules together</text>
+    <rect class="box" x="60" y="140" width="200" height="55" rx="6"/><text class="lbl" x="160" y="163" text-anchor="middle">pr-registration</text><text class="lbl-s" x="160" y="181" text-anchor="middle">write side + outbox</text>
+    <rect class="box-new" x="350" y="140" width="200" height="55" rx="6"/><text class="lbl" x="450" y="163" text-anchor="middle">pr-ui</text><text class="lbl-s" x="450" y="181" text-anchor="middle">static React build</text>
+    <rect class="box-new" x="640" y="140" width="200" height="55" rx="6"/><text class="lbl" x="740" y="163" text-anchor="middle">pr-reporting</text><text class="lbl-s" x="740" y="181" text-anchor="middle">new read side</text>
+    <rect class="box" x="350" y="262" width="200" height="50" rx="6"/><text class="lbl" x="450" y="284" text-anchor="middle">pr-shared</text><text class="lbl-s" x="450" y="301" text-anchor="middle">shared kernel</text>
+    <path class="ln" d="M400,70 L200,138" marker-end="url(#m2)"/>
+    <path class="ln" d="M450,70 L450,138" marker-end="url(#m2)"/>
+    <path class="ln" d="M500,70 L700,138" marker-end="url(#m2)"/>
+    <path class="ln" d="M200,195 L400,260" marker-end="url(#m2)"/>
+    <path class="ln" d="M700,195 L500,260" marker-end="url(#m2)"/>
+    <path class="ln-bad" d="M120,195 L120,335 L780,335 L780,197" marker-end="url(#m2b)"/>
+    <text class="lbl-s" x="450" y="355" text-anchor="middle">no code link: data flows outbox &rarr; Debezium &rarr; Kafka &rarr; ClickHouse (PatientSnapshot v1 contract)</text>
+  </svg>
+  </div>
+  <p class="caption">Arrows are Maven dependencies. Registration and reporting never depend on each other at compile time or call each other at run time.</p>
+  <h3>Module rules</h3>
+  <ul>
+    <li><strong>Packages follow modules</strong>: <code>com.hospital.patientreg.registration</code>, <code>&hellip;reporting</code>, <code>&hellip;shared</code>, <code>&hellip;app</code>. Today's code lives in <code>&hellip;controller/dao/service/report/model/config</code>, so stage 1 renames these packages (an automated IDE refactor). ArchUnit tests then fail the build if one module reaches into another's internals.</li>
+    <li><strong>One configuration class per module</strong> (<code>RegistrationConfig</code>, <code>ReportingConfig</code>), listed by <code>WebAppInitializer</code>. Component scans are narrowed to each module's packages.</li>
+    <li><strong>The published contract</strong>: registration owns <code>PatientSnapshot</code> v1 (the flattened, minimised outbox payload, section 13.3). It is a documented JSON schema, not a shared Java class; reporting depends only on the schema.</li>
+    <li><strong>Connection pools</strong>:
+      <ul>
+        <li>OLTP pool (PostgreSQL), owned by registration and marked <code>@Primary</code>.</li>
+        <li>Analytics pool (ClickHouse), owned by reporting.</li>
+        <li>A small reporting-metadata pool (2&ndash;3 connections, PostgreSQL schema <code>reporting</code>) for saved reports, shares and dashboards.</li>
+      </ul>
+      Report queries can never take live-database connections.</li>
+  </ul>
+  <h3>Changes the existing code needs (stage 1)</h3>
+  <p>This is a real refactor, not a pure file move. These items come from reviewing the current code:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Today</th><th>Problem once reporting is added</th><th>Change</th></tr></thead>
+    <tbody>
+      <tr><td><code>AppConfig</code> takes <code>DataSource</code> by type; DAOs take <code>NamedParameterJdbcTemplate</code> by type; <code>@Transactional</code> assumes one transaction manager</td><td>A second DataSource or template makes these ambiguous</td><td>Mark the OLTP DataSource, templates and transaction manager <code>@Primary</code>. Qualify all analytics beans. Define <strong>no</strong> transaction manager for ClickHouse (it is not transactional). Add a context-startup test.</td></tr>
+      <tr><td><code>GlobalExceptionHandler</code> handles every <code>Exception</code> and renders <code>error.jsp</code></td><td>API errors would come back as HTML pages</td><td>Scope it to the JSP controllers; add an API <code>@RestControllerAdvice</code> (scoped to <code>@RestController</code>) returning <code>application/problem+json</code></td></tr>
+      <tr><td><code>WebConfig</code> scans only <code>&hellip;controller</code>; <code>AppConfig</code> scans all of <code>com.hospital.patientreg</code></td><td>New REST controllers aren't found; root and web contexts overlap after the package rename</td><td>Per-module scans and configuration classes</td></tr>
+      <tr><td><code>pom.xml</code> has no Jackson</td><td>No JSON support for <code>/api</code></td><td>Add Jackson (new dependency)</td></tr>
+      <tr><td><code>PatientService.register()</code> only</td><td>No outbox; no edit or delete path</td><td>Write the <code>PatientSnapshot</code> outbox record in <code>register()</code>; define the same for future edit and delete operations</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 7 -->
+<section id="frontend">
+  <h2><span class="num">7.</span>Front end: JSP and React in one project</h2>
+  <h3>URL map (all under <code>/patient-registration</code>)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Path</th><th>Served by</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>/</code>, <code>/patient/**</code>, <code>/reports/**</code></td><td>Existing JSP controllers</td><td>Unchanged</td></tr>
+      <tr><td><code>/app/**</code></td><td>React single-page app (plain files copied into the WAR under <code>/app</code>, served by a Spring <code>ResourceHandler</code>)</td><td>A custom resolver returns <code>index.html</code> for unknown <em>route</em> paths so browser routing and bookmarks work. Missing <em>asset</em> files (<code>/app/assets/*</code>) still return 404. <code>index.html</code> is never cached; hashed assets are cached long-term.</td></tr>
+      <tr><td><code>/api/v1/**</code></td><td>Spring <code>@RestController</code>s in pr-reporting (JSON via Jackson)</td><td>Versioned, so the API can evolve without breaking the UI</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Build pipeline: still one command</h3>
+  <div class="diagram">
+  <svg width="1000" height="230" viewBox="0 0 1000 230" role="img" aria-label="Build pipeline">
+    <defs><marker id="m3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+    <rect class="box-new" x="20" y="30" width="190" height="60" rx="6"/><text class="lbl" x="115" y="55" text-anchor="middle">pr-ui/src (React, TS)</text><text class="lbl-s" x="115" y="73" text-anchor="middle">npm + Vite</text>
+    <rect class="box-new" x="260" y="30" width="210" height="60" rx="6"/><text class="lbl" x="365" y="55" text-anchor="middle">frontend-maven-plugin</text><text class="lbl-s" x="365" y="73" text-anchor="middle">Node in tools/node, vite build</text>
+    <rect class="box-new" x="520" y="30" width="190" height="60" rx="6"/><text class="lbl" x="615" y="55" text-anchor="middle">pr-ui.jar</text><text class="lbl-s" x="615" y="73" text-anchor="middle">META-INF/resources/app</text>
+    <rect class="box" x="20" y="140" width="190" height="60" rx="6"/><text class="lbl" x="115" y="165" text-anchor="middle">Java modules</text><text class="lbl-s" x="115" y="183" text-anchor="middle">shared, registration, reporting</text>
+    <rect class="box" x="260" y="140" width="210" height="60" rx="6"/><text class="lbl" x="365" y="165" text-anchor="middle">javac &rarr; jars</text><text class="lbl-s" x="365" y="183" text-anchor="middle">same Maven reactor build</text>
+    <rect class="box" x="760" y="85" width="210" height="60" rx="6"/><text class="lbl" x="865" y="110" text-anchor="middle">patient-registration.war</text><text class="lbl-s" x="865" y="128" text-anchor="middle">WEB-INF/lib/*.jar + JSPs</text>
+    <path class="ln" d="M210,60 L258,60" marker-end="url(#m3)"/>
+    <path class="ln" d="M470,60 L518,60" marker-end="url(#m3)"/>
+    <path class="ln" d="M210,170 L258,170" marker-end="url(#m3)"/>
+    <path class="ln" d="M710,60 L735,60 L735,105 L758,105" marker-end="url(#m3)"/>
+    <path class="ln" d="M470,170 L735,170 L735,125 L758,125" marker-end="url(#m3)"/>
+    <text class="lbl-s" x="760" y="175">build.bat (mvn package) &rarr; deploy.bat</text>
+    <text class="lbl-s" x="760" y="191">same steps as today</text>
+  </svg>
+  </div>
+  <ul>
+    <li><strong>Node.js is a build-time tool only.</strong> The <code>frontend-maven-plugin</code> is configured with <code>&lt;installDirectory&gt;</code> pointing at <code>tools/</code>, so Node lands in <code>tools/node</code> inside the project. Tomcat never runs Node.</li>
+    <li><strong>Context path</strong>: Vite <code>base: './'</code> (relative asset URLs), so the app works under any context path; there is no client router (state in the URL hash).</li>
+    <li><strong>Developer workflow:</strong> <code>npm run dev</code> gives instant UI hot-reload, with <code>/api</code> proxied to the running Tomcat. UI changes don't need a WAR rebuild.</li>
+    <li><strong>Navigation between the two worlds:</strong> the JSP header gets an "Analytics" link to <code>/app</code>; the React header links back to JSP screens. Shared colour tokens keep the look consistent.</li>
+    <li><strong>Targets</strong>: current Chrome, Edge and Firefox; keyboard-accessible, labelled controls (WCAG 2.1 AA as the aim); English UI first, with text kept in resource files so Hindi or regional languages can be added.</li>
+  </ul>
+  <h3>Front-end libraries (all MIT or Apache 2.0)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Need</th><th>Library</th><th>Licence</th></tr></thead>
+    <tbody>
+      <tr><td>Framework / language / build</td><td>React, TypeScript, Vite</td><td>MIT / Apache 2.0 / MIT</td></tr>
+      <tr><td>Server data</td><td>plain <code>fetch</code> wrapper (<code>api.ts</code>); TanStack Query not used</td><td>&mdash;</td></tr>
+      <tr><td>Data grid (sorting, resizing, column order, virtual scrolling)</td><td>TanStack Table 8.20 (paging on the server; no virtual scrolling needed)</td><td>MIT</td></tr>
+      <tr><td>Pivot grid</td><td>own small component (<code>PivotTable.tsx</code>); Perspective not used</td><td>&mdash;</td></tr>
+      <tr><td>Charts</td><td>Apache ECharts 5.5</td><td>Apache 2.0</td></tr>
+      <tr><td>UI components and forms</td><td>own CSS; Mantine not used</td><td>&mdash;</td></tr>
+      <tr><td>End-to-end UI tests</td><td>Playwright</td><td>Apache 2.0</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><strong>Licence traps to avoid:</strong> AG Grid's pivoting, grouping and Excel export are in its paid Enterprise edition; MUI X Pro/Premium grids are paid; Highcharts, Flexmonster and WebDataRocks are proprietary.</div>
+</section>
+
+<!-- 8 -->
+<section id="session">
+  <h2><span class="num">8.</span>Sessions &amp; security</h2>
+  <ul>
+    <li><strong>One session for everything.</strong> JSP pages, React and the API share the context path, so the browser sends the same <code>JSESSIONID</code> cookie (already HTTP-only, cookie-only) to all of them. No CORS and no tokens. In production also set <code>Secure</code> and <code>SameSite=Lax</code>.</li>
+    <li><strong>Login</strong> (built in stage 5a): Spring Security with session-based form login protects JSP and API alike.
+      <ul>
+        <li>JSP forms use the hidden CSRF field.</li>
+        <li>The React app uses a CSRF cookie plus request header, together with Spring Security 6's SPA-specific token request handling (which protects against the BREACH attack). Just exposing the cookie isn't enough.</li>
+        <li>Roles drive datasets, fields and row-level rules (section 10).</li>
+      </ul></li>
+    <li><strong>Identity is the security boundary.</strong> Saved and shared reports and row-level security need a real, server-verified user. The POC may use a user selector to demonstrate features, but it must <strong>never ship</strong>: row-level security based on an identity the browser claims is meaningless.</li>
+    <li><strong>Scaling to more Tomcats later</strong>: Spring Session JDBC (Apache 2.0) stores sessions in a database, so no sticky load balancing is needed. Note that it writes to the database on most requests: use a separate database or schema sized for it, not the hot OLTP tables. Session attributes must be serializable.</li>
+    <li><strong>Optional Superset embedding</strong> is a separate origin (iframe plus guest-token endpoint, with Superset's CORS and security-header configuration). It is the one exception to the same-origin principle and needs its own security review.</li>
+  </ul>
+</section>
+
+<!-- 9 -->
+<section id="features">
+  <h2><span class="num">9.</span>Report module: complete feature set</h2>
+  <p>Priorities: <span class="tag must">MUST</span> for the first complete version, <span class="tag should">SHOULD</span> next, <span class="tag could">COULD</span> later.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Area</th><th>Feature</th><th>Priority</th></tr></thead>
+    <tbody>
+      <tr><td rowspan="5">Build a report</td><td>Pick a dataset (Patients first; Visits, Insurance later) and choose, reorder and resize columns</td><td><span class="tag must">MUST</span></td></tr>
+      <tr><td>Filter on any column, with operators by type: text (equals, contains, starts with, in list), numbers (=, &lt;, &gt;, between), dates (between, relative such as "last 30 days" or "this month", computed in IST), yes/no; AND/OR groups</td><td><span class="tag must">MUST</span></td></tr>
+      <tr><td>Group by one or more columns, with measures: count, distinct count, sum, average (rounded to a defined precision), min, max; grand totals and subtotals</td><td><span class="tag must">MUST</span></td></tr>
+      <tr><td>Pivot (rows &times; columns), for example department &times; month</td><td><span class="tag should">SHOULD</span></td></tr>
+      <tr><td>Calculated fields from a safe expression list (age band, % of total, month-on-month change)</td><td><span class="tag could">COULD</span></td></tr>
+      <tr><td rowspan="4">See results</td><td>Results on the same screen on Run: grid with sorting, frozen header, virtual scrolling or paging, grand totals, "data as of" time, query time</td><td><span class="tag must">MUST</span></td></tr>
+      <tr><td>Switch the same result to a chart (bar, line, pie, stacked, heatmap)</td><td><span class="tag must">MUST</span></td></tr>
+      <tr><td>Drill down: click a grouped value (for example Cardiology) to see the underlying patients</td><td><span class="tag should">SHOULD</span></td></tr>
+      <tr><td>Compare periods (this month vs last month or last year)</td><td><span class="tag could">COULD</span></td></tr>
+      <tr><td rowspan="4">Download</td><td>Excel, PDF, CSV of exactly what is on screen (columns, filters, grouping, totals), streamed immediately</td><td><span class="tag must">MUST</span></td></tr>
+      <tr><td>Size guidance and caps: very large results recommend CSV (Excel's sheet limit is about 10.48 lakh rows; huge PDFs are unreadable); separate caps for screen and download</td><td><span class="tag must">MUST</span></td></tr>
+      <tr><td>PDF in Indian scripts (names in Devanagari, Tamil and so on): embed a Unicode font and verify shaping. The current project prints these as <code>???</code>; until fixed, this is a stated limitation and Excel/CSV are the workaround</td><td><span class="tag should">SHOULD</span></td></tr>
+      <tr><td>Scheduled delivery by email (daily or weekly)</td><td><span class="tag could">COULD</span></td></tr>
+      <tr><td rowspan="4">Save &amp; share</td><td>Save as "My report", rename, duplicate, delete; set a default</td><td><span class="tag must">MUST</span></td></tr>
+      <tr><td>Share with a user or role, read-only or editable; shareable link (the recipient's own row-level rules always apply)</td><td><span class="tag should">SHOULD</span></td></tr>
+      <tr><td>Report templates: today's Report 1 and Report 2 rebuilt as ready-made saved reports</td><td><span class="tag must">MUST</span></td></tr>
+      <tr><td>Dashboards: several saved reports or charts on one page with shared filters</td><td><span class="tag should">SHOULD</span></td></tr>
+      <tr><td rowspan="4">Govern</td><td>Row-level security and column masking, enforced server-side (section 10)</td><td><span class="tag must">MUST</span></td></tr>
+      <tr><td>Audit log: who ran or downloaded what, with which filters and row count, and when</td><td><span class="tag must">MUST</span></td></tr>
+      <tr><td>Guard rails: query timeout, row caps per output, per-user concurrency (section 14)</td><td><span class="tag must">MUST</span></td></tr>
+      <tr><td>Usage statistics (most-used reports, slow queries)</td><td><span class="tag could">COULD</span></td></tr>
+      <tr><td>Analyst tools</td><td>Embedded Apache Superset dashboards for power users (guest tokens, row-level rules; not on the current POC machine because of memory)</td><td><span class="tag could">COULD</span></td></tr>
+    </tbody>
+  </table></div>
+  <h3>Compared honestly with Power BI</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Capability</th><th>Power BI</th><th>This solution</th></tr></thead>
+    <tbody>
+      <tr><td>Drag-and-drop report building</td><td>Yes (desktop and web)</td><td>Yes, guided builder in the product UI (web only)</td></tr>
+      <tr><td>Filters, grouping, pivots, charts, drill-down</td><td>Yes</td><td>Yes (MUST and SHOULD items above)</td></tr>
+      <tr><td>Advanced modelling language (DAX), arbitrary data sources</td><td>Yes</td><td><span class="mid">Not the goal</span>: a curated semantic layer over our data; Superset can cover analyst SQL needs</td></tr>
+      <tr><td>Data freshness</td><td>Scheduled refresh in import mode, or live connection</td><td>Seconds behind live, always</td></tr>
+      <tr><td>Embedded in our product, same login and look</td><td>Needs paid embedding capacity</td><td>Native</td></tr>
+      <tr><td>Row-level security, export</td><td>Yes</td><td>Yes</td></tr>
+      <tr><td>Licence cost</td><td>Per user or capacity</td><td>None</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 10 -->
+<section id="semantic">
+  <h2><span class="num">10.</span>Semantic layer, security &amp; caching</h2>
+  <p>The UI never sends SQL. It sends a small <strong>report definition</strong> (JSON), which the server checks against a <strong>dataset catalogue</strong>, secures for the current user, and turns into parameterised ClickHouse SQL.</p>
+  <h3>Dataset catalogue (one file per dataset, inside pr-reporting)</h3>
+<pre><code>{ "id": "patients", "label": "Patients", "table": "patient_report", "version": 3,
+  "fields": [
+    { "name": "registration_date", "label": "Registration date", "type": "date",   "role": "dimension" },
+    { "name": "dept_name",         "label": "Department",        "type": "string", "role": "dimension", "suggest": true },
+    { "name": "gender",            "label": "Gender",            "type": "string", "role": "dimension", "suggest": true },
+    { "name": "state",             "label": "State",             "type": "string", "role": "dimension", "suggest": true },
+    { "name": "age_years",         "label": "Age",               "type": "number", "role": "dimension" },
+    { "name": "mobile_masked",     "label": "Mobile",            "type": "string", "role": "dimension", "sensitivity": "masked" },
+    { "name": "registration_fee",  "label": "Fee (Rs)",          "type": "money",  "role": "measure", "aggregations": ["sum","avg","min","max"], "scale": 2 },
+    { "name": "patients",          "label": "Patients",          "type": "number", "role": "measure", "expression": "count()" }
+  ],
+  "rowPolicy": "hospital_id IN {user_hospitals:Array(UInt32)} AND dept_id IN {user_depts:Array(UInt16)}" }</code></pre>
+  <h3>Report definition sent by the UI</h3>
+<pre><code>{ "dataset": "patients",
+  "columns": ["dept_name", "gender"],
+  "measures": [{ "field": "patients" }, { "field": "registration_fee", "agg": "sum" }],
+  "filters": { "and": [ { "field": "registration_date", "op": "relative", "value": "LAST_30_DAYS" },
+                        { "field": "state", "op": "in", "value": ["Maharashtra", "Gujarat"] } ] },
+  "sort": [{ "field": "patients", "dir": "desc" }],
+  "totals": "grand+subtotals", "page": { "size": 100 } }</code></pre>
+  <h3>What the query engine does</h3>
+  <ol class="steps">
+    <li><strong>Validate</strong>: every field, operator and aggregation must exist in the catalogue, so injection and hidden columns are impossible. Text "contains" uses the lower-cased column with escaped <code>%</code> / <code>_</code> wildcards, as the current <code>ReportDao</code> does.</li>
+    <li><strong>Secure (D12)</strong>: add the user's row-policy predicate with the user's values bound as parameters, and apply column masking for their role. This applies to on-screen queries, exports, drill-downs and value suggestions alike. As a backstop, the ClickHouse reporting user has a row policy that reads a per-query setting the app sets, so a bug in the app can't widen access.</li>
+    <li><strong>Generate SQL</strong>:
+      <ul>
+        <li>Always <code>FROM patient_report FINAL</code>.</li>
+        <li><code>GROUP BY</code> with <code>WITH TOTALS</code> for grand totals, and <code>ROLLUP</code> / <code>GROUPING SETS</code> for subtotals.</li>
+        <li>Averages on decimals rounded to the field's scale.</li>
+        <li>Per-query limits through two settings profiles: <em>interactive</em> (short timeout, small result cap) and <em>export</em> (longer timeout, larger cap, streaming).</li>
+      </ul></li>
+    <li><strong>Cache, safely</strong> (design only; <em>no result cache was built</em> in the POC, so there is no cache to leak): the cache key is the <em>final rewritten query</em> (definition + bound row-policy values + masking profile + catalogue version), never the definition alone. Only small aggregate results are cached; detail pages and exports are not. A test guarantees two users with different departments never share an entry. The ClickHouse query cache is used only together with this rule, because it separates entries by ClickHouse user, and all app users share one.</li>
+    <li><strong>Return</strong> JSON: column metadata, rows, totals, next-page token, data-as-of time and query time. The same definition drives downloads.</li>
+  </ol>
+  <p>Adding a column to reporting means adding it to the <code>PatientSnapshot</code> contract, the ClickHouse table and the catalogue file. The UI picks it up automatically.</p>
+  <div class="note"><strong>Row-level rule to confirm:</strong> "department" here means the department of the <em>registration</em> visit. Patients seen later in another department would not be visible to that department. Confirm this is the intended rule (decision 5).</div>
+
+  <h3 id="multihospital">10.1 Multi-hospital isolation (D13)</h3>
+  <p>Several hospitals share one installation. Each hospital registers its own patients and must see <strong>only its own data</strong>; a group user may see the several hospitals they are assigned to. The hospital is the primary security boundary and is enforced at every layer, so one missed filter can't expose another hospital's patients.</p>
+  <h4>Decisions (confirmed 15-Oct-2026)</h4>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Question</th><th>Decision</th><th>Consequence</th></tr></thead>
+    <tbody>
+      <tr><td>Registration number</td><td><strong>Separate series per hospital</strong></td><td><code>{HOSPITAL_CODE}-REG{year}{7 digits}</code>, e.g. <code>CITY-REG20260000001</code>; unique on <code>(hospital_id, registration_no)</code></td></tr>
+      <tr><td>Same person at two hospitals</td><td><strong>Separate records</strong></td><td>No cross-hospital matching or merging; no hospital can search another hospital's patients</td></tr>
+      <tr><td>Multi-hospital users</td><td><strong>Yes, several hospitals per user</strong></td><td>A user has a list of allowed hospitals; reports can span them, registration works in one chosen hospital at a time</td></tr>
+      <tr><td>Login</td><td><strong>Local users for now</strong></td><td>Users and BCrypt password hashes in PostgreSQL; LDAP/AD or an identity server can replace it later without touching the isolation rules</td></tr>
+      <tr><td>Departments and doctors</td><td><strong>Separate list per hospital</strong></td><td><code>department</code> (and doctors) carry <code>hospital_id</code>; the form shows only the active hospital's lists</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>Layer 1: data model (PostgreSQL)</h4>
+  <ul>
+    <li>New master <code>hospital (hospital_id, hospital_code UNIQUE, name, active)</code>.</li>
+    <li><code>hospital_id NOT NULL</code> on <code>patient</code>, all five child tables, <code>department</code>, doctors and the outbox payload.</li>
+    <li>Child tables reference the patient by the <strong>composite key</strong> <code>(hospital_id, patient_id)</code>, and a visit references <code>(hospital_id, dept_id)</code>. The database itself rejects a contact, visit or department belonging to a different hospital than the patient, so no "mixed" record can exist.</li>
+    <li>Per-hospital numbering uses a counter table <code>hospital_reg_counter (hospital_id, year, last_no)</code> updated with <code>UPDATE &hellip; RETURNING</code> inside the registration transaction. It is gap-free (a failed save rolls it back) and needs no new database object when a hospital is added.</li>
+  </ul>
+
+  <h4>Layer 2: identity and session (Spring Security, D10)</h4>
+  <ul>
+    <li>Tables <code>app_user (user_id, username, password_hash, active)</code> and <code>app_user_hospital (user_id, hospital_id, role)</code>. Roles per hospital: <code>REGISTRATION</code>, <code>REPORTS</code>, <code>HOSPITAL_ADMIN</code>; a <code>GROUP_ADMIN</code> simply has several hospitals.</li>
+    <li>Form login with session and CSRF protection for JSP and React (same origin, same session). Spring Security 6 works with plain Spring MVC and carries over unchanged to Spring Boot.</li>
+    <li>After login the server holds a <code>TenantContext</code>: allowed hospital ids and the <em>active</em> hospital (users with several hospitals switch it in the header; the server checks it is in their list).</li>
+    <li><strong>The hospital is never taken from the browser.</strong> <code>hospitalId</code> is a disallowed binding field like <code>patientId</code>; saves always use the active hospital from the session.</li>
+    <li>Every read by id is <code>WHERE patient_id = ? AND hospital_id IN (allowed)</code>. Another hospital's patient gives 404 "not found", not 403, so ids can't be probed.</li>
+  </ul>
+
+  <h4>Layer 3: database backstop (PostgreSQL row-level security)</h4>
+  <ul>
+    <li>The application stops connecting as the superuser <code>postgres</code> (superusers bypass row-level security) and uses a normal role <code>patientreg_app</code>.</li>
+    <li>Each patient table gets <code>ENABLE</code> + <code>FORCE ROW LEVEL SECURITY</code> and a policy: <code>hospital_id = ANY ((SELECT patientreg.current_hospitals())::INTEGER[])</code> (the function reads the setting <code>app.hospital_ids</code>).</li>
+    <li><code>TenantAwareDataSource</code> sets <code>app.hospital_ids</code> and <code>app.user_id</code> with <code>set_config(..., false)</code> on every connection the application borrows and clears them when it is returned, so a pooled connection never carries one user's hospitals into another request. With the setting missing, the policy matches nothing: the system <strong>fails closed</strong>.</li>
+    <li>Pipeline accounts are separate: <code>reporting_ro</code> (backfill and sync) gets <code>BYPASSRLS</code> on the published view only; <code>debezium</code> reads only the outbox.</li>
+  </ul>
+
+  <h4>Layer 4: reporting pipeline and ClickHouse</h4>
+  <ul>
+    <li><code>hospital_id</code> and <code>hospital_code</code> are added to <code>PatientSnapshot</code> (v2), the Kafka event and <code>analytics.patient_report</code>.</li>
+    <li>ClickHouse sort key becomes <code>(hospital_id, registration_date, patient_id)</code> (immutable columns only, see 13.4), so a hospital's report reads only that hospital's data blocks, which also keeps it fast at crore scale. The table is rebuilt once by backfill.</li>
+    <li>Kafka, Debezium and ClickHouse are internal services; no user connects to them, so no per-hospital topics or databases are needed.</li>
+  </ul>
+
+  <h4>Layer 5: reports (semantic layer, D12)</h4>
+  <ul>
+    <li><code>QueryBuilder</code> always adds <code>hospital_id IN {hospitals:Array(UInt32)}</code>, bound from the <code>TenantContext</code>. The report definition from the browser cannot add, change or remove it. It applies to grid, counts, totals, charts, all downloads and the filter value suggestions (which would otherwise reveal other hospitals' doctors or cities).</li>
+    <li>Group users get a "Hospital" field to group, filter and compare by; single-hospital users never see it.</li>
+    <li>Saved reports store the layout only, never data, and belong to a hospital (shared within it); global templates are visible to all. Opening any report always shows the viewer's own allowed data.</li>
+    <li>The legacy JSP reports (<code>ReportDao</code>) and the dashboard counts get the same hospital condition.</li>
+    <li>Cache keys include the bound hospital list (as already required in step 4 above). The ClickHouse backstop row policy described in step 2 also checks the hospital; its exact mechanism is verified when built.</li>
+  </ul>
+
+  <h4>Migration of the current data</h4>
+  <ul>
+    <li>The existing 100,002 patients, the 10 departments and the saved reports are assigned to a default hospital <code>H001</code>. Existing registration numbers are kept as they are; the <code>H001</code> counter continues after them.</li>
+    <li>The bulk-data generator spreads new test data over 3&ndash;4 hospitals with their own departments and doctors, so isolation is visible and testable.</li>
+    <li>A full backup is taken before the migration; ClickHouse is rebuilt from PostgreSQL afterwards.</li>
+  </ul>
+
+  <h4>Proof: cross-hospital tests (success criterion S8)</h4>
+  <p>Automated tests log in as a hospital A user and try to reach hospital B data by every path: open, edit and print by id, search, both JSP reports and downloads, every API query, export and value suggestion, saved reports, and a forged <code>hospitalId</code> in the form and in the report definition. Every attempt must return nothing or 404. Further tests check that a direct SQL query without the session setting returns zero rows (row-level security fails closed), that registration numbers are independent per hospital, that a child row with another hospital's id is rejected by the database, and that a group user sees exactly the union of their hospitals.</p>
+
+  <h3 id="customise">10.2 Everything customisable: fields, calculations, reports (D14)</h3>
+  <p>Requirement (15-Oct-2026): the report builder is mandatory and <strong>everything must be customisable</strong> from screens, without a developer or a release. The principle: <em>configuration, not code</em>. Every customisation is stored as metadata per hospital, is versioned and audited, and always runs inside the security rules (hospital isolation, masking, permissions), which no customisation can switch off.</p>
+
+  <h4>What can be customised, and by whom</h4>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Area</th><th>Customisable from screens</th><th>Default permission</th></tr></thead>
+    <tbody>
+      <tr><td>Registration form</td><td>Add custom fields (text, long text, number, decimal, date, yes/no, dropdown, multi-select); label, help text, section, order, required, min/max, length, pattern, allowed values; hide optional standard fields</td><td>Hospital admin</td></tr>
+      <tr><td>Dropdown lists</td><td>Values of every list (religion, occupation, category, visit type, referral source, coverage type&hellip;), departments, doctors</td><td>Hospital admin</td></tr>
+      <tr><td>Field visibility in reports</td><td>Per field (standard or custom): <em>reportable</em> yes/no, <em>sensitivity</em> (normal, masked, hidden), label shown in reports, which roles may see it. New fields start <strong>not reportable</strong> until the admin enables them</td><td>Hospital admin</td></tr>
+      <tr><td>Calculated columns and measures</td><td>Formulas in the report builder (below): private to a report, or published as shared fields for the hospital</td><td>Create private: every report user. Publish shared: analyst / hospital admin</td></tr>
+      <tr><td>Groups and buckets</td><td>Custom ranges (age, fee) and value groups (cities &rarr; regions) as reusable fields</td><td>As calculated fields</td></tr>
+      <tr><td>Reports</td><td>Columns, measures, filters (incl. on calculated results), sort, pivot rows &times; columns, subtotals, totals, % of total, period comparisons, top N, conditional formatting, chart type and options, drill-down; save, copy, share with users or roles</td><td>Every report user (own reports); sharing per permission</td></tr>
+      <tr><td>Dashboards</td><td>Several saved reports and charts on one page, with shared filters</td><td>Every report user</td></tr>
+      <tr><td>Downloads</td><td>Per hospital: title, logo, header/footer text on PDF and Excel; which roles may download and in which formats</td><td>Hospital admin</td></tr>
+      <tr><td>Roles and permissions</td><td>Create roles; assign permissions (register, edit, view reports, create/publish calculated fields, share, download, manage fields, manage users) and hospitals to users</td><td>Hospital admin; group admin across hospitals</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>Custom fields: from form to report without a release</h4>
+  <ul>
+    <li>Definitions in <code>custom_field_def (hospital_id, field_key, label, type, section, order, required, rules, options, reportable, sensitivity, version, active)</code>. Fields are never physically deleted, only deactivated, so old records and saved reports stay valid.</li>
+    <li>Values in one validated <code>JSONB</code> column <code>patient.custom_fields</code>. The server validates each value against the definition (type, required, range, allowed values), exactly like standard fields; the form is rendered from the definitions.</li>
+    <li>The PatientSnapshot carries <code>custom_fields</code> (reportable fields only, masked or left out according to sensitivity). In ClickHouse they are stored as <code>Map(String, String)</code>; the query engine casts on read (number, date, boolean) using the definition. A custom field enabled for reporting appears in the builder immediately, for that hospital only.</li>
+    <li>Turning on <em>reportable</em> for a field that already has data triggers a background backfill of that hospital's rows so old records are included.</li>
+    <li>Promotion: a heavily used custom field can become a real typed column for speed (section 13 field manifest); saved reports keep working because they refer to the field key, not the storage.</li>
+    <li>Standard fields: a <strong>field manifest</strong> generating the view, the ClickHouse columns, the pipeline lists and the catalogue was planned but <em>not built</em>: a developer-added standard field still touches the view, the ClickHouse DDL, both pipeline lists and <code>patients.json</code>. (Hospital-defined custom fields need no code at all.)</li>
+  </ul>
+
+  <h4>Calculated fields: a safe formula language</h4>
+  <ul>
+    <li>Users write formulas such as <code>IF(age_years &gt;= 60, "Senior", "Adult")</code>, <code>registration_fee * 1.18</code>, <code>DAYS_BETWEEN(policy_valid_to, TODAY())</code>, <code>COUNT_IF(is_insured = 1) / COUNT() * 100</code>, <code>MEDIAN(age_years)</code>.</li>
+    <li>They are <strong>never SQL</strong>: the server parses the formula into a syntax tree, checks every function against an allow-list and every field against what the user may see (hospital, role, sensitivity), checks types, and only then translates it to ClickHouse SQL with values bound as parameters. Masked or hidden fields can't be read through a formula.</li>
+    <li>Functions (extensible by adding to the allow-list): arithmetic, rounding; <code>IF</code>, <code>SWITCH</code>, <code>BUCKET</code>, <code>IN</code> (no COALESCE); text (concat, upper, lower, left, contains, length); dates (year, quarter, month, week, day, days/months/years between, today); aggregations (count, count-if, distinct count, sum, sum-if, average, median, percentile, min, max, standard deviation); window calculations (% of total, % of group, running total, rank, difference and growth vs previous period).</li>
+    <li>Guard rails: formula length and nesting limits, the query timeout and result limits of section 14; an editor with field picker, function help, live validation and a preview of the first rows.</li>
+  </ul>
+
+  <h4>Governance of customisation</h4>
+  <ul>
+    <li>Every change to fields, formulas, lists, roles and shared reports is versioned and written to the audit log (who, when, before/after).</li>
+    <li>Changing a shared calculated field shows which reports use it; incompatible changes create a new version instead of breaking reports.</li>
+    <li>Customisations are per hospital; a group admin can copy a hospital's configuration to another hospital as a starting point.</li>
+  </ul>
+</section>
+
+<!-- 11 -->
+<section id="sync">
+  <h2><span class="num">11.</span>On-screen results (synchronous)</h2>
+  <div class="diagram">
+  <svg width="1000" height="420" viewBox="0 0 1000 420" role="img" aria-label="Sequence of running a report and downloading">
+    <defs>
+      <marker id="m4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah-new"/></marker>
+      <marker id="m4s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah-sync"/></marker>
+    </defs>
+    <rect class="box" x="40" y="20" width="140" height="40" rx="6"/><text class="lbl" x="110" y="45" text-anchor="middle">User (React app)</text>
+    <rect class="box-new" x="300" y="20" width="160" height="40" rx="6"/><text class="lbl" x="380" y="45" text-anchor="middle">Reporting API</text>
+    <rect class="box-new" x="560" y="20" width="160" height="40" rx="6"/><text class="lbl" x="640" y="45" text-anchor="middle">ClickHouse</text>
+    <line class="life" x1="110" y1="60" x2="110" y2="400"/>
+    <line class="life" x1="380" y1="60" x2="380" y2="400"/>
+    <line class="life" x1="640" y1="60" x2="640" y2="400"/>
+    <rect class="lane" x="780" y="20" width="200" height="380" rx="8"/>
+    <text class="lbl" x="880" y="48" text-anchor="middle">Background sync</text>
+    <text class="lbl-s" x="880" y="80" text-anchor="middle">PostgreSQL change log</text>
+    <text class="lbl-s" x="880" y="98" text-anchor="middle">&darr; Debezium &darr; Kafka &darr;</text>
+    <text class="lbl-s" x="880" y="116" text-anchor="middle">ClickHouse (seconds)</text>
+    <text class="lbl-s" x="880" y="150" text-anchor="middle">runs continuously,</text>
+    <text class="lbl-s" x="880" y="166" text-anchor="middle">independent of users;</text>
+    <text class="lbl" x="880" y="190" text-anchor="middle" style="fill:var(--svg-sync)">never in the</text>
+    <text class="lbl" x="880" y="208" text-anchor="middle" style="fill:var(--svg-sync)">request path</text>
+    <path class="ln-sync" d="M780,240 L644,240" marker-end="url(#m4s)"/>
+    <text class="lbl-s" x="712" y="232" text-anchor="middle">keeps data fresh</text>
+    <path class="ln-new" d="M110,95 L376,95" marker-end="url(#m4)"/><text class="lbl-s" x="120" y="88">1. Run (columns, filters, grouping)</text>
+    <path class="ln-new" d="M380,135 L636,135" marker-end="url(#m4)"/><text class="lbl-s" x="390" y="128">2. validated, secured, parameterised SQL</text>
+    <path class="ln-new" d="M640,175 L384,175" stroke-dasharray="5 4" marker-end="url(#m4)"/><text class="lbl-s" x="395" y="168">3. rows + totals</text>
+    <path class="ln-new" d="M380,215 L114,215" stroke-dasharray="5 4" marker-end="url(#m4)"/><text class="lbl-s" x="120" y="208">4. JSON &rarr; grid, totals, chart on screen</text>
+    <path class="ln-new" d="M110,290 L376,290" marker-end="url(#m4)"/><text class="lbl-s" x="120" y="283">5. Download Excel / PDF / CSV</text>
+    <path class="ln-new" d="M380,330 L636,330" marker-end="url(#m4)"/><text class="lbl-s" x="390" y="323">6. same definition, streamed rows</text>
+    <path class="ln-new" d="M380,370 L114,370" stroke-dasharray="5 4" marker-end="url(#m4)"/><text class="lbl-s" x="120" y="363">7. file starts downloading immediately</text>
+  </svg>
+  </div>
+  <ul>
+    <li><strong>Run</strong> is one HTTP request; the answer is rendered on the same page. There is no waiting queue, no "check back later" and no email.</li>
+    <li><strong>Downloads</strong> reuse the exact on-screen definition (with the same security) and stream rows straight from ClickHouse into the Excel/PDF/CSV writer, so the file starts arriving at once.</li>
+    <li><strong>Kafka is not involved in any request.</strong> If the background sync falls behind, reports still answer instantly, and the "data as of" time shows how fresh they are.</li>
+    <li>Response targets are in section 21 and will be measured in the POC.</li>
+  </ul>
+</section>
+
+<!-- 12 -->
+<section id="api">
+  <h2><span class="num">12.</span>Reporting API (<code>/api/v1</code>)</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Method &amp; path</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>GET /datasets</code></td><td>Catalogue of datasets and fields the user may use (filtered by role)</td></tr>
+      <tr><td><code>GET /datasets/{id}/fields/{field}/values?q=</code></td><td>Value suggestions for filter drop-downs. Only for fields marked <code>suggest</code>, and with the user's row policy and masking applied</td></tr>
+      <tr><td><code>POST /query</code></td><td>Run a report definition; returns columns, rows, totals, next-page token, data-as-of, query time</td></tr>
+      <tr><td><code>POST /query/export?format=xlsx|pdf|csv</code></td><td>Stream the same definition as a file</td></tr>
+      <tr><td><code>GET/POST/PUT/DELETE /reports</code></td><td>Saved reports</td></tr>
+      <tr><td><code>POST /reports/{id}/share</code></td><td>Share with users or roles</td></tr>
+      <tr><td><code>GET/POST/PUT/DELETE /dashboards</code></td><td>Dashboards made of saved reports</td></tr>
+      <tr><td><code>GET /freshness</code></td><td>Data-as-of time and pipeline lag (section 13.5)</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><strong>Errors</strong> use <code>application/problem+json</code> (RFC 9457), which Spring 6 supports via <code>ProblemDetail</code>. Without Boot this needs the explicit, scoped <code>@RestControllerAdvice</code> from section 6.</li>
+    <li><strong>Saved reports, shares and dashboards</strong> live in a PostgreSQL schema <code>reporting</code>, reached through the small reporting-metadata pool. The load is negligible and these need transactions.</li>
+    <li><strong>Audit events</strong> go to the append-only PostgreSQL table <code>identity.audit_log</code> (insert and read only for the application role), backed up with the other schemas (section 16).</li>
+    <li><strong>TypeScript types</strong> for the API are maintained in pr-ui; generating them from an OpenAPI description is a natural addition after the Spring upgrade.</li>
+  </ul>
+</section>
+
+<!-- 13 -->
+<section id="data">
+  <h2><span class="num">13.</span>Reporting data platform</h2>
+  <h3>13.1 Why a column store</h3>
+  <p>PostgreSQL stores each row together, so a filter on 2 columns still reads whole rows. ClickHouse stores each column separately, compressed, and processes it in large vectorised batches. Its sorted, partitioned parts let it skip blocks that can't match. Reports (few columns, many rows, filters, totals) are exactly this workload.</p>
+  <h3>13.2 Options considered</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Option</th><th>Isolates live DB</th><th>Crores + any-column filters</th><th>Freshness</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr><td>Tune PostgreSQL in place (partitioning, BRIN indexes, timeouts, limits)</td><td class="bad">No</td><td class="mid">Fixed filters only</td><td>Live</td><td>Do the cheap parts anyway</td></tr>
+      <tr><td>PostgreSQL read replica</td><td class="good">Yes</td><td class="mid">Same row scans elsewhere</td><td>Sub-second</td><td>Good stop-gap, not the end state</td></tr>
+      <tr><td>Summary tables / materialized views</td><td class="mid">Partly</td><td class="bad">Fixed reports only</td><td>Scheduled</td><td>Not self-service</td></tr>
+      <tr><td>OpenSearch</td><td class="good">Yes</td><td class="mid">Great search, weaker analytics</td><td>Seconds</td><td>Best for finding a patient, not for reports</td></tr>
+      <tr class="rec"><td>ClickHouse via CDC</td><td class="good">Yes</td><td class="good">Designed for it</td><td>Seconds</td><td class="good">Chosen</td></tr>
+      <tr><td>StarRocks / Apache Doris</td><td class="good">Yes</td><td class="good">Strong, better at big joins</td><td>Seconds</td><td>Valid alternative if heavy joins are needed</td></tr>
+      <tr><td>Lakehouse (Parquet + DuckDB / Trino)</td><td class="good">Yes</td><td class="good">Good</td><td>Batch</td><td>Later, for archive and history</td></tr>
+    </tbody>
+  </table></div>
+  <h3>13.3 Pipeline</h3>
+  <ol class="steps">
+    <li><strong>Registration</strong> saves its six tables as today and, in the same transaction and connection, inserts a <code>PatientSnapshot</code> v1 record into <code>report_outbox</code>, then deletes it.
+      <ul>
+        <li>The record is the flattened, minimised report record (section 15).</li>
+        <li>The table stays empty, but both changes are in PostgreSQL's change log.</li>
+        <li><code>patient.row_version</code> (new column, incremented on every change) is copied into the record as its version.</li>
+      </ul></li>
+    <li><strong>Debezium</strong> (PostgreSQL connector, <code>pgoutput</code>, a publication on the outbox table only) uses its Outbox Event Router to write to Kafka topic <code>patient.report</code>, keyed by patient id so each patient's events stay in order.
+      <ul>
+        <li>The router ignores the DELETE.</li>
+        <li>Delete and tombstone records are suppressed in the connector configuration (<code>tombstones.on.delete=false</code>).</li>
+        <li>The payload is emitted as plain JSON (no schema envelope).</li>
+        <li>A heartbeat (<code>heartbeat.interval.ms</code> + <code>heartbeat.action.query</code>) keeps the slot advancing when the outbox is quiet but the rest of the database is busy, which prevents change-log build-up.</li>
+        <li>Debezium connects with a dedicated replication role, not the superuser.</li>
+      </ul>
+      <em>Alternative:</em> <code>pg_logical_emit_message</code> carries the same record with no outbox table at all; Debezium supports it with <code>pgoutput</code>.</li>
+    <li><strong>ClickHouse</strong>: a Kafka engine table (format <code>JSONEachRow</code>, malformed messages sent to an error stream with <code>kafka_handle_error_mode='stream'</code>) and a materialized view insert into <code>patient_report</code>.</li>
+    <li><strong>Backfill</strong> (once, and after any recovery) uses ClickHouse's <code>postgresql()</code> table function to read a flattening view in PostgreSQL, month by month, off-hours. CDC is started <em>before</em> the backfill; version rules (13.5) make the overlap safe.</li>
+  </ol>
+  <div class="note"><strong>Writes outside the application bypass the outbox.</strong> SQL scripts (including <code>db/load-test-data.sql</code>), manual fixes and cascading deletes all skip it, so after any such change a backfill is required. For the live product, if other systems write these tables, use table-level CDC instead: stream the six tables and flatten inside ClickHouse on a schedule. That catches every writer, but the flat table is minutes rather than seconds behind (decision 3).</div>
+  <h3>13.4 Analytics table</h3>
+<pre><code>CREATE TABLE patient_report (
+    patient_id UInt64, registration_no String, registration_date Date, patient_name String,
+    gender LowCardinality(String), age_years UInt8, age_band LowCardinality(String),
+    patient_category LowCardinality(String), mobile_masked String,
+    city LowCardinality(String), state LowCardinality(String),
+    dept_id UInt16, dept_name LowCardinality(String), consulting_doctor LowCardinality(String),
+    visit_type LowCardinality(String), payment_mode LowCardinality(String),
+    is_insured UInt8, coverage_type LowCardinality(String), registration_fee Decimal(10,2),
+    -- ... further report columns (only those approved in section 15)
+    version UInt64,                          -- = patient.row_version
+    is_deleted UInt8,
+    source_ts DateTime64(3, 'Asia/Kolkata'), -- commit time of the change in PostgreSQL
+    ingested_at DateTime64(3, 'Asia/Kolkata') DEFAULT now64(3),
+    INDEX idx_dept dept_id TYPE set(0) GRANULARITY 4,
+    INDEX idx_name lower(patient_name) TYPE ngrambf_v1(3, 65536, 3, 0) GRANULARITY 4
+) ENGINE = ReplacingMergeTree(version, is_deleted)
+  PARTITION BY toYYYYMM(registration_date)
+  ORDER BY (hospital_id, registration_date, patient_id);   -- only columns that never change</code></pre>
+  <ul>
+    <li><strong>Why only immutable columns in the key</strong>: <code>ReplacingMergeTree</code> treats two rows as the same patient only when the sort key matches, and replaces them only within one partition. If a changeable column (such as department) were in the key, an edit would leave two rows for the patient forever. Department filtering uses the skip index instead.</li>
+    <li>If <code>registration_date</code> is ever corrected, the outbox record carries the old value and the pipeline writes an <code>is_deleted=1</code> row for the old key.</li>
+    <li>Queries always use <code>FINAL</code> (efficient and parallel in current ClickHouse, with skip indexes honoured). The minimum version is pinned in <code>infra/</code>; <code>is_deleted</code> support needs ClickHouse 23.2 or later.</li>
+    <li>All time columns are declared in IST, so relative filters and "today" match what users expect. The PostgreSQL container runs in UTC and <code>created_at</code> has no time zone, so conversions are explicit.</li>
+    <li>Aggregate tables for dashboards, if added, use refreshable materialized views or <code>FINAL</code>. Insert-triggered aggregate views would double-count replaced rows.</li>
+  </ul>
+  <h3>13.5 Correctness rules</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Topic</th><th>Rule</th></tr></thead>
+    <tbody>
+      <tr><td>Version</td><td><code>patient.row_version</code>, incremented inside every transaction that changes the patient. CDC and backfill read the same value, so the overlap is harmless and the newest version always wins.</td></tr>
+      <tr><td>Ordering</td><td>Kafka key = patient id, so one patient's events stay in order. Version-based replacement makes late or duplicate events harmless.</td></tr>
+      <tr><td>Edits and deletes</td><td>The app has no edit or delete path today. When added, they publish <code>PatientSnapshot</code> with a higher version, or <code>is_deleted=1</code>. A department rename is a catalogue change: either re-publish affected patients or look the name up through a ClickHouse dictionary.</td></tr>
+      <tr><td>Stage-2 incremental copy (before Kafka)</td><td>Watermark on <code>updated_at</code> with an overlap window of several minutes, not on ids, because concurrent transactions commit out of id order. De-duplication by version absorbs the overlap.</td></tr>
+      <tr><td>Data as of</td><td>The source commit time (<code>source_ts</code>), plus a heartbeat row that advances even when nobody registers. Lag = now &minus; heartbeat time. Not <code>max(ingested_at)</code>, which looks stale at night and fresh during a backfill.</td></tr>
+      <tr><td>Reconciliation</td><td>Nightly, for closed days only (below the watermark): per-day counts and fee totals in PostgreSQL vs ClickHouse with <code>FINAL</code>. Any difference raises an alert.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 14 -->
+<section id="guard">
+  <h2><span class="num">14.</span>Guard rails &amp; protecting the live database</h2>
+  <div class="grid2">
+    <div class="card"><h4>Live PostgreSQL</h4><p><code>wal_level=logical</code> (one restart). Publication on the outbox only. A heartbeat keeps the slot moving. <code>max_slot_wal_keep_size</code> caps change-log retention (2 GB in <code>docker-compose.yml</code>). If the cap is exceeded the slot is <em>invalidated</em>: recovery is a new slot plus a backfill, with a data gap until it finishes (runbook in section 16). Backfill runs off-hours or from a replica. Legacy JSP reports keep their download limit.</p></div>
+    <div class="card"><h4>ClickHouse</h4><p>Two settings profiles (interactive and export) with <code>max_execution_time</code>, <code>max_memory_usage</code> and result caps. Since all app users share one ClickHouse login, ClickHouse quotas act as an overall ceiling. Per-app-user fairness either uses quotas keyed by a per-user <code>quota_key</code> or (simpler) the app limit below.</p></div>
+    <div class="card"><h4>Application</h4><p>Per-user concurrent query limit (a semaphore per user, like today's <code>ExportLimiter</code>), a global export limit (plus one download per user), row caps per output, and request timeouts aligned with ClickHouse's.</p></div>
+    <div class="card"><h4>Freshness</h4><p>"Data as of" on every report from source commit time and heartbeat; an alert if lag passes a threshold. Reports keep working on slightly older data if the pipeline is down.</p></div>
+  </div>
+</section>
+
+<!-- 15 -->
+<section id="compliance">
+  <h2><span class="num">15.</span>Patient-data compliance</h2>
+  <p>Patient records are sensitive personal data (for example under India's Digital Personal Data Protection Act, 2023). The reporting copy is kept as small and controlled as possible:</p>
+  <ul>
+    <li><strong>Minimise</strong>: <code>PatientSnapshot</code> carries only approved report fields.
+      <ul>
+        <li>No Aadhaar; mobile masked.</li>
+        <li>Each sensitive field needs explicit approval before it is added: patient name (needed for drill-down lists, but personal data), chief complaint and chronic conditions (free-text health data).</li>
+        <li>Fields that aren't approved stay in PostgreSQL only.</li>
+      </ul></li>
+    <li><strong>Control</strong>: role-based datasets and fields, server-side row-level security (D12), a read-only ClickHouse reporting user with a backstop row policy, and Kafka topics limited to pipeline accounts.</li>
+    <li><strong>Retention</strong>: Kafka keeps events for a short window (for example 7 days) as a replay buffer. ClickHouse <code>TTL</code> enforces the agreed retention period for report data.</li>
+    <li><strong>Audit</strong>: every run and download logged (user, definition, row count, time) and backed up (section 16).</li>
+    <li><strong>Protection</strong>: TLS between components and disk encryption in production.</li>
+  </ul>
+</section>
+
+<!-- 16 -->
+<section id="dr">
+  <h2><span class="num">16.</span>Backup &amp; disaster recovery</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Data</th><th>Source of truth?</th><th>Backup</th><th>Recovery</th></tr></thead>
+    <tbody>
+      <tr><td>PostgreSQL <code>patientreg</code> schema</td><td>Yes</td><td><code>backup.bat</code> (as today)</td><td><code>pg_restore</code></td></tr>
+      <tr><td>PostgreSQL <code>reporting</code> schema (saved reports, shares, dashboards, outbox)</td><td>Yes</td><td><code>backup.bat</code> dumps <code>identity</code>, <code>patientreg</code> and <code>reporting</code> (with <code>pg_trgm</code>)</td><td><code>restore.bat</code></td></tr>
+      <tr><td>ClickHouse <code>patient_report</code></td><td>No (derived)</td><td>Optional</td><td>Rebuild by backfill from PostgreSQL</td></tr>
+      <tr><td>Audit log (<code>identity.audit_log</code>, PostgreSQL)</td><td><strong>Yes</strong>: it can't be rebuilt</td><td>part of <code>backup.bat</code></td><td><code>restore.bat</code></td></tr>
+      <tr><td>Kafka topics</td><td>No (buffer)</td><td>None</td><td>Recreated; gaps filled by backfill</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Runbooks to write in the POC</h3>
+  <ul>
+    <li><strong>Pipeline stopped for longer than the change-log cap</strong> (slot invalidated): create a new slot and publication, restart Debezium, backfill the affected period, then reconcile.</li>
+    <li><strong>PostgreSQL restored from backup</strong>: replication slots aren't in dumps, so recreate the publication and slot, re-backfill ClickHouse, then reconcile.</li>
+    <li><strong>ClickHouse lost</strong>: recreate tables from <code>infra/clickhouse</code> DDL, backfill, then reconcile. Reports show "rebuilding" until done.</li>
+  </ul>
+</section>
+
+<!-- 17 -->
+<section id="ops">
+  <h2><span class="num">17.</span>Build, deploy, operate, test</h2>
+  <p class="caption">As built (v2.4). The original plan named Testcontainers, JMeter, a Micrometer endpoint and a CI pipeline; the POC uses the simpler set-up below.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Concern</th><th>As built</th></tr></thead>
+    <tbody>
+      <tr><td>Build</td><td>The <code>Dockerfile</code> builds everything inside Docker (Maven 3.9.9 + Node downloaded by the build): <code>docker compose up -d --build</code>. On the host, <code>build.bat</code> / <code>test.bat</code> run the bundled Maven (<code>tools\</code>); the reactor builds the React UI, all modules and the WAR in one go.</td></tr>
+      <tr><td>Deploy</td><td><code>docker-compose.yml</code> in the project root runs PostgreSQL, ClickHouse and the app (Tomcat 11 with the WAR); profile <code>cdc</code> adds Kafka and Debezium, profile <code>seed</code> loads test data. <code>deploy.bat</code> = <code>docker compose up -d --build app</code>. One-shot services (<code>pg-setup</code>, <code>analytics-setup</code>, <code>ch-cdc-setup</code>, <code>cdc-setup</code>) prepare accounts, the publication, ClickHouse and the connector, idempotently, on every start.</td></tr>
+      <tr><td>Networking</td><td>All containers share the compose network; only the app (8080) is published to the network. PostgreSQL (5432), ClickHouse (8123) and Kafka Connect REST (8083) are bound to 127.0.0.1 for local tools and tests.</td></tr>
+      <tr><td>Configuration</td><td><code>db.properties</code>, <code>identity.properties</code>, <code>reporting.properties</code> (Boot-style keys such as <code>app.reporting.clickhouse.url</code>), overridden in Docker by environment variables from <code>.env</code>.</td></tr>
+      <tr><td>Monitoring</td><td>Not built as an endpoint (no Micrometer). Available: "Data as of" freshness on every report (<code>/api/v1/freshness</code>), the audit log screen, ClickHouse <code>system.query_log</code>, <code>analytics.pipeline_errors</code>, Debezium status via its REST API, <code>docker compose logs</code>.</td></tr>
+      <tr><td>Testing</td><td>
+        <ul>
+          <li>JUnit 5, AssertJ, Spring MockMvc through the real security chain, ArchUnit for module boundaries.</li>
+          <li>Integration tests use the Docker databases on localhost (PostgreSQL <code>prtest</code>, ClickHouse <code>analytics_test</code>) instead of Testcontainers.</li>
+          <li>Security tests: hospital isolation (<code>HospitalIsolationTest</code>), customisation and permissions (<code>CustomisationTest</code>), administration screens.</li>
+          <li>Playwright end-to-end tests in the installed Edge against the running containers.</li>
+          <li>Load tests (JMeter) belong to stage 6, which is postponed.</li>
+        </ul></td></tr>
+      <tr><td>CI</td><td>Not set up (the project is not yet under version control).</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 18 -->
+<section id="boot">
+  <h2><span class="num">18.</span>Spring upgrade readiness (later, separate step)</h2>
+  <p>No framework upgrade happens in this phase. These choices keep it mechanical later:</p>
+  <ul>
+    <li><strong>WAR packaging stays.</strong> Spring Boot supports JSP with WAR packaging, deployed to Tomcat or run as an executable WAR (not with an executable JAR).</li>
+    <li><strong>Boot defaults already in use</strong>: one configuration class per module, constructor injection, Boot-style property names, HikariCP, Jackson and SLF4J. Most hand-written configuration simply disappears.</li>
+    <li><strong>Spring Modulith fit</strong>: the module and package layout matches Spring Modulith's conventions, so its module verification can be adopted with Boot. Its event-publication registry is an application-level mechanism, complementary to, not a replacement for, the Debezium CDC outbox.</li>
+  </ul>
+  <div class="note"><strong>Risk to plan for</strong>: open-source support for Spring Framework 6.2 (this project's version) ends according to the Spring Framework versions wiki; check the current dates on spring.io before any production use. Security fixes now come only through commercial support.
+    <ul>
+      <li><strong>Interim option without Boot</strong>: upgrade in place to Spring Framework 7. It targets Jakarta EE 11 / Servlet 6.1 on JDK 17+, matching Tomcat 11 and Java 21 here.</li>
+      <li><strong>What changes</strong>: Jackson 3 is the new default, but Jackson 2 still works (deprecated) in 7.0. Other breaking changes to check:
+        <ul>
+          <li><code>HttpHeaders</code> is no longer a <code>MultiValueMap</code>.</li>
+          <li><code>spring-jcl</code> is removed.</li>
+          <li>Suffix-pattern and trailing-slash matching are removed.</li>
+          <li><code>javax.annotation</code> / <code>javax.inject</code> are dropped.</li>
+          <li><code>ListenableFuture</code> is removed.</li>
+        </ul></li>
+      <li>The live product's upgrade timeline should account for this.</li>
+    </ul></div>
+</section>
+
+<!-- 19 -->
+<section id="stack">
+  <h2><span class="num">19.</span>Technology &amp; licences</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Layer</th><th>Component</th><th>Licence</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Runtime</td><td>Java 21, Tomcat 11, Spring MVC 6.2, JSP/JSTL</td><td>see project guide</td><td>Existing</td></tr>
+      <tr><td>Live DB</td><td>PostgreSQL 18</td><td>PostgreSQL</td><td>Existing</td></tr>
+      <tr><td>Analytics DB</td><td>ClickHouse server + JDBC driver (clickhouse-java)</td><td>Apache 2.0</td><td>New</td></tr>
+      <tr><td>Change capture</td><td>Debezium (Kafka Connect), Apache Kafka (KRaft)</td><td>Apache 2.0</td><td>New</td></tr>
+      <tr><td>API</td><td>Spring <code>@RestController</code> (existing) + Jackson</td><td>Apache 2.0</td><td>Jackson is a new dependency</td></tr>
+      <tr><td>Caching</td><td>Caffeine</td><td>Apache 2.0</td><td>New</td></tr>
+      <tr><td>Front end</td><td>React, TypeScript, Vite, TanStack Query/Table/Virtual, Apache ECharts, Perspective, Mantine</td><td>MIT / Apache 2.0</td><td>New</td></tr>
+      <tr><td>Front-end build</td><td>frontend-maven-plugin, Node.js (build time only)</td><td>Apache 2.0 / MIT</td><td>New</td></tr>
+      <tr><td>Exports</td><td>Apache POI, OpenPDF (as today), CSV writer</td><td>Apache 2.0 / LGPL-MPL</td><td>Existing</td></tr>
+      <tr><td>Testing</td><td>JUnit 5, Testcontainers, ArchUnit, Playwright, JMeter</td><td>EPL / MIT / Apache 2.0</td><td>New</td></tr>
+      <tr><td>Optional</td><td>Apache Superset (+ embedded SDK), Kafka UI (kafbat), Spring Session JDBC, Flyway Community</td><td>Apache 2.0</td><td>Optional</td></tr>
+    </tbody>
+  </table></div>
+  <p class="caption">Not chosen: Redpanda (Business Source Licence), Confluent Community Licence components (source-available), PeerDB (AGPL-3.0, plus an extra moving part), AG Grid Enterprise, MUI X Pro/Premium, Highcharts, Flexmonster, WebDataRocks (paid or proprietary). The original provectus Kafka UI is no longer maintained; kafbat/kafka-ui is the maintained fork. Re-confirm licences for the exact versions you adopt.</p>
+</section>
+
+<!-- 20 -->
+<section id="roadmap">
+  <h2><span class="num">20.</span>POC roadmap (on this project)</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Stage</th><th>Delivers</th><th>Proves</th><th>Estimate</th></tr></thead>
+    <tbody>
+      <tr><td><strong>0. Test &amp; CI foundation</strong></td><td>JUnit 5, ArchUnit, smoke tests for today's screens (as built: Docker test databases instead of Testcontainers; no CI job)</td><td>A safety net before refactoring</td><td>2&ndash;3 days</td></tr>
+      <tr><td><strong>1. Modules</strong></td><td>Parent POM, package rename into modules, the wiring changes from section 6 (<code>@Primary</code>, scoped exception handlers, per-module scans, Jackson); <code>pr-app</code> builds the same WAR</td><td>Same app, same URLs, new structure; one build and one deploy</td><td>2&ndash;3 days</td></tr>
+      <tr><td><strong>2. Analytics backbone</strong></td><td>ClickHouse (memory-tuned); <code>patient_report</code>; backfill of the current 1 lakh; analytics and metadata pools; catalogue + secure query engine + <code>POST /query</code>; incremental copy with an overlap window</td><td>Fast any-column queries from a separate store, with no load on PostgreSQL</td><td>3&ndash;4 days</td></tr>
+      <tr><td><strong>3. React report builder (MUST)</strong></td><td>pr-ui with Vite and the Maven build; <code>/app</code> serving and routing; columns, any-column filters, grouping and totals, grid, chart, streamed Excel/PDF/CSV, save and load, Report 1 and 2 templates; links between JSP and React</td><td>JSP and React in one WAR with one session; on-screen results</td><td>8&ndash;10 days</td></tr>
+      <tr><td><strong>4. Real-time pipeline</strong></td><td><code>wal_level=logical</code>, replication role; Kafka + Debezium; <code>row_version</code> + outbox; ClickHouse Kafka engine; heartbeat and "data as of"; failure drills (as built: no automatic reconciliation job; recovery = backfill, documented)</td><td>Seconds-fresh data; resilience</td><td>3&ndash;5 days</td></tr>
+      <tr><td><strong>5a. Security &amp; hospitals</strong></td><td>Login (local users), roles and permissions, multi-hospital isolation (10.1), row-level security, masking, audit, guard rails (as built: no result cache)</td><td>No hospital sees another's data; every access is authorised and audited</td><td>8&ndash;10 days</td></tr>
+      <tr><td><strong>5b. Customisation &amp; full report builder</strong></td><td>(Field manifest: not built.) Admin-defined custom fields in form and reports; dropdown/department/doctor management; field reportable/sensitivity settings; calculated columns and measures (formula language + editor); buckets and custom groups; % of total, period comparisons, top N; pivot, subtotals, drill-down, conditional formatting; sharing; dashboards; download branding (10.2)</td><td>Everything customisable from screens without a release, inside the security rules</td><td>20&ndash;26 days</td></tr>
+      <tr><td><strong>6. Scale &amp; load test</strong></td><td>Move Docker's disk image to D:; generate 50 lakh&ndash;1 crore patients <em>then backfill</em> ClickHouse (SQL loads bypass the outbox); JMeter: report users + registrations, old vs new path</td><td>R1 and R2 with numbers</td><td>3&ndash;4 days</td></tr>
+    </tbody>
+  </table></div>
+  <p class="caption">Indicative effort for one developer: originally 29&ndash;39 working days; with login, multi-hospital and full customisation (stages 5a/5b) about 47&ndash;64 days in total, of which stages 0&ndash;5b are done (16-Oct-2026); stage 6 is postponed. Stage 5a comes first because 5b builds on its users, hospitals and permissions.</p>
+  <div class="note"><strong>Progress (16-Oct-2026):</strong> stages 5a and 5b are built, independently reviewed (32 findings: 30 fixed, 2 accepted as documented limits) and tested; a final review of all code, database, set-up and documents followed (see <code>Final-Review-Report.html</code>): 178 Java and 23 browser tests pass, and a clean install was tested. Stage 6 (load test) is postponed by the user until the functions are complete and memory allows.</div>
+  <div class="note"><strong>Progress (15-Oct-2026):</strong> stages 0&ndash;4 are built and tested. Stage 4 also moved the whole system into Docker (<code>docker-compose.yml</code>: app, PostgreSQL, ClickHouse by default; Kafka + Debezium with <code>--profile cdc</code>), so the project runs anywhere with only Docker Desktop. Measured: a registration reaches ClickHouse through Kafka in about 2 s; with Debezium, Kafka or ClickHouse stopped, registrations keep working and the events arrive after the component restarts; PostgreSQL and ClickHouse match exactly (counts, fee totals, per-department counts). The planned Testcontainers and CI job are not used: tests run against the Docker databases on localhost. Load tests (stage 6) are postponed at the user's request. Remaining: stages 5a, 5b and 6.</div>
+  <h3>Machine constraints</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Item</th><th>Plan</th></tr></thead>
+    <tbody>
+      <tr><td>Docker memory (about 3.9 GB; WSL limit can be raised to about 5 GB)</td><td>
+        <ul>
+          <li>Per-container <code>mem_limit</code>: PostgreSQL 0.5 GB, ClickHouse 1.2&ndash;1.5 GB, Kafka 0.75 GB, Debezium Connect 0.9 GB (512 MB heap, but resident memory is higher).</li>
+          <li>ClickHouse uses its low-memory configuration: smaller mark and uncompressed caches (the 5 GiB default is far too large here), and fewer background threads.</li>
+          <li>Kafka and Debezium run only in stages 4&ndash;6.</li>
+        </ul></td></tr>
+      <tr><td>Host memory (7.7 GB total)</td><td>Tomcat, Node/Vite builds, the browser and Windows live outside Docker. With WSL at 5 GB, under 3 GB remains for them, so close other applications during stages 4&ndash;6.</td></tr>
+      <tr><td>Superset</td><td>Out of scope on this machine (about 1 GB or more on its own).</td></tr>
+      <tr><td>Disk</td><td>1 lakh patients take about 318 MB in PostgreSQL, so 1 crore is roughly 30 GB. Move Docker Desktop's disk image to D: (309 GB free) before stage 6; C: has 35 GB free.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 21 -->
+<section id="success">
+  <h2><span class="num">21.</span>Success criteria</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Criterion</th><th>How measured</th></tr></thead>
+    <tbody>
+      <tr><td>S1</td><td>Registration response time under heavy report load stays within about 10% of the no-load baseline on the new path</td><td>JMeter p95, with and without N report users</td></tr>
+      <tr><td>S2</td><td>Typical builder queries return in about 2 s or less at the stage-6 size (target to confirm)</td><td>API timings and ClickHouse <code>query_log</code> p95</td></tr>
+      <tr><td>S3</td><td>Downloads start within about 2 s</td><td>Time to first byte</td></tr>
+      <tr><td>S4</td><td>Change-to-report delay under 10 s at p95</td><td>Source commit time vs <code>ingested_at</code></td></tr>
+      <tr><td>S5</td><td>Zero mismatches for closed days</td><td>Nightly reconciliation with <code>FINAL</code> below the watermark</td></tr>
+      <tr><td>S6</td><td>JSP and React in one WAR, one session, one build, one deploy; existing screens unchanged</td><td>Functional and smoke tests</td></tr>
+      <tr><td>S7</td><td>All MUST features in section 9 working</td><td>Feature checklist demo</td></tr>
+      <tr><td>S8</td><td>No cross-user data exposure</td><td>Automated row-level security and hospital-isolation tests pass (no result cache was built)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 22 -->
+<section id="risks">
+  <h2><span class="num">22.</span>Risks</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Risk</th><th>Mitigation</th></tr></thead>
+    <tbody>
+      <tr><td>Data leaking between users through caching or a security bug</td><td>No result cache in the POC; server-side row-level security everywhere; ClickHouse backstop policy; automated tests (S8)</td></tr>
+      <tr><td>Spring Framework 6.2 no longer receives free security fixes</td><td>Plan the Framework 7 (or Boot) upgrade for the live product (section 18)</td></tr>
+      <tr><td>Local users only (no SSO), POC passwords in plain text</td><td>Login, roles and audit built in stage 5a; for real use: secrets out of files, SSO, TLS</td></tr>
+      <tr><td>Reports seconds behind live</td><td>"Data as of" everywhere; single-patient screens stay on PostgreSQL</td></tr>
+      <tr><td>Change log fills the disk, or the slot is invalidated</td><td>Heartbeat, retention cap, lag alerts, backfill (<code>backfill.sql</code>); a stopped <code>cdc</code> profile leaves the slot: drop it when Kafka is no longer used</td></tr>
+      <tr><td>Writes that bypass the outbox (scripts, fixes)</td><td>Backfill after bulk changes (no automatic reconciliation was built); table-level CDC if other writers exist</td></tr>
+      <tr><td>More systems to operate (ClickHouse, Kafka, Debezium)</td><td>Staged adoption (ClickHouse first); widely used projects; production hardening only after the POC</td></tr>
+      <tr><td>Self-service queries can be heavy</td><td>Catalogue-only fields, ClickHouse profiles, per-user limits, row caps, ClickHouse constraints and quota</td></tr>
+      <tr><td>Two UI technologies to maintain</td><td>Clear rule: new reporting UI in React; JSP frozen except fixes</td></tr>
+      <tr><td>Effort larger than expected</td><td>Revised estimate (29&ndash;39 days); stage 5 can stop at its MUST items</td></tr>
+      <tr><td>POC machine limits</td><td>Memory limits per container, ClickHouse low-memory config, Kafka only with the <code>cdc</code> profile; moving Docker Desktop's disk image to D: was <em>not</em> done (the ClickHouse volume is on C:)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 23 -->
+<section id="decisions">
+  <h2><span class="num">23.</span>Decisions (taken)</h2>
+  <div class="ok">Status 16-Oct-2026: all decisions below were taken and stages 0&ndash;5b are built: React, outbox CDC, Patients dataset first, multi-hospital rules, everything customisable, <code>wal_level=logical</code>. Still open: the crore-scale load test (stage 6) and the machine changes it needs (WSL memory, Docker disk on D:).</div>
+  <ol class="steps">
+    <li><strong>Overall direction</strong>: modular monolith, one WAR, ClickHouse + CDC, React next to JSP (decisions D1&ndash;D12).</li>
+    <li><strong>Front-end framework</strong>: React (recommended) or Vue 3 / Angular, based on team skills.</li>
+    <li><strong>Change capture for the live product</strong>: application outbox (seconds-fresh; sees app writes only) or table-level CDC (catches every writer; minutes-fresh flat table).</li>
+    <li><strong>MUST list</strong>: confirm or adjust the section 9 priorities, which datasets beyond Patients matter first, and which sensitive fields (patient name, complaint, conditions) may be in reports.</li>
+    <li><strong>Who sees what</strong>: roles and row-level rules, including whether "department" means the registration visit's department (section 10). <em>Multi-hospital rules decided 15-Oct-2026: registration numbers per hospital, same person at two hospitals kept separate, users may have several hospitals, local login for now, departments and doctors per hospital (section 10.1).</em></li>
+    <li><strong>POC scope and machine changes</strong>: 50 lakh or 1 crore; approval to set <code>wal_level=logical</code> (one Postgres restart), add containers, raise the WSL memory limit and move Docker's disk to D:.</li>
+  </ol>
+  <div class="note">Original suggestion (done): <strong>stage 0 (tests and CI)</strong>, <strong>stage 1 (modules)</strong> and <strong>stage 2 (ClickHouse backbone)</strong>. None of them changes PostgreSQL settings, and together they give a safety net, the final project layout and real query timings in about 1.5&ndash;2 weeks.</div>
+</section>
+
+<!-- 24 -->
+<section id="changes">
+  <h2><span class="num">24.</span>Changes in v2.1 (after independent review)</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Severity</th><th>Finding</th><th>Change made</th></tr></thead>
+    <tbody>
+      <tr><td class="bad">Critical</td><td>Result cache keyed only by report definition could show one user another user's rows</td><td>Cache key = fully secured query; aggregates only; isolation test (sections 10, 21)</td></tr>
+      <tr><td class="bad">Critical</td><td>ClickHouse row policies and quotas can't tell app users apart behind one pooled login</td><td>New D12: row-level security enforced in the semantic layer, ClickHouse policy as backstop; per-user limits in the app (sections 5, 10, 14)</td></tr>
+      <tr><td class="mid">Major</td><td>Sort key containing department would duplicate patients after edits</td><td>Key limited to immutable columns; department via skip index (13.4)</td></tr>
+      <tr><td class="mid">Major</td><td>Outbox written by reporting needed registration's connection (boundary and pool contradiction)</td><td>Registration owns the outbox and a published contract; reporting has its own small metadata pool (D7, section 6)</td></tr>
+      <tr><td class="mid">Major</td><td>Second DataSource and the existing exception handler would break current wiring</td><td>Explicit stage-1 change list (<code>@Primary</code>, scoped handlers, scans, Jackson)</td></tr>
+      <tr><td class="mid">Major</td><td>Pipeline details: heartbeat, tombstones, slot invalidation, JSON format, writes bypassing the outbox, no edit or delete path</td><td>Specified in 13.3, 13.5, 14, 16</td></tr>
+      <tr><td class="mid">Major</td><td>"Data as of" and version undefined</td><td>Source commit time + heartbeat; <code>row_version</code> rules (13.5)</td></tr>
+      <tr><td class="mid">Major</td><td>No backup or DR coverage for new data</td><td>New section 16</td></tr>
+      <tr><td class="mid">Major</td><td>Licence and maintenance facts: PeerDB is AGPL-3.0 (not ELv2); Kafka UI moved to kafbat; Perspective moved to perspective-dev</td><td>Corrected (sections 7, 19)</td></tr>
+      <tr><td class="mid">Major</td><td>Effort and memory budget optimistic</td><td>29&ndash;39 days with a test stage; per-container memory limits; Superset off this machine (section 20)</td></tr>
+      <tr><td>Minor</td><td>Subtotals, catalogue example, package claim, Jackson, Node location, SPA routing, Spring 7 details, free-text fields, Kafka retention, Spring Session load, Superset origin, reconciliation window, decisions count</td><td>All corrected in place</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<footer>Reporting solution architecture &middot; version 2.4 &middot; Patient Registration POC &middot; 16 October 2026 &middot; local document, not published</footer>
+<!-- as built -->
+<section id="asbuilt">
+  <h2><span class="num">25.</span>As built (v2.4, 16 October 2026)</h2>
+  <p>The design above was followed; where the POC differs, this table is authoritative. Details of the built system: <code>Patient-Registration-Project-Guide.html</code>; the review history: <code>Stage-5-Completion-Report.html</code> and <code>Final-Review-Report.html</code>.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Topic</th><th>Design said</th><th>As built</th></tr></thead>
+    <tbody>
+      <tr><td>Modules</td><td>pr-shared, pr-registration, pr-reporting, pr-ui, pr-app</td><td>plus <strong>pr-identity</strong> (users, hospitals, roles, login, audit, administration)</td></tr>
+      <tr><td>React libraries</td><td>TanStack Query/Table/Virtual, Perspective, Mantine, ECharts</td><td>React 18.3, TypeScript 5.6, Vite 5.4, TanStack Table 8.20, ECharts 5.5 only; own pivot table and CSS</td></tr>
+      <tr><td>Serving <code>/app</code></td><td>from the pr-ui jar</td><td>plain files copied into the WAR (a jar in WEB-INF/lib stays locked on Windows)</td></tr>
+      <tr><td>Result cache</td><td>secured cache of aggregate results</td><td>not built (every query runs on ClickHouse; fast enough at this size)</td></tr>
+      <tr><td>Audit log</td><td>ClickHouse table (+ PostgreSQL copy)</td><td>PostgreSQL <code>identity.audit_log</code>, append-only for the application</td></tr>
+      <tr><td>Row-level security</td><td>transaction-local setting</td><td>set on every borrowed connection by <code>TenantAwareDataSource</code>, cleared on return; policies call <code>current_hospitals()</code></td></tr>
+      <tr><td>Field manifest</td><td>one file generates view, DDL, pipeline lists, catalogue</td><td>not built; hospitals' own fields need no code, standard fields are added in four places</td></tr>
+      <tr><td>Reconciliation job</td><td>automatic</td><td>not built; recovery by backfill</td></tr>
+      <tr><td>Testing</td><td>Testcontainers, JMeter, CI</td><td>Docker test databases, Playwright; no CI, load test postponed</td></tr>
+      <tr><td>Monitoring</td><td>Micrometer endpoint</td><td>not built; freshness, audit screen, ClickHouse logs, Debezium REST</td></tr>
+      <tr><td>Formula functions</td><td>IF, CASE, COALESCE, ...</td><td>about 45 functions incl. IF, SWITCH, BUCKET, IN, COUNT_IF, PERCENTILE, date functions; fields stored by name</td></tr>
+      <tr><td>Exposure</td><td>&mdash;</td><td>only the app port 8080 is published; PostgreSQL, ClickHouse and Kafka Connect REST are bound to 127.0.0.1</td></tr>
+      <tr><td>Docker disk on D:</td><td>planned for stage 6</td><td>not done (stage 6 postponed)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+</main>
+</div>
+<script>
+(function () {
+  var btn = document.getElementById('themeBtn'), root = document.documentElement;
+  try { var saved = localStorage.getItem('pr-doc-theme'); if (saved) root.setAttribute('data-theme', saved); } catch (e) {}
+  btn.addEventListener('click', function () {
+    var cur = root.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    var next = cur === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('pr-doc-theme', next); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>

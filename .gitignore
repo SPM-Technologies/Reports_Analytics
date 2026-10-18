@@ -1,0 +1,11 @@
+# build output and local tools (re-created by the build / Docker)
+**/target/
+pr-ui/node_modules/
+pr-ui/test-results/
+pr-ui/playwright-report/
+pr-ui/e2e/.auth/
+tools/
+# database dumps contain patient data
+backup/
+*.dump
+*.log

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.hospital</groupId>
+        <artifactId>patient-registration-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
+    <artifactId>pr-identity</artifactId>
+    <packaging>jar</packaging>
+    <name>Identity module (hospitals, users, roles, login, audit)</name>
+    <dependencies>
+        <dependency><groupId>com.hospital</groupId><artifactId>pr-shared</artifactId></dependency>
+        <dependency><groupId>org.springframework</groupId><artifactId>spring-webmvc</artifactId></dependency>
+        <dependency><groupId>org.springframework</groupId><artifactId>spring-jdbc</artifactId></dependency>
+        <dependency><groupId>org.springframework.security</groupId><artifactId>spring-security-web</artifactId></dependency>
+        <dependency><groupId>org.springframework.security</groupId><artifactId>spring-security-config</artifactId></dependency>
+        <dependency><groupId>org.slf4j</groupId><artifactId>slf4j-api</artifactId></dependency>
+        <dependency><groupId>jakarta.servlet</groupId><artifactId>jakarta.servlet-api</artifactId></dependency>
+        <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId></dependency>
+        <dependency><groupId>org.assertj</groupId><artifactId>assertj-core</artifactId></dependency>
+    </dependencies>
+</project>

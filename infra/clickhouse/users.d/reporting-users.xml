@@ -1,0 +1,72 @@
+<!--
+  Application account for the reporting module: read-only (readonly=2 still allows per-query settings),
+  limited to the analytics databases, with interactive and export settings profiles.
+  Tables are created by the admin user via infra scripts, never by the application.
+-->
+<clickhouse>
+    <profiles>
+        <reporting_interactive>
+            <readonly>2</readonly>
+            <max_execution_time>30</max_execution_time>
+            <max_memory_usage>400000000</max_memory_usage>
+            <max_result_rows>100000</max_result_rows>
+            <result_overflow_mode>throw</result_overflow_mode>
+            <max_threads>4</max_threads>
+            <!-- per-query settings may only stay within these bounds (downloads raise rows and time up to the
+                 export limits, never beyond): the account cannot lift its own limits (final review finding) -->
+            <constraints>
+                <max_execution_time><min>1</min><max>300</max></max_execution_time>   <!-- 0 = unlimited -->
+                <max_memory_usage><min>1</min><max>400000000</max></max_memory_usage>
+                <max_result_rows><min>1</min><max>2000001</max></max_result_rows>
+                <max_threads><min>1</min><max>4</max></max_threads>
+                <result_overflow_mode><const/></result_overflow_mode>
+            </constraints>
+        </reporting_interactive>
+    </profiles>
+    <quotas>
+        <!-- generous for screens and downloads, but a runaway client is stopped -->
+        <reporting_quota>
+            <interval>
+                <duration>60</duration>
+                <queries>1200</queries>
+                <errors>300</errors>
+                <execution_time>1800</execution_time>
+            </interval>
+        </reporting_quota>
+    </quotas>
+    <users>
+        <reporting_app>
+            <password from_env="CLICKHOUSE_APP_PASSWORD"/>
+            <profile>reporting_interactive</profile>
+            <quota>reporting_quota</quota>
+            <!-- the app container and the host via Docker port mapping (private networks only, not the internet) -->
+            <networks>
+                <ip>127.0.0.1</ip><ip>::1</ip><ip>10.0.0.0/8</ip><ip>172.16.0.0/12</ip><ip>192.168.0.0/16</ip>
+            </networks>
+            <!-- only the report table and the heartbeat: not the pipeline views or raw Kafka messages
+                 (pipeline_errors), which have no row filter (stage 5a review) -->
+            <grants>
+                <query>GRANT SELECT ON analytics.patient_report</query>
+                <query>GRANT SELECT ON analytics.pipeline_heartbeat</query>
+                <query>GRANT SELECT ON analytics_test.patient_report</query>
+                <query>GRANT SELECT ON analytics_test.pipeline_heartbeat</query>
+            </grants>
+            <!-- Row filter (second line of defence for hospital isolation, architecture 10.1): the application
+                 sends the signed-in user's hospitals with every query (SETTINGS SQL_hospitals = '1,3') and
+                 adds the same condition itself. Without the setting getSetting() fails, so a query that
+                 forgets it returns an error, never other hospitals' rows. -->
+            <databases>
+                <analytics>
+                    <patient_report>
+                        <filter>has(splitByChar(',', toString(getSetting('SQL_hospitals'))), toString(hospital_id))</filter>
+                    </patient_report>
+                </analytics>
+                <analytics_test>
+                    <patient_report>
+                        <filter>has(splitByChar(',', toString(getSetting('SQL_hospitals'))), toString(hospital_id))</filter>
+                    </patient_report>
+                </analytics_test>
+            </databases>
+        </reporting_app>
+    </users>
+</clickhouse>

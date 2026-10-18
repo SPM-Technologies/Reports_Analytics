@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Spring is bootstrapped from WebAppInitializer; this file only holds container settings. -->
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_1.xsd"
+         version="6.1">
+
+    <session-config>
+        <session-timeout>30</session-timeout>
+        <cookie-config>
+            <http-only>true</http-only>
+        </cookie-config>
+        <!-- keep ;jsessionid=... out of URLs -->
+        <tracking-mode>COOKIE</tracking-mode>
+    </session-config>
+
+    <!-- errors raised outside Spring MVC (e.g. by the container) -->
+    <error-page>
+        <location>/WEB-INF/views/error.jsp</location>
+    </error-page>
+</web-app>

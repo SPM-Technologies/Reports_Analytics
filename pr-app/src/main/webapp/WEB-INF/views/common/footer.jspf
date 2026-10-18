@@ -1,0 +1,5 @@
+</main>
+<script src="${pageContext.request.contextPath}/resources/js/common.js"></script>
+<footer class="footer">Patient Registration System &middot; Spring MVC + PostgreSQL</footer>
+</body>
+</html>

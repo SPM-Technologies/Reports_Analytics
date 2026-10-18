@@ -1,0 +1,14 @@
+# keep the build context small: local tools, build output and data never go into the image
+tools/
+**/target/
+pr-ui/node_modules/
+pr-ui/test-results/
+backup/
+Docs/
+infra/data/
+*.dump
+*.log
+pr-ui/e2e/.auth/
+.env
+.git/
+restore.bat
