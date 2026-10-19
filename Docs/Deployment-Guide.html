@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deployment Guide</title>
+<style>
+:root {
+  --bg: #f5f7f9; --surface: #ffffff; --surface-2: #eef3f6; --text: #1d2730; --muted: #5d6b78;
+  --border: #d3dce3; --accent: #00707e; --accent-soft: #e0f1f3; --code-bg: #f0f3f6;
+  --ok: #2e7d32; --ok-bg: #e9f6ec; --warn: #9a6400; --warn-bg: #fff6e5; --bad: #b3261e; --bad-bg: #fdecea;
+  --svg-box: #ffffff; --svg-line: #4d5b67; --svg-text: #1d2730; --svg-muted: #6a7885;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12171c; --surface: #1a2128; --surface-2: #212a33; --text: #e3e9ee; --muted: #9aa8b4;
+    --border: #33404c; --accent: #3fb6c4; --accent-soft: #163339; --code-bg: #212a33;
+    --ok: #7cc68a; --ok-bg: #18291d; --warn: #f0b45a; --warn-bg: #2e2717; --bad: #f08a80; --bad-bg: #3a1f1d;
+    --svg-box: #1f2830; --svg-line: #9aa8b4; --svg-text: #e3e9ee; --svg-muted: #9aa8b4;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12171c; --surface: #1a2128; --surface-2: #212a33; --text: #e3e9ee; --muted: #9aa8b4;
+  --border: #33404c; --accent: #3fb6c4; --accent-soft: #163339; --code-bg: #212a33;
+  --ok: #7cc68a; --ok-bg: #18291d; --warn: #f0b45a; --warn-bg: #2e2717; --bad: #f08a80; --bad-bg: #3a1f1d;
+  --svg-box: #1f2830; --svg-line: #9aa8b4; --svg-text: #e3e9ee; --svg-muted: #9aa8b4;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 "Segoe UI", system-ui, -apple-system, Arial, sans-serif; }
+a { color: var(--accent); }
+code, pre { font-family: Consolas, "Cascadia Mono", "Courier New", monospace; font-size: 13px; }
+code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+pre { background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; border: 1px solid var(--border); line-height: 1.45; margin: 8px 0 12px; }
+pre code { background: none; padding: 0; overflow-wrap: normal; }
+.layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 100vh; }
+nav.toc { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--surface); border-right: 1px solid var(--border); padding: 20px 16px; }
+nav.toc .brand { font-weight: 700; color: var(--accent); }
+nav.toc .sub { color: var(--muted); font-size: 12px; margin-bottom: 14px; }
+nav.toc ol { margin: 0; padding-left: 20px; }
+nav.toc li { margin: 3px 0; font-size: 13.5px; }
+nav.toc a { text-decoration: none; color: var(--text); }
+nav.toc a:hover { color: var(--accent); }
+main { padding: 28px 40px 60px; max-width: 1180px; width: 100%; min-width: 0; }
+header.hero { background: var(--surface); border: 1px solid var(--border); border-left: 5px solid var(--accent); border-radius: 8px; padding: 22px 26px; margin-bottom: 24px; }
+header.hero h1 { margin: 0 0 6px; font-size: 26px; }
+header.hero p { margin: 4px 0; color: var(--muted); }
+section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 22px 26px; margin-bottom: 22px; min-width: 0; }
+section h2 { margin: 0 0 14px; font-size: 21px; padding-bottom: 8px; border-bottom: 2px solid var(--accent-soft); }
+section h3 { font-size: 16.5px; margin: 22px 0 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 10px 0; }
+th, td { border: 1px solid var(--border); padding: 7px 10px; text-align: left; vertical-align: top; }
+th { background: var(--surface-2); }
+.wrap { overflow-x: auto; }
+.step { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 14px; margin: 18px 0; }
+.step .n { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.step h3 { margin: 4px 0 6px; }
+.note { background: var(--surface-2); border-left: 4px solid var(--accent); padding: 10px 14px; border-radius: 4px; margin: 12px 0; }
+.ok { background: var(--ok-bg); border-left: 4px solid var(--ok); padding: 10px 14px; border-radius: 4px; margin: 12px 0; }
+.warnbox { background: var(--warn-bg); border-left: 4px solid var(--warn); padding: 10px 14px; border-radius: 4px; margin: 12px 0; }
+.badbox { background: var(--bad-bg); border-left: 4px solid var(--bad); padding: 10px 14px; border-radius: 4px; margin: 12px 0; }
+.check { list-style: none; padding-left: 0; }
+.check li { padding-left: 28px; position: relative; margin: 6px 0; }
+.check li::before { content: "\2610"; position: absolute; left: 4px; color: var(--accent); }
+.tag { display: inline-block; font-size: 12px; border-radius: 10px; padding: 0 8px; margin-left: 6px; vertical-align: middle; background: var(--accent-soft); }
+svg { width: 100%; height: auto; display: block; margin: 8px 0; }
+.diagram { overflow-x: auto; }
+.diagram svg { min-width: 820px; }
+svg .box { fill: var(--svg-box); stroke: var(--svg-line); stroke-width: 1.3; }
+svg .opt { fill: var(--surface-2); stroke: var(--svg-line); stroke-width: 1.2; stroke-dasharray: 5 3; }
+svg .chk { fill: var(--ok-bg); stroke: var(--ok); stroke-width: 1.4; }
+svg text { fill: var(--svg-text); font: 13px "Segoe UI", Arial, sans-serif; }
+svg text.s { fill: var(--svg-muted); font-size: 11.5px; }
+svg text.b { font-weight: 700; }
+svg .ln { stroke: var(--svg-line); stroke-width: 1.4; fill: none; }
+.theme-btn { margin-top: 18px; font: inherit; font-size: 12px; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 5px 10px; cursor: pointer; }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  nav.toc { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--border); }
+  main { padding: 16px; }
+  section { padding: 16px; }
+  td, th, p, li { overflow-wrap: anywhere; }
+  .step { grid-template-columns: 36px minmax(0, 1fr); gap: 10px; }
+}
+@media print { nav.toc, .theme-btn { display: none; } .layout { display: block; } }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc" aria-label="Contents">
+  <div class="brand">Deployment guide</div>
+  <div class="sub">Patient Registration &amp; Analytics &middot; from Git to a running, verified system &middot; 19 Oct 2026</div>
+  <ol>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#inside">Java, Maven, Tomcat in Docker</a></li>
+    <li><a href="#prereq">Prerequisites</a></li>
+    <li><a href="#prepare">Prepare the machine</a></li>
+    <li><a href="#clone">Get the project from Git</a></li>
+    <li><a href="#config">Review the settings</a></li>
+    <li><a href="#deploy">Deploy step by step</a></li>
+    <li><a href="#data">Load the data</a></li>
+    <li><a href="#realtime">Real-time reports (optional)</a></li>
+    <li><a href="#verify">Verify everything works</a></li>
+    <li><a href="#network">Access from other computers</a></li>
+    <li><a href="#daily">Daily operation</a></li>
+    <li><a href="#update">Update to a new version</a></li>
+    <li><a href="#backup">Backup and restore</a></li>
+    <li><a href="#trouble">Troubleshooting</a></li>
+    <li><a href="#remove">Uninstall</a></li>
+    <li><a href="#linux">Linux and macOS commands</a></li>
+    <li><a href="#card">One-page checklist</a></li>
+  </ol>
+  <button class="theme-btn" type="button" id="themeBtn">Switch light / dark</button>
+  <div class="sub" style="margin-top:14px">Related: <a href="Patient-Registration-Project-Guide.html">Project guide</a> &middot; <a href="ClickHouse-and-New-Tools-Explained.html">ClickHouse explained</a></div>
+</nav>
+<main>
+<header class="hero">
+  <h1>Deploying the Patient Registration system</h1>
+  <p>Step-by-step instructions for anyone: take the project from Git, install the one prerequisite (Docker), start the system, load the demo data, and check that every part works. No Java, Maven, Node or database installation is needed.</p>
+  <p>Repository: <code>https://github.com/SPM-Technologies/Reports_Analytics</code> (private: you need access). Commands are for Windows (PowerShell or Command Prompt); Linux/macOS equivalents are in <a href="#linux">section 16</a>.</p>
+</header>
+
+<section id="overview">
+  <h2>1. Overview</h2>
+  <div class="diagram"><svg viewBox="0 0 1000 220" role="img" aria-label="Deployment process overview">
+    <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--svg-line)"/></marker></defs>
+    <rect class="box" x="10" y="30" width="140" height="70" rx="8"/><text x="80" y="58" text-anchor="middle" class="b">1. Prerequisites</text><text x="80" y="78" text-anchor="middle" class="s">Docker Desktop, Git</text>
+    <rect class="box" x="175" y="30" width="140" height="70" rx="8"/><text x="245" y="58" text-anchor="middle" class="b">2. Clone</text><text x="245" y="78" text-anchor="middle" class="s">git clone</text>
+    <rect class="box" x="340" y="30" width="150" height="70" rx="8"/><text x="415" y="58" text-anchor="middle" class="b">3. Start</text><text x="415" y="78" text-anchor="middle" class="s">start.bat (first: ~10 min)</text>
+    <rect class="box" x="515" y="30" width="150" height="70" rx="8"/><text x="590" y="58" text-anchor="middle" class="b">4. Load data</text><text x="590" y="78" text-anchor="middle" class="s">restore.bat (or generate)</text>
+    <rect class="opt" x="690" y="30" width="140" height="70" rx="8"/><text x="760" y="58" text-anchor="middle" class="b">5. Real time</text><text x="760" y="78" text-anchor="middle" class="s">start.bat cdc (optional)</text>
+    <rect class="chk" x="855" y="30" width="135" height="70" rx="8"/><text x="922" y="58" text-anchor="middle" class="b">6. Verify</text><text x="922" y="78" text-anchor="middle" class="s">checklist (section 9)</text>
+    <path class="ln" d="M150,65 H173" marker-end="url(#ar)"/><path class="ln" d="M315,65 H338" marker-end="url(#ar)"/><path class="ln" d="M490,65 H513" marker-end="url(#ar)"/><path class="ln" d="M665,65 H688" marker-end="url(#ar)"/><path class="ln" d="M830,65 H853" marker-end="url(#ar)"/>
+    <text x="500" y="140" text-anchor="middle" class="s">What runs afterwards (all in Docker): pr-postgres (registration database), pr-clickhouse (reporting database), pr-app (Tomcat with the application),</text>
+    <text x="500" y="158" text-anchor="middle" class="s">plus pr-kafka and pr-debezium with the real-time option. One-shot set-up containers prepare accounts and the reporting copy, then exit.</text>
+    <text x="500" y="190" text-anchor="middle" class="s">Typical total time on a new laptop: 15-25 minutes, mostly downloads and the first build.</text>
+  </svg></div>
+  <div class="wrap"><table>
+    <tr><th>Container</th><th>Role</th><th>Port</th><th>Memory cap</th></tr>
+    <tr><td><code>pr-app</code></td><td>the web application (registration screens, reports, Analytics)</td><td>8080 (network)</td><td>900 MB</td></tr>
+    <tr><td><code>pr-postgres</code></td><td>PostgreSQL 18.6: patients, users, settings, saved reports</td><td>5432 (this computer only)</td><td>700 MB</td></tr>
+    <tr><td><code>pr-clickhouse</code></td><td>ClickHouse 25.3: reporting copy of the patients</td><td>8123 (this computer only)</td><td>1.2 GB</td></tr>
+    <tr><td><code>pr-kafka</code> (optional)</td><td>message queue for real-time reports</td><td>internal only</td><td>640 MB</td></tr>
+    <tr><td><code>pr-debezium</code> (optional)</td><td>reads changes from PostgreSQL into Kafka</td><td>8083 (this computer only)</td><td>800 MB</td></tr>
+  </table></div>
+</section>
+
+<section id="inside">
+  <h2>1a. Java, Maven, Node and Tomcat: provided by Docker</h2>
+  <p>You do not install Java, Maven, Node or Tomcat. They come inside Docker images, defined in the project's <code>Dockerfile</code>, and are downloaded automatically by <code>start.bat</code> the first time. The application image is built in two stages:</p>
+  <div class="diagram"><svg viewBox="0 0 1000 250" role="img" aria-label="Two-stage Docker build">
+    <defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--svg-line)"/></marker></defs>
+    <rect class="box" x="10" y="70" width="170" height="90" rx="8"/><text x="95" y="98" text-anchor="middle" class="b">Project source</text><text x="95" y="118" text-anchor="middle" class="s">from Git (Java, JSP,</text><text x="95" y="134" text-anchor="middle" class="s">React, pom.xml files)</text>
+    <rect class="opt" x="220" y="20" width="360" height="190" rx="10"/>
+    <text x="400" y="42" text-anchor="middle" class="b">Stage 1: build (temporary)</text>
+    <text x="400" y="62" text-anchor="middle" class="s">image maven:3.9.9-eclipse-temurin-21</text>
+    <rect class="box" x="240" y="78" width="150" height="56" rx="6"/><text x="315" y="100" text-anchor="middle" class="b">Java 21 + Maven</text><text x="315" y="118" text-anchor="middle" class="s">compile, package</text>
+    <rect class="box" x="410" y="78" width="150" height="56" rx="6"/><text x="485" y="100" text-anchor="middle" class="b">Node 20.18.1</text><text x="485" y="118" text-anchor="middle" class="s">builds the React UI</text>
+    <text x="400" y="162" text-anchor="middle" class="s">Node is downloaded by Maven (frontend-maven-plugin)</text>
+    <text x="400" y="180" text-anchor="middle" class="s">output: patient-registration.war; this stage is then discarded</text>
+    <rect class="chk" x="620" y="20" width="230" height="190" rx="10"/>
+    <text x="735" y="42" text-anchor="middle" class="b">Stage 2: run (pr-app)</text>
+    <text x="735" y="62" text-anchor="middle" class="s">image tomcat:11.0.27-jdk21-temurin</text>
+    <rect class="box" x="640" y="78" width="190" height="56" rx="6"/><text x="735" y="100" text-anchor="middle" class="b">Tomcat 11.0.27 + Java 21</text><text x="735" y="118" text-anchor="middle" class="s">runs the WAR on port 8080</text>
+    <text x="735" y="162" text-anchor="middle" class="s">only the WAR is copied in;</text>
+    <text x="735" y="180" text-anchor="middle" class="s">no Maven, Node or source code</text>
+    <rect class="box" x="880" y="85" width="110" height="60" rx="8"/><text x="935" y="112" text-anchor="middle" class="b">Browser</text><text x="935" y="130" text-anchor="middle" class="s">:8080</text>
+    <path class="ln" d="M180,115 H218" marker-end="url(#ar2)"/>
+    <path class="ln" d="M580,115 H618" marker-end="url(#ar2)"/>
+    <path class="ln" d="M850,115 H878" marker-end="url(#ar2)"/>
+  </svg></div>
+  <div class="wrap"><table>
+    <tr><th>Software</th><th>Version</th><th>Where it comes from</th><th>Configured in</th></tr>
+    <tr><td>Java (JDK, Eclipse Temurin)</td><td>21</td><td>both images (<code>maven:...-eclipse-temurin-21</code>, <code>tomcat:...-jdk21-temurin</code>)</td><td><code>Dockerfile</code></td></tr>
+    <tr><td>Maven</td><td>3.9.9</td><td>build image <code>maven:3.9.9-eclipse-temurin-21</code>; libraries downloaded from Maven Central during the build and kept in a Docker build cache</td><td><code>Dockerfile</code>, <code>pom.xml</code> files</td></tr>
+    <tr><td>Node + npm</td><td>20.18.1 / 10.8.2</td><td>downloaded by Maven's frontend plugin during the build</td><td><code>pr-ui/pom.xml</code></td></tr>
+    <tr><td>Tomcat</td><td>11.0.27</td><td>runtime image <code>tomcat:11.0.27-jdk21-temurin</code></td><td><code>Dockerfile</code> (memory <code>-Xms256m -Xmx512m</code>, time zone Asia/Kolkata)</td></tr>
+    <tr><td>Application (WAR)</td><td>this project</td><td>built in stage 1, deployed as <code>/patient-registration</code></td><td><code>Dockerfile</code>, settings via <code>docker-compose.yml</code> / <code>.env</code></td></tr>
+    <tr><td>PostgreSQL, ClickHouse, Kafka, Debezium</td><td>18.6, 25.3.14.14, 3.9.0, 3.0.0</td><td>their official images</td><td><code>docker-compose.yml</code></td></tr>
+  </table></div>
+  <p>Check them on a running system:</p>
+<pre><code>docker exec pr-app java -version                                       # openjdk version "21..."
+docker exec pr-app sh -c "grep 'Apache Tomcat Version' /usr/local/tomcat/RELEASE-NOTES"   # 11.0.27
+docker compose logs app | findstr /C:"Server version name"             # Tomcat start-up line</code></pre>
+  <div class="note">The repository also contains <code>tools\</code> (Maven 3.9.9, Node and a library cache). These are <b>not</b> used by Docker (they are excluded from the build); they are only for developers who build or test on Windows outside Docker, together with a locally installed JDK 21 (section 9.6).</div>
+</section>
+
+<section id="prereq">
+  <h2>2. Prerequisites</h2>
+  <div class="wrap"><table>
+    <tr><th>Item</th><th>Minimum</th><th>Recommended</th><th>Why</th></tr>
+    <tr><td>Operating system</td><td>Windows 10/11 (64-bit) with WSL 2, macOS 12+, or Linux</td><td>Windows 11</td><td>the <code>.bat</code> scripts are for Windows; other systems use plain Docker commands</td></tr>
+    <tr><td>Memory (RAM)</td><td>8 GB, with 4 GB for Docker</td><td>16 GB, with 6 GB for Docker</td><td>all five containers use about 1.6-2 GB, plus the first build</td></tr>
+    <tr><td>Free disk</td><td>10 GB</td><td>20 GB</td><td>Docker images about 5.2 GB, repository about 0.45 GB, data about 0.5 GB, build cache</td></tr>
+    <tr><td>Docker Desktop</td><td>4.x with Docker Compose v2 (<code>docker compose</code>)</td><td>latest</td><td>runs everything; free for personal and small-business use, otherwise check Docker's subscription terms</td></tr>
+    <tr><td>Git</td><td>2.x</td><td>Git for Windows (includes Git Credential Manager)</td><td>to clone the repository</td></tr>
+    <tr><td>GitHub access</td><td>read access to <code>SPM-Technologies/Reports_Analytics</code></td><td></td><td>the repository is private</td></tr>
+    <tr><td>Internet (first start only)</td><td>download about 5-6 GB</td><td></td><td>Docker images (Docker Hub, quay.io) and build libraries (Maven Central, Node)</td></tr>
+    <tr><td>Free ports</td><td>8080, 5432, 8123 (and 8083 for real time)</td><td></td><td>nothing else on the computer may use them (e.g. a locally installed PostgreSQL or Tomcat)</td></tr>
+    <tr><td>Browser</td><td>Edge, Chrome or Firefox (current)</td><td></td><td>to use the application</td></tr>
+  </table></div>
+  <div class="note">Not needed: Java, Maven, Node, Tomcat, PostgreSQL or ClickHouse on the computer itself. Everything is built and run inside Docker (<a href="#inside">section 1a</a>). (Only developers who want to run the automated tests on the host need a JDK 21; see <a href="#verify">section 9.6</a>.)</div>
+</section>
+
+<section id="prepare">
+  <h2>3. Prepare the machine</h2>
+  <div class="step"><div class="n">1</div><div>
+    <h3>Install Git</h3>
+    <p>Download Git for Windows from <code>https://git-scm.com/download/win</code> and install with the default options. Check in a new PowerShell window:</p>
+<pre><code>git --version            # e.g. git version 2.5x</code></pre>
+  </div></div>
+  <div class="step"><div class="n">2</div><div>
+    <h3>Install Docker Desktop</h3>
+    <p>Download from <code>https://www.docker.com/products/docker-desktop/</code>, install with "Use WSL 2" selected, restart Windows if asked, then start Docker Desktop and wait until it shows "Engine running".</p>
+<pre><code>docker --version
+docker compose version   # must print "Docker Compose version v2..."
+docker run --rm hello-world</code></pre>
+  </div></div>
+  <div class="step"><div class="n">3</div><div>
+    <h3>Give Docker enough memory</h3>
+    <p>With WSL 2 the memory is set in <code>%UserProfile%\.wslconfig</code> (create it if missing), then run <code>wsl --shutdown</code> and start Docker Desktop again:</p>
+<pre><code>[wsl2]
+memory=6GB
+processors=4</code></pre>
+    <p>Check: Docker Desktop &rarr; Settings &rarr; Resources shows the limit; <code>docker info</code> prints <code>Total Memory</code> of at least 4 GB.</p>
+  </div></div>
+  <div class="step"><div class="n">4</div><div>
+    <h3>Make sure the ports are free</h3>
+<pre><code>netstat -ano | findstr ":8080 :5432 :8123 :8083"</code></pre>
+    <p>No output means the ports are free. If a line shows <code>LISTENING</code>, stop that program (for example a Windows PostgreSQL service or another Tomcat) before continuing.</p>
+  </div></div>
+</section>
+
+<section id="clone">
+  <h2>4. Get the project from Git</h2>
+  <div class="step"><div class="n">5</div><div>
+    <h3>Clone the repository</h3>
+    <p>Choose a folder without spaces, preferably on a drive with enough space (for example <code>D:\Projects</code>):</p>
+<pre><code>cd D:\Projects
+git clone https://github.com/SPM-Technologies/Reports_Analytics.git
+cd Reports_Analytics</code></pre>
+    <p>The first time, a GitHub sign-in window appears (Git Credential Manager): sign in with an account that has access. The download is about 450 MB because the repository also holds the bundled build tools (<code>tools\</code>) and the database backups (<code>backup\</code>).</p>
+    <div class="warnbox">Clone with Git (not "Download ZIP"): the repository's <code>.gitattributes</code> makes sure the Linux scripts used inside the containers keep their correct line endings. A ZIP extracted on Windows can break them.</div>
+  </div></div>
+  <div class="step"><div class="n">6</div><div>
+    <h3>Check what you received</h3>
+<pre><code>dir
+#  backup\  db\  Docs\  infra\  pr-app\ ... tools\
+#  docker-compose.yml  Dockerfile  .env  start.bat  stop.bat  deploy.bat  restore.bat  backup.bat  load-data.bat  README.md
+git log --oneline -3</code></pre>
+  </div></div>
+</section>
+
+<section id="config">
+  <h2>5. Review the settings (<code>.env</code>)</h2>
+  <p>All passwords and options are in the file <code>.env</code> in the project folder. The defaults work as they are for a local demo:</p>
+  <div class="wrap"><table>
+    <tr><th>Setting</th><th>Default</th><th>Meaning</th></tr>
+    <tr><td><code>POSTGRES_PASSWORD</code></td><td><code>Pass@1234</code></td><td>PostgreSQL administrator <code>postgres</code></td></tr>
+    <tr><td><code>APP_DB_PASSWORD</code></td><td><code>PrApp@1234</code></td><td>the application's own database account</td></tr>
+    <tr><td><code>CLICKHOUSE_ADMIN_PASSWORD</code></td><td><code>ChAdmin@1234</code></td><td>ClickHouse administrator <code>admin</code></td></tr>
+    <tr><td><code>CLICKHOUSE_APP_PASSWORD</code></td><td><code>Report@1234</code></td><td>the application's read-only reporting account</td></tr>
+    <tr><td><code>REPORTING_RO_PASSWORD</code>, <code>DEBEZIUM_PASSWORD</code></td><td><code>RoPass@1234</code>, <code>Dbz@1234</code></td><td>accounts of the data pipeline</td></tr>
+    <tr><td><code>BOOTSTRAP_ADMIN_PASSWORD</code></td><td><code>Admin@1234</code></td><td>first user <code>admin</code> (created only on an empty database)</td></tr>
+    <tr><td><code>DEMO_DATA</code>, <code>DEMO_PASSWORD</code></td><td><code>true</code>, <code>Demo@1234</code></td><td>create demo hospitals H002/H003 and the demo users at start</td></tr>
+    <tr><td><code>SEED_ROWS</code>, <code>SEED_HOSPITAL</code></td><td><code>100000</code>, <code>1</code></td><td>defaults for generated test patients</td></tr>
+  </table></div>
+  <div class="warnbox">Change the passwords <b>before the first start</b> if the computer is shared or reachable from a network. The PostgreSQL administrator password is fixed when its data volume is created; changing it later needs a fresh volume. Set <code>DEMO_DATA=false</code> for an installation without demo users.</div>
+</section>
+
+<section id="deploy">
+  <h2>6. Deploy step by step</h2>
+  <div class="step"><div class="n">7</div><div>
+    <h3>Start the system</h3>
+    <p>In the project folder (Docker Desktop must be running):</p>
+<pre><code>start.bat
+# same as: docker compose up -d --build</code></pre>
+    <p>The <b>first</b> start downloads the images and builds the application inside Docker: about <b>8-15 minutes</b> (measured 8 min 39 s on a test laptop). Later starts take about 1-2 minutes.</p>
+  </div></div>
+  <div class="step"><div class="n">8</div><div>
+    <h3>What happens automatically</h3>
+    <ol>
+      <li>PostgreSQL and ClickHouse start; ClickHouse creates its databases <code>analytics</code> and <code>analytics_test</code> on the first start.</li>
+      <li>The application starts and creates or updates all tables, security rules and the report templates; it creates the user <code>admin</code> and (with <code>DEMO_DATA=true</code>) hospitals H002, H003 and the demo users.</li>
+      <li>When the application is healthy, <code>pg-setup</code> creates the pipeline accounts and the test database, then <code>analytics-setup</code> prepares ClickHouse and the one-minute copy. Both then stop ("Exited (0)") &mdash; that is correct.</li>
+    </ol>
+  </div></div>
+  <div class="step"><div class="n">9</div><div>
+    <h3>Wait until it is healthy</h3>
+<pre><code>docker compose ps -a</code></pre>
+    <p>Expected:</p>
+<pre><code>pr-app          Up ... (healthy)
+pr-clickhouse   Up ... (healthy)
+pr-postgres     Up ... (healthy)
+...-pg-setup-1          Exited (0)
+...-analytics-setup-1   Exited (0)</code></pre>
+    <p>If <code>pr-app</code> shows <code>(health: starting)</code>, wait a minute and run the command again.</p>
+  </div></div>
+  <div class="step"><div class="n">10</div><div>
+    <h3>Open the application</h3>
+    <p><a href="http://localhost:8080/patient-registration/">http://localhost:8080/patient-registration/</a> &rarr; sign-in page. Sign in as <code>admin</code> / <code>Admin@1234</code>. At this point the system is running <b>without patients</b>; load data in the next step.</p>
+  </div></div>
+</section>
+
+<section id="data">
+  <h2>7. Load the data</h2>
+  <p>Choose <b>one</b> of the two options.</p>
+  <h3>Option A &mdash; the exact demo data (recommended)</h3>
+  <p>The repository contains the full demo data set in <code>backup\patientreg_full_2026-10-16_1726.dump</code> (22 MB): H001 1,00,002, H002 20,000 and H003 10,000 patients, all users, settings and saved reports.</p>
+<pre><code>certutil -hashfile backup\patientreg_full_2026-10-16_1726.dump SHA256
+#  must print 5eb7c11e3fb09084e79871119944e35fb08c0a76be5a67d5660f6bc936b9f72b
+
+restore.bat backup\patientreg_full_2026-10-16_1726.dump
+#  type YES when asked; takes about 1-2 minutes</code></pre>
+  <p><code>restore.bat</code> stops the application, replaces all data in PostgreSQL with the backup, empties ClickHouse, starts everything again and lets ClickHouse copy all patients. After it, the users and passwords of the backup apply (see section 9.2).</p>
+  <h3>Option B &mdash; generate new test patients</h3>
+<pre><code>load-data.bat 100000 1      # 1 lakh patients for H001 (about 1 minute)
+load-data.bat 20000 2       # H002
+load-data.bat 10000 3       # H003</code></pre>
+  <p>The patients are realistic but fictitious, with every field filled; ClickHouse is reloaded automatically after each run. Running it again adds more patients.</p>
+  <div class="note">Option A is needed if you want to run the browser test suite: it checks the exact demo counts (1,00,002 / 20,000 / 10,000).</div>
+</section>
+
+<section id="realtime">
+  <h2>8. Real-time reports (optional)</h2>
+  <p>Without this option, a new registration appears in Analytics within about one minute. With it (Kafka + Debezium), within a few seconds.</p>
+<pre><code>start.bat cdc
+# same as: docker compose --profile cdc up -d --build</code></pre>
+  <p>The first time this downloads two more images (about 2.8 GB). Expected afterwards in <code>docker compose ps -a</code>: <code>pr-kafka (healthy)</code>, <code>pr-debezium (healthy)</code>, <code>...-ch-cdc-setup-1 Exited (0)</code>, <code>...-cdc-setup-1 Exited (0)</code>.</p>
+  <div class="warnbox">After using the real-time option once, always start with <code>start.bat cdc</code>. If you decide to stop using it permanently, remove its database slot so PostgreSQL does not keep change log for it: <code>docker exec pr-postgres psql -U postgres -c "SELECT pg_drop_replication_slot('pr_outbox_slot')"</code>.</div>
+</section>
+
+<section id="verify">
+  <h2>9. Verify everything works</h2>
+  <h3>9.1 Containers</h3>
+<pre><code>docker compose ps -a</code></pre>
+  <ul class="check">
+    <li><code>pr-app</code>, <code>pr-postgres</code>, <code>pr-clickhouse</code> are <code>Up (healthy)</code> (and <code>pr-kafka</code>, <code>pr-debezium</code> with real time)</li>
+    <li>every <code>...-setup-1</code> container is <code>Exited (0)</code> (any other exit code: see <a href="#trouble">troubleshooting</a>)</li>
+    <li><code>docker compose logs app | findstr /C:"Database schema applied"</code> prints one line, and <code>docker compose logs app | findstr SEVERE</code> prints nothing</li>
+  </ul>
+
+  <h3>9.2 Sign in</h3>
+  <div class="wrap"><table>
+    <tr><th>User</th><th>Password</th><th>Should see</th></tr>
+    <tr><td><code>admin</code></td><td><code>Admin@1234</code></td><td>all three hospitals; Administration and Settings menus</td></tr>
+    <tr><td><code>h001.admin</code></td><td><code>Demo@1234</code></td><td>only H001, with Settings and Administration</td></tr>
+    <tr><td><code>h002.reports</code></td><td><code>Demo@1234</code></td><td>only H002 reports; no registration</td></tr>
+    <tr><td><code>group.reports</code></td><td><code>Demo@1234</code></td><td>"3 hospitals" in Analytics</td></tr>
+  </table></div>
+  <ul class="check">
+    <li>each of these users can sign in, and a wrong password shows "Wrong username or password"</li>
+  </ul>
+
+  <h3>9.3 Screens</h3>
+  <ul class="check">
+    <li>Dashboard (<code>/patient-registration/</code>) shows the patient count of the working hospital (H001: 1,00,002 with option A)</li>
+    <li>Reports &rarr; Patient Register lists patients, 50 per page, and the Excel download opens</li>
+    <li>Reports &rarr; Department Summary shows departments with a grand total</li>
+    <li>Analytics (<code>/patient-registration/app/</code>) opens the "Patient Register (Report 1)" template; the header shows "Data as of" with a recent time</li>
+    <li>Analytics as <code>h001.reports</code>: the template "Department Summary (Report 2)" shows a total of 1,00,002 (option A; as <code>admin</code> or <code>group.reports</code> the total covers all three hospitals: 1,30,002), and its Chart button draws a chart</li>
+    <li>Settings (as <code>h001.admin</code>) opens Form fields, Dropdown lists, Departments, Report fields, Downloads</li>
+    <li>Administration (as <code>admin</code>) lists users, hospitals, roles and the audit log</li>
+  </ul>
+
+  <h3>9.4 Data in both databases</h3>
+<pre><code>docker exec pr-postgres psql -U postgres -c "SELECT hospital_id, count(*) FROM patientreg.patient GROUP BY 1 ORDER BY 1"
+docker exec pr-clickhouse clickhouse-client --user admin --password ChAdmin@1234 -q "SELECT hospital_id, count() FROM analytics.patient_report FINAL WHERE is_deleted = 0 GROUP BY 1 ORDER BY 1"</code></pre>
+  <ul class="check">
+    <li>both commands print the same numbers per hospital (option A: 1 &rarr; 100002, 2 &rarr; 20000, 3 &rarr; 10000)</li>
+  </ul>
+
+  <h3>9.5 End-to-end: a new registration reaches Analytics</h3>
+  <ol>
+    <li>Sign in as <code>h001.reg</code> / <code>Demo@1234</code> and register a patient (New Registration, fill the required fields, Save). Note the registration number shown (for example <code>H001-REG2026...</code>).</li>
+    <li>Sign in as <code>h001.reports</code>, open Analytics, run "Patient Register (Report 1)" and search for the new patient (filter Patient Name contains ...).</li>
+  </ol>
+  <ul class="check">
+    <li>the patient appears within about 1 minute (without real time) or within a few seconds (with <code>start.bat cdc</code>)</li>
+    <li>with real time: <code>curl http://localhost:8083/connectors/patient-outbox/status</code> shows <code>"state":"RUNNING"</code> twice</li>
+  </ul>
+  <div class="note">The test patient stays in the data. Delete it later as administrator if needed, or simply run <code>restore.bat</code> again.</div>
+
+  <h3>9.6 Automated tests (optional, for developers)</h3>
+  <p>Needs a JDK 21 installed on the computer (for example Eclipse Temurin 21) and the system running. The bundled Maven in <code>tools\</code> is used; edit <code>JAVA_HOME</code> in <code>env.bat</code> to your JDK first.</p>
+<pre><code>test.bat                                   # 178 Java tests (about 8 minutes)
+cd pr-ui
+..\tools\node\npm ci                       # first time only (downloads the test libraries)
+..\tools\node\npx playwright test          # 23 browser tests in Microsoft Edge (needs option A data)</code></pre>
+  <ul class="check">
+    <li>"Tests run: ..., Failures: 0, Errors: 0" in every module and "BUILD SUCCESS"; Playwright prints "23 passed"</li>
+  </ul>
+</section>
+
+<section id="network">
+  <h2>10. Access from other computers</h2>
+  <p>The application port 8080 is open to the network (the databases are not). Other computers on the same network use the server's IP address:</p>
+<pre><code>ipconfig                                   # find the IPv4 address, e.g. 192.168.1.25
+http://192.168.1.25:8080/patient-registration/</code></pre>
+  <p>If it does not open, allow the port in Windows Defender Firewall (administrator PowerShell):</p>
+<pre><code>New-NetFirewallRule -DisplayName "Patient Registration 8080" -Direction Inbound -Protocol TCP -LocalPort 8080 -Action Allow -Profile Private</code></pre>
+  <div class="badbox">This is a proof of concept: demo passwords, no HTTPS. Do not expose it to the internet or use real patient data before production hardening (secrets, TLS, sign-on).</div>
+</section>
+
+<section id="daily">
+  <h2>11. Daily operation</h2>
+  <div class="wrap"><table>
+    <tr><th>Task</th><th>Command</th><th>Note</th></tr>
+    <tr><td>Start</td><td><code>start.bat</code> or <code>start.bat cdc</code></td><td>containers also restart by themselves when Docker Desktop starts</td></tr>
+    <tr><td>Stop</td><td><code>stop.bat</code></td><td>data is kept</td></tr>
+    <tr><td>Status</td><td><code>docker compose ps -a</code></td><td></td></tr>
+    <tr><td>Application log</td><td><code>docker compose logs -f app</code></td><td>Ctrl+C to leave</td></tr>
+    <tr><td>Restart only the application</td><td><code>docker compose restart app</code></td><td></td></tr>
+    <tr><td>Backup</td><td><code>backup.bat</code></td><td>creates <code>backup\patientreg_full_YYYY-MM-DD_HHmm.dump</code></td></tr>
+    <tr><td>Disk use</td><td><code>docker system df</code></td><td></td></tr>
+  </table></div>
+</section>
+
+<section id="update">
+  <h2>12. Update to a new version</h2>
+<pre><code>backup.bat                 # safety copy of the data first
+git pull                   # get the new version
+deploy.bat                 # rebuild and replace only the application (databases keep running)
+docker compose up -d       # re-run the set-up steps (new ClickHouse columns etc.); add --profile cdc if used</code></pre>
+  <ul>
+    <li>Database changes are applied automatically when the application starts; no manual SQL is needed.</li>
+    <li>Check afterwards with <a href="#verify">section 9</a>. If the new version misbehaves: <code>git checkout &lt;previous commit&gt;</code>, <code>deploy.bat</code>, and if needed <code>restore.bat</code> with the backup.</li>
+    <li>After <code>deploy.bat</code>, the image date can be checked with <code>docker image inspect patient-registration-app:latest --format "{{.Created}}"</code>; it must be the current time.</li>
+  </ul>
+</section>
+
+<section id="backup">
+  <h2>13. Backup and restore</h2>
+  <ul>
+    <li><b>Backup:</b> <code>backup.bat</code> &rarr; one file in <code>backup\</code> with all patients, users, settings and saved reports (the reporting copy in ClickHouse is rebuilt from it, so it needs no backup).</li>
+    <li><b>Restore:</b> <code>restore.bat backup\&lt;file&gt;.dump</code> (type YES) &mdash; replaces everything with the backup.</li>
+    <li><b>Move to another computer:</b> deploy there (sections 3-6), copy the dump file into its <code>backup\</code> folder (or commit it to the private repository), and run <code>restore.bat</code>.</li>
+    <li>Keep backups private: they contain patient records and users' password hashes.</li>
+  </ul>
+</section>
+
+<section id="trouble">
+  <h2>14. Troubleshooting</h2>
+  <div class="wrap"><table>
+    <tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+    <tr><td><code>failed to connect to the docker API ... dockerDesktopLinuxEngine</code></td><td>Docker Desktop is not running</td><td>start Docker Desktop, wait for "Engine running", run the command again</td></tr>
+    <tr><td><code>ports are not available ... 8080</code> (or 5432, 8123)</td><td>another program uses the port, or Docker had not released it yet</td><td>stop the other program (section 3, step 4); otherwise run the command again</td></tr>
+    <tr><td><code>dependency failed to start: container pr-app is unhealthy</code></td><td>the application did not start (wrong password in <code>.env</code>, database problem)</td><td><code>docker compose logs app</code>; fix the cause; <code>docker compose up -d</code></td></tr>
+    <tr><td>Image download fails with "server gave HTTP response to HTTPS client" (quay.io)</td><td>temporary registry problem</td><td>run the command again</td></tr>
+    <tr><td>First build fails while downloading libraries</td><td>no internet or a proxy blocks Maven Central / nodejs.org</td><td>connect directly or configure Docker Desktop's proxy (Settings &rarr; Resources &rarr; Proxies)</td></tr>
+    <tr><td><code>/bin/bash^M: bad interpreter</code> in ClickHouse logs</td><td>project downloaded as ZIP, scripts got Windows line endings</td><td>clone with Git (section 4), then <code>docker compose down -v</code> and start again</td></tr>
+    <tr><td>Sign-in fails for demo users</td><td><code>DEMO_DATA=false</code>, or a restored backup has other users</td><td>sign in as <code>admin</code>; check users under Administration</td></tr>
+    <tr><td>"Paused" sign-in after several wrong passwords</td><td>throttling (1 minute, doubling up to 15)</td><td>wait, or unlock the user under Administration &rarr; Users</td></tr>
+    <tr><td>Analytics shows no patients, or counts differ from PostgreSQL</td><td>reporting copy not loaded (e.g. data loaded by hand)</td><td><code>docker exec -i pr-clickhouse clickhouse-client --user admin --password ChAdmin@1234 --multiquery &lt; infra\clickhouse\pipeline\backfill.sql</code></td></tr>
+    <tr><td>"Data as of" is old with real time on</td><td>Debezium connector stopped or failed</td><td><code>curl http://localhost:8083/connectors/patient-outbox/status</code>; <code>start.bat cdc</code> re-registers it; the one-minute copy keeps working meanwhile</td></tr>
+    <tr><td><code>restore.bat</code>: "No such container: pr-postgres"</td><td>the system is not running</td><td><code>start.bat</code> first, then the restore</td></tr>
+    <tr><td>Everything is slow, containers restart</td><td>too little memory for Docker</td><td>raise the WSL memory (section 3, step 3); run without <code>cdc</code></td></tr>
+  </table></div>
+</section>
+
+<section id="remove">
+  <h2>15. Uninstall</h2>
+<pre><code>docker compose --profile cdc --profile seed down        # remove containers, KEEP the data volumes
+docker compose --profile cdc --profile seed down -v     # remove containers AND all data (cannot be undone)
+docker image rm patient-registration-app:latest         # optional: free the application image</code></pre>
+  <p>Then delete the project folder. Take a <code>backup.bat</code> first if the data may be needed again.</p>
+</section>
+
+<section id="linux">
+  <h2>16. Linux and macOS commands</h2>
+  <p>The <code>.bat</code> files are short wrappers; on Linux/macOS run the Docker commands directly in the project folder:</p>
+  <div class="wrap"><table>
+    <tr><th>Windows</th><th>Linux / macOS</th></tr>
+    <tr><td><code>start.bat</code> / <code>start.bat cdc</code></td><td><code>docker compose up -d --build</code> / <code>docker compose --profile cdc up -d --build</code></td></tr>
+    <tr><td><code>stop.bat</code></td><td><code>docker compose --profile cdc --profile seed stop</code></td></tr>
+    <tr><td><code>deploy.bat</code></td><td><code>docker compose up -d --build app</code></td></tr>
+    <tr><td><code>load-data.bat 20000 2</code></td><td><code>SEED_ROWS=20000 SEED_HOSPITAL=2 docker compose --profile seed run --rm seed &amp;&amp; docker compose --profile seed run --rm --no-deps seed-backfill</code></td></tr>
+    <tr><td><code>backup.bat</code></td><td><code>docker exec pr-postgres pg_dump -U postgres -d postgres -n identity -n patientreg -n reporting --extension=pg_trgm -Fc -Z 6 &gt; backup/patientreg_full_$(date +%F_%H%M).dump</code></td></tr>
+    <tr><td><code>certutil -hashfile ... SHA256</code></td><td><code>sha256sum backup/&lt;file&gt;.dump</code> (macOS: <code>shasum -a 256</code>)</td></tr>
+  </table></div>
+  <p><code>restore.bat</code> on Linux/macOS (replaces all data):</p>
+<pre><code>docker compose stop app debezium
+docker exec pr-postgres psql -U postgres -d postgres -c "DROP SCHEMA IF EXISTS identity, patientreg, reporting CASCADE"
+docker exec -i pr-postgres pg_restore -U postgres -d postgres --no-owner --no-acl &lt; backup/patientreg_full_2026-10-16_1726.dump
+docker exec pr-clickhouse sh -c 'clickhouse-client --user admin --password "$CLICKHOUSE_PASSWORD" -q "TRUNCATE TABLE analytics.patient_report"'
+docker compose up -d</code></pre>
+</section>
+
+<section id="card">
+  <h2>17. One-page checklist</h2>
+  <ul class="check">
+    <li>Docker Desktop installed and running, at least 4 GB memory for Docker, 10 GB free disk</li>
+    <li>Git installed; access to <code>SPM-Technologies/Reports_Analytics</code></li>
+    <li>Ports 8080, 5432, 8123 (8083) free</li>
+    <li><code>git clone https://github.com/SPM-Technologies/Reports_Analytics.git</code> &rarr; <code>cd Reports_Analytics</code></li>
+    <li><code>.env</code> reviewed (passwords changed if the computer is shared)</li>
+    <li><code>start.bat</code> &rarr; wait for <code>pr-app (healthy)</code> (first time 8-15 min)</li>
+    <li><code>restore.bat backup\patientreg_full_2026-10-16_1726.dump</code> &rarr; YES</li>
+    <li>optional: <code>start.bat cdc</code> for real-time reports</li>
+    <li><code>docker compose ps -a</code>: all Up (healthy), set-up containers Exited (0)</li>
+    <li>sign in at <code>http://localhost:8080/patient-registration/</code> as <code>admin</code> / <code>Admin@1234</code></li>
+    <li>patient counts equal in PostgreSQL and ClickHouse (section 9.4)</li>
+    <li>a new registration appears in Analytics (section 9.5)</li>
+    <li>first backup taken with <code>backup.bat</code></li>
+  </ul>
+  <div class="ok">When every box is ticked, the deployment is complete and verified.</div>
+</section>
+</main>
+</div>
+<script>
+(function () {
+  var btn = document.getElementById('themeBtn');
+  try { var t = localStorage.getItem('pr-doc-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  btn.addEventListener('click', function () {
+    var cur = document.documentElement.getAttribute('data-theme');
+    var dark = cur ? cur === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var next = dark ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('pr-doc-theme', next); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>

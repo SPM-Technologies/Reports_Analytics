@@ -4,7 +4,7 @@ Java 21 · Spring MVC 6.2 · Spring Security 6.4 · Tomcat 11 · PostgreSQL 18 �
 React 18 analytics UI · Apache POI (Excel) · OpenPDF (PDF). Everything is open source and runs in Docker.
 Several hospitals share one installation; each sees only its own data.
 
-Full documentation (local HTML): `Docs/Patient-Registration-Project-Guide.html`, `Docs/Reports-Comparison-JSP-vs-Analytics.html`,
+Full documentation (local HTML): `Docs/Deployment-Guide.html` (step-by-step deployment and checks), `Docs/Patient-Registration-Project-Guide.html`, `Docs/Reports-Comparison-JSP-vs-Analytics.html`,
 `Docs/Stage-5-Completion-Report.html`, `Docs/Final-Review-Report.html`, `Docs/Solution-Architecture.html`, `Docs/SQL-Server-Impact-Analysis.html` (what changes with Microsoft SQL Server), `Docs/ClickHouse-and-New-Tools-Explained.html` (how ClickHouse stores data, and every new tool with an example).
 
 ## Run (only Docker Desktop is needed)
